@@ -1,0 +1,26 @@
+@keyframes from-right {
+  from{
+    transform: translateX(110%);
+  }
+  to{
+    transform: translateX(0%);
+  }
+}
+
+a.pending {
+  animate: pulse 1s infinite;
+}
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.animate-ripple {
+  animation: ripple 0.6s linear;
+}
+
+.alert .show{
+  transform: translateX(0%);
+}
