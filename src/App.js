@@ -1,37 +1,38 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router"
-
-/*-----Pages-----*/
-//Portfolio
-import Home from "./pages/_index"
-import Pricing from "./pages/portfolio/Pricing"
-import About from "./pages/portfolio/About"
-
-//Auth
-import Login from "./pages/_auth/login/route"
-import Signup from "./pages/_auth/signup/route"
-
-
-//Blockers
-import WatchBoard from "./pages/blockers/WatchBoard"
-
-/*-----App-----*/
-import Dashboard from "./pages/app/route"
-
+import React from "react";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import PortfolioStack from "./navigation/PortfolioStack";
+import AppStack from "./navigation/AppStack";
+import AuthStack from "./navigation/AuthStack";
+import WatchBoard from "./pages/blockers/WatchBoard";
+// React Query Client
+const queryClient = new QueryClient({
+ defaultOptions: {
+  queries: {
+   suspense: true
+  }
+ }
+});
 
 const App = () => {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/auth/Login" element={<Login />} />
-        <Route path="/auth/signup" element={<Signup />} />
-        <Route path="/dashboard" element={<Dashboard />}/>
-        <Route path="/blockers/watch" element={<WatchBoard />} />
-      </Routes>
-    </Router>
-  )
-}
+ return (
+  <QueryClientProvider client={queryClient}>
+   <Router>
+    <Routes>
+     {/* Portfolio Routes */}
+     <Route path="/*" element={<PortfolioStack />} />
 
-export default App
+     {/* App Routes */}
+     <Route path="/app/*" element={<AppStack />} />
+
+     {/* Auth Routes */}
+     <Route path="/auth/*" element={<AuthStack />} />
+
+     <Route path="/blockers/watch" element={<WatchBoard />} />
+    </Routes>
+   </Router>
+  </QueryClientProvider>
+ );
+};
+
+export default App;

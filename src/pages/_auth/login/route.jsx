@@ -1,18 +1,31 @@
-import { useState, useActionState } from "react";
+import { useState } from "react";
 import axios from "axios";
-import { Link } from "react-router";
+import { Link } from "react-router-dom"; // Corrected import
 import { FaGoogle, FaApple, FaTriangleExclamation, FaCheck, FaArrowLeft } from "react-icons/fa6";
 import { FormLayout, FormHeader, FormBody } from "../../../layouts/FormLayout";
 import Input from "../../../components/Input";
 import Button from "../../../components/Button";
 import Alert from "../../../components/Alert";
 
+// Mock implementation of useActionState if not defined elsewhere
+const useActionState = (action, initialState) => {
+  const [data, setData] = useState(initialState);
+  const [isPending, setIsPending] = useState(false);
+
+  const executeAction = async (formData) => {
+    setIsPending(true);
+    const result = await action(data, formData);
+    setData(result);
+    setIsPending(false);
+  };
+
+  return [data, executeAction, isPending];
+};
+
 const Login = () => {
-  // For managing alerts
-  const [alerts, setAlerts] = useState([]); 
-  // For managing login logic
-  const [data, action, isPending] = useActionState(handleLogin, {}); 
-  // Function to handle API call logic
+  const [alerts, setAlerts] = useState([]);
+  const [data, action, isPending] = useActionState(handleLogin, {});
+
   async function handleLogin(currentData, formData) {
     const form = {
       user: {
@@ -21,11 +34,13 @@ const Login = () => {
       },
     };
     try {
-      const response = await axios.post("https://kcb-reports-api.vercel.app/auth/login", form);
+      const response = await axios.post(
+        //"https://kcb-reports-api.vercel.app/auth/login"
+        "http://localhost:5000/auth/login", form);
       localStorage.setItem("token", response.data.token);
       setTimeout(() => {
-        window.location.href = "/dashboard"; // Redirect after successful login
-      }, 500); // Reduced artificial delay
+        window.location.href = "/app";
+      }, 500);
       return { status: true, data: response };
     } catch (error) {
       console.error("Login failed:", error.response?.data);
@@ -33,7 +48,6 @@ const Login = () => {
     }
   }
 
-  // Function to create alerts
   const createAlert = (status, message) => {
     const newAlert = {
       id: Math.random().toString(),
@@ -41,7 +55,7 @@ const Login = () => {
       status: status ? "success" : "error",
       icon: status ? <FaCheck className="w-4 h-4" /> : <FaTriangleExclamation className="w-4 h-4" />,
     };
-    setAlerts((prevAlerts) => [...prevAlerts.slice(-4), newAlert]); // Keep only the last 5 alerts
+    setAlerts((prevAlerts) => [...prevAlerts.slice(-4), newAlert]);
   };
 
   return (
@@ -60,14 +74,13 @@ const Login = () => {
             Log in to access your reports.
           </p>
         </div>
-      
         <Link to="/" className="flex justify-center items-center absolute bottom-3 left-3 z-10 gap-2 rounded-lg text-slate-200/80 px-1 py-1 active:bg-gray-300/50 hover:bg-gray-200/60">
           <FaArrowLeft />
           Go back Home
         </Link>
-      </FormHeader> 
+      </FormHeader>
       <FormBody>
-        <form className="w-full" action={action}>
+        <form className="w-full" onSubmit={(e) => { e.preventDefault(); action(new FormData(e.target)); }}>
           <Input type="text" label="Username" name="username" required />
           <Input type="password" label="Password" name="password" required />
           <div className="flex">
