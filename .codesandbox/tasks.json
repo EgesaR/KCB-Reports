@@ -2,7 +2,7 @@
   // These tasks will run in order when initializing your CodeSandbox project.
   "setupTasks": [
     {
-      "command": "yarn install",
+      "command": "npm install && npx prisma generate",
       "name": "Installing Dependencies"
     }
   ],
@@ -11,7 +11,7 @@
   "tasks": {
     "start": {
       "name": "start",
-      "command": "yarn start",
+      "command": "npm run dev",
       "runAtStart": true
     },
     "server": {

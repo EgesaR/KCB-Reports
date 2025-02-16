@@ -20,6 +20,10 @@ export default defineConfig({
     ),
   },
   server: {
-    allowedHosts: ["xlsfk4-5173.csb.app", "localhost", "https://kcb-reports.vercel.app/"],
+    allowedHosts: [
+      "k3wncn-5173.csb.app",
+      "localhost",
+      "https://kcb-reports.vercel.app/",
+    ],
   },
 });

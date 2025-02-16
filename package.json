@@ -7,7 +7,7 @@
     "build": "remix vite:build",
     "dev": "remix vite:dev",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
-    "start": "remix-serve build/server/index.js",
+    "start": "npx prisma generate && remix-serve build/server/index.js",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -28,6 +28,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^5.0.0",
+    "react-i18next": "^15.4.0",
     "react-icons": "^5.4.0",
     "sort-by": "^1.2.0",
     "sqlite3": "^5.1.7",
