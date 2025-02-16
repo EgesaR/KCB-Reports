@@ -1,8 +1,9 @@
+import { MetaFunction } from "@remix-run/node";
 import { motion } from "framer-motion";
 import { Link } from "@remix-run/react";
 import { FaArrowRight } from "react-icons/fa";
 
-export const meta = () => {
+export const meta : MetaFunction = () => {
   return [
     { title: "KCB Reports - Home" },
     { name: "description", content: "Welcome to KCB Reports!" },

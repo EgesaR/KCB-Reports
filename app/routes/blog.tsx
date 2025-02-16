@@ -1,34 +1,40 @@
-import { useState, useEffect, ChangeEvent } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { json, LoaderFunction } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
+import { motion } from "framer-motion";
 import SearchBox from "~/components/SearchBox";
 
 interface Blog {
-  source: { name: string };
-  author: string;
+  id: string;
   title: string;
   description: string;
   url: string;
   urlToImage: string;
+  author: string;
   publishedAt: string;
 }
 
-const Blogs = () => {
-  const [blogs, setBlogs] = useState<Blog[]>([]);
+// Fetch blogs from API route
+export const loader: LoaderFunction = async () => {
+  try {
+    const response = await fetch(`${process.env.ORIGIN}/api/blog`);
+    if (!response.ok) throw new Error("Failed to fetch blogs");
+    const blogs = await response.json();
+    return json(blogs);
+  } catch (error) {
+    console.error("Error fetching blogs:", error);
+    return json([]);
+  }
+};
 
-  useEffect(() => {
-    fetch("/api/blogs")
-      .then((response) => response.json())
-      .then((data) => setBlogs(data))
-      .catch((error) => console.error("Error fetching blogs:", error));
-  }, []);
+const Blogs = () => {
+  const blogs = useLoaderData<Blog[]>(); // Fetch from API
 
   return (
     <div className="min-h-screen w-full text-black dark:text-neutral-400 px-2 pb-8 pt-28 sm:px-10 sm:pt-0">
       <div className="flex flex-row justify-between gap-4 mt-24 items-center">
         <h1 className="text-5xl font-semibold text-slate-600 dark:text-white">
-          Blogs1
+          Blogs
         </h1>
         <SearchBox blogs={blogs} />
       </div>
@@ -82,12 +88,12 @@ const InterestTabs = ({
 );
 
 const BlogGrid = ({ blogs }: { blogs: Blog[] }) => {
-  if (!Array.isArray(blogs)) return <p>No blogs available</p>; // Prevents the error
+  if (!Array.isArray(blogs)) return <p>No blogs available</p>;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {blogs.map((blog, idx) => (
-        <BlogCard key={idx} blog={blog} />
+      {blogs.map((blog) => (
+        <BlogCard key={blog.id} blog={blog} />
       ))}
     </div>
   );

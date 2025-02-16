@@ -1,6 +1,7 @@
+import { MetaFunction } from "@remix-run/node";
 import { RiCheckFill } from "react-icons/ri";
 
-export const meta = () => [
+export const meta : MetaFunction = () => [
   {
     title: "Our Mission and Values | Pricing KCB Reports",
     description: "Welcome to KCB Reports!",

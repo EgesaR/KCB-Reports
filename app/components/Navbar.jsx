@@ -1,4 +1,4 @@
-import { Link, NavLink } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 import Button from "./Button";
 
 const Navbar = () => {
@@ -51,22 +51,23 @@ const Navbar = () => {
               className="size-6"
               fill="none"
               viewBox="0 0 24 24"
-              stroke-width="1.5"
+              strokeWidth="1.5"
               stroke="currentColor"
               aria-hidden="true"
               data-slot="icon"
             >
               <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
               />
             </svg>
           </button>
         </div>
         <div className="hidden lg:flex lg:gap-x-12">
-          {links.map((link) => (
-            <NavLink
+          {links.map((link, index) => (
+            <Link
+              key={index}
               to={link.link}
               className={`${({ isActive, isPending }) =>
                 isActive
@@ -76,7 +77,7 @@ const Navbar = () => {
                   : ""} text-sm/6 font-semibold text-gray-900 dark:text-gray-200`}
             >
               {link.name}
-            </NavLink>
+            </Link>
           ))}
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
@@ -107,14 +108,14 @@ const Navbar = () => {
                 className="size-6"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke-width="1.5"
+                strokeWidth="1.5"
                 stroke="currentColor"
                 aria-hidden="true"
                 data-slot="icon"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M6 18 18 6M6 6l12 12"
                 />
               </svg>
@@ -138,7 +139,7 @@ const Navbar = () => {
                       data-slot="icon"
                     >
                       <path
-                        fill-rule="evenodd"
+                        fillRule="evenodd"
                         d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
                         clipRule="evenodd"
                       />
