@@ -10,7 +10,6 @@ import {
 import type { LinksFunction } from "@remix-run/node";
 import Navbar from "~/components/Navbar";
 import Footer from "~/components/Footer";
-import { Suspense } from "react";
 
 import styles from "./tailwind.css?url";
 
@@ -40,9 +39,7 @@ export default function App() {
           <div className="fixed top-0 left-0 w-full h-1 bg-green-500 animate-pulse z-50" />
         )}
 
-        <Suspense fallback={<div className="text-center py-4">Loading...</div>}>
-          <Navbar />
-        </Suspense>
+        <Navbar />
 
         <main className="min-h-screen">
           <Outlet />

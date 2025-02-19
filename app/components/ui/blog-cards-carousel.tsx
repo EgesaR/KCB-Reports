@@ -12,7 +12,6 @@ import {
 } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useOutsideClick } from "~/hooks/use-outside-click";
-import Imgix from "react-imgix";
 
 interface CarouselProps {
   items: JSX.Element[];
@@ -182,8 +181,6 @@ export const Card = ({
     setOpen(false);
     onCardClose(index);
   };
-  console.log("card: ", card);
-  console.log(1, card.title);
   return (
     <>
       <AnimatePresence>
@@ -228,11 +225,17 @@ export const Card = ({
       </AnimatePresence>
       <motion.button
         layoutId={layout ? `card-${card.title}` : undefined}
-        onClick={handleOpen}
+        //onClick={handleOpen}
         className="rounded-3xl bg-gray-100 dark:bg-neutral-900 h-80 w-56 md:h-[40rem] md:w-96 overflow-hidden flex flex-col items-start justify-start relative z-10"
       >
-        <div className="absolute h-full top-0 inset-x-0 bg-gradient-to-b from-black/50 via-transparent to-transparent z-30 pointer-events-none" />
-        <div className="relative z-40 p-8">
+        <div className="absolute h-full bottom-0 inset-x-0 bg-gradient-to-b from-black/50 via-transparent to-transparent z-30 pointer-events-none" />
+        <div className="absolute bottom-0 z-40 p-8">
+          <motion.p
+            layoutId={layout ? `title-${card.title}` : undefined}
+            className="text-white text-xl md:text-3xl font-semibold max-w-xs text-left [text-wrap:balance] font-sans mt-2"
+          >
+            {card.title}
+          </motion.p>
           <motion.p
             layoutId={layout ? `category-${card.category}` : undefined}
             className="text-white text-sm md:text-base font-medium font-sans text-left"
@@ -270,17 +273,23 @@ export const BlurImage: React.FC<BlurImageProps> = ({
   alt = "Background of a beautiful view",
   ...rest
 }) => {
-  const [isLoading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = src;
+    img.onload = () => setIsLoading(false);
+  }, [src]); // Runs when `src` changes
 
   return (
-    <div>
-      h{alt}{" "}
-      <Imgix
-        src="https://images.unsplash.com/photo-1593508512255-86ab42a8e620"
-        sizes="(max-width: 800px) 100vw, 800px"
-        className="w-full h-48 object-cover"
-      />
-    </div>
+    <div
+      className={`
+        transition duration-300 w-full h-full bg-cover bg-center
+        ${isLoading ? "blur-sm" : "blur-0"}
+        ${className}
+      `}
+      style={{ backgroundImage: `url(${src})` }}
+    />
   );
 };
 

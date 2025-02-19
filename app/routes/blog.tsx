@@ -1,34 +1,15 @@
-import { json, LoaderFunction } from "@remix-run/node";
+import { loader } from "~/routes/api.blogs";
 import { useLoaderData } from "@remix-run/react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { motion } from "framer-motion";
 import SearchBox from "~/components/SearchBox";
+import type { Blog } from "~/types";
 
-interface Blog {
-  id: string;
-  title: string;
-  description: string;
-  url: string;
-  urlToImage: string;
-  author: string;
-  publishedAt: string;
-}
-
-// Fetch blogs from API route
-export const loader: LoaderFunction = async () => {
-  try {
-    const response = await fetch(`${process.env.ORIGIN}/api/blog`);
-    if (!response.ok) throw new Error("Failed to fetch blogs");
-    const blogs = await response.json();
-    return json(blogs);
-  } catch (error) {
-    console.error("Error fetching blogs:", error);
-    return json([]);
-  }
-};
-
+export { loader }
 const Blogs = () => {
-  const blogs = useLoaderData<Blog[]>(); // Fetch from API
+  const blogs = useLoaderData<Blog[]>();
+  //console.log("Blogs from blog.tsx: ",blogs)
+  const filteredBlogs = blogs.slice(0, 12); // Limit to latest blogs
 
   return (
     <div className="min-h-screen w-full text-black dark:text-neutral-400 px-2 pb-8 pt-28 sm:px-10 sm:pt-0">
@@ -47,7 +28,7 @@ const Blogs = () => {
           "Education",
           "Creative",
         ]}
-        blogs={blogs}
+        blogs={filteredBlogs}
       />
     </div>
   );
@@ -123,7 +104,7 @@ const BlogCard = ({ blog }: { blog: Blog }) => (
         rel="noopener noreferrer"
         className="text-blue-500 hover:underline mt-2 block"
       >
-        Read more
+       Read more
       </a>
     </div>
   </div>

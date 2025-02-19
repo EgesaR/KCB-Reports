@@ -2,18 +2,14 @@ import { PrismaClient } from "@prisma/client";
 
 let prisma: PrismaClient;
 
-// Prevent multiple instances in development mode (for hot-reloading)
 declare global {
-  var __prisma: PrismaClient | undefined;
+  var __db: PrismaClient | undefined;
 }
 
-if (process.env.NODE_ENV === "production") {
-  prisma = new PrismaClient();
-} else {
-  if (!global.__prisma) {
-    global.__prisma = new PrismaClient();
-  }
-  prisma = global.__prisma;
+if (!global.__db) {
+  global.__db = new PrismaClient();
 }
+
+prisma = global.__db;
 
 export { prisma };

@@ -1,9 +1,10 @@
 import { MetaFunction } from "@remix-run/node";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Card, Carousel } from "~/components/ui/blog-cards-carousel";
+import { data } from "~/data/blogData";
 
-export const meta : MetaFunction = () => [
+export const meta: MetaFunction = () => [
   {
     title: "Our Mission and Values | About KCB Reports",
     description: "Welcome to KCB Reports!",
@@ -34,53 +35,6 @@ interface BadgeProps {
   text: string;
 }
 
-export function AppleCardsCarouselDemo() {
-  const cards = data.map((card, index) => (
-    <Card key={card.src} card={card} index={index} />
-  ));
-
-  return (
-    <div className="w-full h-full py-20">
-      <h2 className="max-w-7xl pl-4 mx-auto text-xl md:text-5xl font-bold text-neutral-800 dark:text-neutral-200 font-sans">
-        Get to know your iSad.
-      </h2>
-      <Carousel items={cards} />
-    </div>
-  );
-}
-
-const DummyContent = () => {
-  return (
-    <>
-      {[...new Array(3).fill(1)].map((_, index) => {
-        return (
-          <div
-            key={"dummy-content" + index}
-            className="bg-[#F5F5F7] dark:bg-neutral-800 p-8 md:p-14 rounded-3xl mb-4"
-          >
-            <p className="text-neutral-600 dark:text-neutral-400 text-base md:text-2xl font-sans max-w-3xl mx-auto">
-              <span className="font-bold text-neutral-700 dark:text-neutral-200">
-                The first rule of Apple club is that you boast about Apple club.
-              </span>{" "}
-              Keep a journal, quickly jot down a grocery list, and take amazing
-              class notes. Want to convert those notes to text? No problem.
-              Langotiya jeetu ka mara hua yaar is ready to capture every
-              thought.
-            </p>
-            <img
-              src="https://ui.aceternity.com/_next/image?url=https%3A%2F%2Fassets.aceternity.com%2Fmacbook.png&w=640&q=75"
-              alt="Macbook mockup from Aceternity UI"
-              height="500"
-              width="500"
-              className="md:w-1/2 md:h-1/2 h-full w-full mx-auto object-contain"
-            />
-          </div>
-        );
-      })}
-    </>
-  );
-};
-
 export const Badge = ({ text }: BadgeProps) => (
   <div className="no-underline group cursor-pointer relative shadow-2xl shadow-zinc-500 rounded-full p-px py-0.5 text-xs font-semibold leading-6 text-white inline-block">
     <div className="relative flex space-x-2 items-center z-10 rounded-full px-2 ring-1 ring-white/60">
@@ -110,17 +64,32 @@ const BlogCard = ({
   title,
 }: BlogCardProps) => {
   const { name, image } = user;
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = blog_Img;
+    img.onload = () => setIsLoading(false);
+  }, [blog_Img]);
+
   return (
     <div
-      className="h-[32rem] w-full rounded-lg relative overflow-hidden"
+      className="h-[32rem] w-full rounded-lg relative overflow-hidden relative shado-xl hover:shadow-none"
       id={id}
     >
       <img
         src={blog_Img}
         alt={title}
-        className="w-full h-full bg-amber-100 dark:bg-amber-500 rounded-xl"
+        className={`w-full h-full bg-amber-100 dark:bg-amber-500 rounded-xl 
+        transition duration-300 w-full h-full bg-cover bg-center
+        ${isLoading ? "blur-sm" : "blur-0"}
+      `}
+        onLoad={() => setIsLoading(false)}
+        loading="lazy"
+        decoding="async"
       />
-      <div className="w-full h-[65%] px-6 pt-40 flex flex-col justify-center absolute bottom-0 rounded-b-lg bg-gradient-to-b from-transparent dark:to-slate-800/40 to-slate-600/40 to-70%">
+      <div className="absolute h-full bottom-0 inset-x-0 bg-gradient-to-b from-black/50 via-transparent to-transparent z-30 pointer-events-none" />
+      <div className="w-full h-[65%] px-6 pt-40 flex flex-col justify-center absolute bottom-0 rounded-b-lg bg-gradient-to-t to-transparent dark:from-slate-800/40 from-slate-600/40 to-70%">
         <div className="w-full flex items-center mb-2 gap-2 overflow-x-auto">
           {topics.map((topic, index) => (
             <Badge key={index} text={topic} />
@@ -139,46 +108,6 @@ const BlogCard = ({
   );
 };
 
-const data = [
-  {
-    category: "Artificial Intelligence",
-    title: "You can do more with AI.",
-    src: "",
-    content: <DummyContent />,
-  },
-  {
-    category: "Productivity",
-    title: "Enhance your productivity.",
-    src: "",// "https://images.unsplash.com/photo-1531554694128-c4c6665f59c2?q=80&w=3387&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    content: <DummyContent />,
-  },
-  {
-    category: "Product",
-    title: "Launching the new Apple Vision Pro.",
-    src: "", //"https://images.unsplash.com/photo-1713869791518-a770879e60dc?q=80&w=2333&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    content: <DummyContent />,
-  },
-
-  {
-    category: "Product",
-    title: "Maps for your iPhone 15 Pro Max.",
-    src: "", //"https://images.unsplash.com/photo-1599202860130-f600f4948364?q=80&w=2515&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    content: <DummyContent />,
-  },
-  {
-    category: "iOS",
-    title: "Photography just got better.",
-    src: "", //"https://images.unsplash.com/photo-1602081957921-9137a5d6eaee?q=80&w=2793&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    content: <DummyContent />,
-  },
-  {
-    category: "Hiring",
-    title: "Hiring for a Staff Software Engineer",
-    src: "", //"https://images.unsplash.com/photo-1511984804822-e16ba72f5848?q=80&w=2048&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    content: <DummyContent />,
-  },
-];
-
 const About = () => {
   const teamMembers = [
     { img: "", name: "Egesa Raymond", role: "" },
@@ -189,7 +118,8 @@ const About = () => {
   const blogs = [
     {
       id: uuidv4(),
-      blog_Img: "",
+      blog_Img:
+        "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?q=80&w=3556&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       topics: ["Design", "Technology", "Presentations"],
       timePosted: "Mar 10, 2024",
       user: { name: "Lindsy Walton", image: "L" },
@@ -197,7 +127,8 @@ const About = () => {
     },
     {
       id: uuidv4(),
-      blog_Img: "",
+      blog_Img:
+        "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?q=80&w=3556&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       topics: ["Design", "Documentations", "Presentations"],
       timePosted: "Jun 15, 2024",
       user: { name: "Bella Anderson", image: "B" },
@@ -433,14 +364,29 @@ const About = () => {
           From the Blog
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-12 mt-6">
-          {blogs.map((blog) => (
+          {data.map((blog) => (
             <BlogCard key={blog.id} {...blog} />
           ))}
         </div>
       </div>
-      <AppleCardsCarouselDemo />
+      <BlogSection />
     </div>
   );
 };
+
+export function BlogSection() {
+  const cards = data.map((card, index) => (
+    <Card key={card.src} card={card} index={index} />
+  ));
+
+  return (
+    <div className="w-full h-full py-20">
+      <h2 className="max-w-7xl pl-4 mx-auto text-xl md:text-5xl font-bold text-neutral-800 dark:text-neutral-200 font-sans">
+        We proudly present.
+      </h2>
+      <Carousel items={cards} />
+    </div>
+  );
+}
 
 export default About;

@@ -19,43 +19,24 @@ const SearchBox = ({ blogs }: { blogs: any[] }) => {
     blog.title.toLowerCase().includes(query.toLowerCase())
   );
 
-
   const handleExpand = () => {
     setIsExpanded(true);
     setTimeout(() => inputRef.current?.focus(), 200); // Ensure input focuses
   };
 
   const handleBlur = () => {
-    setIsExpanded(false);
-    setTimeout(() => setQuery(""), 300); // Clear input after exit animation
+    if (filteredBlogs.length === 0) {
+      setIsExpanded(false);
+      setTimeout(() => setQuery(""), 300); // Clear input only if no results
+    }
   };
 
   useEffect(() => {
     if (!isPresent) {
       const exitAnimation = async () => {
-        await animate(
-          "h3",
-          {
-            color: "yellow",
-          },
-          {
-            delay: 2.75,
-          }
-        );
-        await animate(
-          "#inputBox",
-          {
-            opacity: 0,
-            width: 50,
-          },
-          {
-            delay: 0.75,
-          }
-        );
-
+        await animate("#inputBox", { opacity: 0, width: 50 }, { delay: 0.5 });
         safeToRemove();
       };
-
       exitAnimation();
     }
   }, [isPresent]);
@@ -92,7 +73,7 @@ const SearchBox = ({ blogs }: { blogs: any[] }) => {
 
       {/* Animate Presence for Smooth Entry/Exit */}
       <AnimatePresence>
-        {isExpanded && (
+        {isExpanded && filteredBlogs.length > 0 && (
           <motion.div
             initial={{ opacity: 0, scaleY: 0.8 }}
             animate={{ opacity: 1, scaleY: 1 }}

@@ -1,3 +1,4 @@
+// app/components/CreateBlog.tsx
 import { useState } from "react";
 import { Form } from "@remix-run/react";
 
@@ -51,6 +52,11 @@ const CreateBlog = () => {
         value={formData.selfLink}
         onChange={handleChange}
         className="w-full p-2 border rounded"
+      />
+      <input
+        type="hidden"
+        name="publishedAt"
+        value={new Date().toISOString()} // Ensure publishedAt is always sent
       />
       <button
         type="submit"

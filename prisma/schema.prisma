@@ -11,26 +11,37 @@ model Blog {
   id          String   @id @default(uuid())
   name        String
   description String
-  publishedAt   DateTime @default(now())
+  publishedAt DateTime @default(now())
   imageUrl    String?
-  selfLink    String
-  updatedAt   DateTime
+  selfLink    String?
+  updatedAt   DateTime @updatedAt
   posts       Post[]
   pages       Page[]
 }
 
 model Post {
-  id      String  @id @default(uuid())
-  title   String
-  content String
-  blog    Blog    @relation(fields: [blogId], references: [id])
-  blogId  String
+  id          String    @id @default(uuid())
+  title       String
+  content     String
+  blog        Blog      @relation(fields: [blogId], references: [id])
+  blogId      String
+  categories  Category[] @relation("PostCategories")
+  publishedAt DateTime   @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Page {
-  id      String @id @default(uuid())
-  title   String
-  content String
-  blog    Blog   @relation(fields: [blogId], references: [id])
-  blogId  String
+  id        String  @id @default(uuid())
+  title     String
+  content   String
+  blog      Blog    @relation(fields: [blogId], references: [id])
+  blogId    String
+  publishedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Category {
+  id    String  @id @default(uuid())
+  name  String  @unique
+  posts Post[]  @relation("PostCategories")
 }
