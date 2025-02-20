@@ -12,8 +12,8 @@ model Blog {
   id          String   @id @default(uuid())
   name        String
   description String
-  imageUrl    String?
-  selfLink    String?
+  imageUrl    String?  @db.VarChar(512) // Increased length for long URLs
+  selfLink    String?  @db.VarChar(512) // Also increase for consistency
   publishedAt DateTime
   updatedAt   DateTime @updatedAt
   posts       Post[]
