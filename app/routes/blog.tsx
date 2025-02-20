@@ -5,11 +5,14 @@ import { motion } from "framer-motion";
 import SearchBox from "~/components/SearchBox";
 import type { Blog } from "~/types";
 
-export { loader }
+export { loader };
+
 const Blogs = () => {
   const blogs = useLoaderData<Blog[]>();
-  //console.log("Blogs from blog.tsx: ",blogs)
-  const filteredBlogs = blogs.slice(0, 12); // Limit to latest blogs
+  console.log("Blogs from loader:", blogs); // Debug log
+
+  // Ensure blogs is an array before slicing
+  const filteredBlogs = Array.isArray(blogs) ? blogs.slice(0, 12) : [];
 
   return (
     <div className="min-h-screen w-full text-black dark:text-neutral-400 px-2 pb-8 pt-28 sm:px-10 sm:pt-0">
@@ -69,7 +72,8 @@ const InterestTabs = ({
 );
 
 const BlogGrid = ({ blogs }: { blogs: Blog[] }) => {
-  if (!Array.isArray(blogs)) return <p>No blogs available</p>;
+  if (!Array.isArray(blogs) || blogs.length === 0)
+    return <p>No blogs available</p>;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -109,6 +113,5 @@ const BlogCard = ({ blog }: { blog: Blog }) => (
     </div>
   </div>
 );
-
 
 export default Blogs;
