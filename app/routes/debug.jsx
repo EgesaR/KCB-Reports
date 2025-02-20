@@ -2,14 +2,25 @@ import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { PrismaClient } from "@prisma/client";
 
+// Custom JSON serializer to handle BigInt
+function serializeBigInt(obj) {
+  return JSON.stringify(obj, (key, value) =>
+    typeof value === "bigint" ? value.toString() : value
+  );
+}
+
 const prisma = new PrismaClient();
 
 export const loader = async () => {
   try {
     const blogs = await prisma.blog.findMany();
-    // Use a simple query to confirm connection (TiDB supports SELECT 1)
     const connectionTest = await prisma.$queryRaw`SELECT 1 AS connected`;
-    return json({ blogs, connected: connectionTest[0].connected });
+    return new Response(
+      serializeBigInt({ blogs, connected: connectionTest[0].connected }),
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   } catch (error) {
     return json({ error: error.message, connected: false });
   }

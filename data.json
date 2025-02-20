@@ -1,0 +1,19 @@
+Prisma schema loaded from prisma/schema.prisma
+Environment variables loaded from .env
+Datasource "db": MySQL database "kcb-reports" at "gateway01.us-west-2.prod.aws.tidbcloud.com:4000"
+
+- Introspecting based on datasource defined in prisma/schema.prisma
+✔ Introspected 5 models and wrote them into prisma/schema.prisma in 4.59s
+      
+*** WARNING ***
+
+Relations were copied from the previous data model due to not using foreign keys in the database. If any of the relation columns changed in the database, the relations might not be correct anymore:
+  - "Post"
+  - "Page"
+  - "Post"
+  - "Blog"
+  - "Blog"
+  - "Category"
+
+Run prisma generate to generate Prisma Client.
+

@@ -3,9 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql" // Changed from "sqlite"
-  url      = env("DATABASE_URL")
-  relationMode = "prisma" // Optional: Emulates relations in Prisma Client
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model Blog {
@@ -25,12 +25,13 @@ model Post {
   title       String
   content     String
   blogId      String
-  blog        Blog       @relation(fields: [blogId], references: [id])
-  categories  Category[] @relation("PostCategories")
   publishedAt DateTime   @default(now())
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  @@index([blogId]) // Index for performance
+  blog        Blog       @relation(fields: [blogId], references: [id])
+  categories  Category[] @relation("PostCategories")
+
+  @@index([blogId])
 }
 
 model Category {
@@ -44,8 +45,18 @@ model Page {
   title       String
   content     String
   blogId      String
-  blog        Blog     @relation(fields: [blogId], references: [id])
   publishedAt DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  @@index([blogId]) // Index for performance
+  blog        Blog     @relation(fields: [blogId], references: [id])
+
+  @@index([blogId])
+}
+
+model PostCategories {
+  A String
+  B String
+
+  @@unique([A, B], map: "_PostCategories_AB_unique")
+  @@index([B], map: "_PostCategories_B_index")
+  @@map("_PostCategories")
 }
