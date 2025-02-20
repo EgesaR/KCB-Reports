@@ -83,7 +83,7 @@ const BlogGrid = ({ blogs }: { blogs: Blog[] }) => {
 const BlogCard = ({ blog }: { blog: Blog }) => (
   <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-lg overflow-hidden">
     <img
-      src={blog.urlToImage}
+      src={blog.urlToImage || "/default-image.jpg"} // Use a fallback image
       alt={blog.title}
       className="w-full h-48 object-cover"
     />
@@ -104,10 +104,11 @@ const BlogCard = ({ blog }: { blog: Blog }) => (
         rel="noopener noreferrer"
         className="text-blue-500 hover:underline mt-2 block"
       >
-       Read more
+        Read more
       </a>
     </div>
   </div>
 );
+
 
 export default Blogs;

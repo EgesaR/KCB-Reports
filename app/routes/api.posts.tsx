@@ -1,7 +1,8 @@
 import {
   type ActionFunction,
-  json,
   type LoaderFunction,
+  json,
+  redirect,
 } from "@remix-run/node";
 import { prisma } from "~/utils/prisma.server";
 
@@ -12,8 +13,15 @@ type PostData = {
   blogId: string;
 };
 
+// 🔄 Fetch blogs & posts
 export const loader: LoaderFunction = async () => {
   try {
+    // Fetch all blogs for selection
+    const blogs = await prisma.blog.findMany({
+      select: { id: true, name: true },
+    });
+
+    // Fetch all posts with blog names
     const posts = await prisma.post.findMany({
       select: {
         id: true,
@@ -21,58 +29,55 @@ export const loader: LoaderFunction = async () => {
         content: true,
         blogId: true,
         blog: {
-          select: {
-            name: true, // Blog name
-          },
+          select: { name: true },
         },
       },
     });
 
-    return json(
-      posts.map((post) => ({
+    return json({
+      blogs,
+      posts: posts.map((post) => ({
         id: post.id,
         title: post.title,
         description: post.content.substring(0, 150) + "...", // Short preview
         url: `/blogs/${post.blogId}/posts/${post.id}`, // Link to post
         author: post.blog.name, // Blog name as author
-      }))
-    );
+      })),
+    });
   } catch (error: any) {
-    console.error("❌ Error fetching posts:", error.message);
-    return json({ error: "Failed to fetch posts" }, { status: 500 });
+    console.error("❌ Error fetching data:", error.message);
+    return json({ error: "Failed to fetch data" }, { status: 500 });
   }
 };
 
+// 📝 Handle post creation
 export const action: ActionFunction = async ({ request }) => {
   try {
-    const formData = await request.json();
-    console.log("📥 Received Data:", formData);
+    const formData = await request.formData();
 
-    if (!formData || !formData.posts) {
-      return json({ error: "Invalid data" }, { status: 400 });
+    // Extract values
+    const title = formData.get("title") as string;
+    const content = formData.get("content") as string;
+    const blogId = formData.get("blogId") as string;
+
+    if (!title || !content || !blogId) {
+      return json({ error: "All fields are required!" }, { status: 400 });
     }
 
-    // ✅ Use create() in a loop instead of createMany()
-    const createdPosts = await Promise.all(
-      formData.posts.map(({ id, title, content, blogId } : PostData) =>
-        prisma.post.create({
-          data: {
-            id,
-            title,
-            content,
-            blogId,
-          },
-        })
-      )
-    );
+    // ✅ Ensure blogId exists before creating a post
+    const blogExists = await prisma.blog.findUnique({ where: { id: blogId } });
+    if (!blogExists) {
+      return json({ error: "Selected blog does not exist!" }, { status: 400 });
+    }
 
-    return json({ message: "✅ Posts created", count: createdPosts.length });
+    // ✅ Create a new post
+    const newPost = await prisma.post.create({
+      data: { title, content, blogId },
+    });
+
+    return redirect(`/posts/${newPost.id}`);
   } catch (error) {
     console.error("❌ Prisma error:", error);
-    return json({ error: "Failed to create posts" }, { status: 500 });
+    return json({ error: "Failed to create post" }, { status: 500 });
   }
 };
-
-
-
-

@@ -1,9 +1,9 @@
-export interface Blog {
+export type Blog = {
   id: string;
-  name: string;
+  title: string;
   description: string;
-  imageUrl: string;
-  selfLink: string;
+  author?: string;
   publishedAt: string;
-  updatedAt: string;
-}
+  url: string;
+  urlToImage?: string; // Add this line if your API provides it
+};

@@ -18,7 +18,12 @@ export const loader: LoaderFunction = async () => {
         publishedAt: true,
         updatedAt: true,
       },
+      orderBy: {
+        publishedAt: "desc", // Get latest blogs first
+      },
     });
+
+    console.log("API Response:", blogs);
 
     // Transform backend response to match frontend expectations
     const formattedBlogs = blogs.map((blog) => ({
@@ -48,6 +53,7 @@ export const action: ActionFunction = async ({ request }) => {
     const selfLink = formData.get("selfLink");
     const publishedAt = formData.get("publishedAt");
 
+    // 🔴 Validation
     if (!name || !description || !imageUrl || !selfLink || !publishedAt) {
       return json({ error: "All fields are required" }, { status: 400 });
     }

@@ -161,7 +161,7 @@ const About = () => {
             Redefining school reports and empowering the future of reporting
           </p>
         </div>
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-200 sm:mx-0 sm:px-10">
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-800 dark:text-gray-200 sm:mx-0 sm:px-10">
           KCB Reports is a dynamic reporting system designed to simplify report
           creation and enhance academic progress analysis for teachers, parents,
           and school administrators.
@@ -217,7 +217,7 @@ const About = () => {
           >
             Our mission
           </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-pretty text-left text-lg font-normal text-gray-600 sm:text-xl/8 dark:text-gray-200 sm:mx-0">
+          <p className="mx-auto mt-6 max-w-2xl text-pretty text-left text-lg font-normal text-gray-800 sm:text-xl/8 dark:text-gray-200 sm:mx-0">
             To change the way parents, teachers and administrators interact with
             their students' reports and progress to give a better feedback for a
             more conductive and condusive response and action for their
@@ -241,7 +241,7 @@ const About = () => {
           >
             Our values
           </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-pretty text-left text-lg font-normal text-gray-600 sm:text-xl/8 sm:mx-0 dark:text-gray-200">
+          <p className="mx-auto mt-6 max-w-2xl text-pretty text-left text-lg font-normal text-gray-800 sm:text-xl/8 sm:mx-0 dark:text-gray-200">
             Our values are clear, simple and easy to grasp in adherence of
             delivering the best services and customer care.
           </p>
@@ -255,7 +255,7 @@ const About = () => {
             >
               Be constructive and innovative
             </h2>
-            <p className="mx-auto mt-2 max-w-2xl text-pretty text-left text-lg font-normal text-gray-600 sm:text-lg dark:text-gray-200">
+            <p className="mx-auto mt-2 max-w-2xl text-pretty text-left text-lg font-normal text-gray-800 sm:text-lg dark:text-gray-200">
               Constructivity and innovation brings one the ability to build and
               implement <b> "out of the box" </b> ideas and makes problem
               solving easier hence speeding planning, development, and service
@@ -270,7 +270,7 @@ const About = () => {
             >
               Be just and transparent
             </h2>
-            <p className="mx-auto mt-2 max-w-2xl text-pretty text-left text-lg font-normal text-gray-600 sm:text-lg dark:text-gray-200">
+            <p className="mx-auto mt-2 max-w-2xl text-pretty text-left text-lg font-normal text-gray-800 sm:text-lg dark:text-gray-200">
               Justification and transparency is paramount to our team's
               understanding and customer privacy protection and priotization.
               This helps us to create and protect a rightful image to the
@@ -285,7 +285,7 @@ const About = () => {
             >
               Always ready to learn
             </h2>
-            <p className="mx-auto mt-2 max-w-2xl text-pretty text-left text-lg font-normal text-gray-600 sm:text-lg dark:text-gray-200">
+            <p className="mx-auto mt-2 max-w-2xl text-pretty text-left text-lg font-normal text-gray-800 sm:text-lg dark:text-gray-200">
               Learning never ends but always has new things to keep us updated.
               Learning from circumstances like service clarity, customer
               feedback, development processing, which brings us close to
@@ -300,7 +300,7 @@ const About = () => {
             >
               Togetherness solves but solitude doesn't
             </h2>
-            <p className="mx-auto mt-2 max-w-2xl text-pretty text-left text-lg font-normal text-gray-600 sm:text-lg dark:text-gray-200">
+            <p className="mx-auto mt-2 max-w-2xl text-pretty text-left text-lg font-normal text-gray-800 sm:text-lg dark:text-gray-200">
               Working together is the best solution for higher, further and
               faster development and implementiton therefore giving a better
               thrust for self and project improvement.
@@ -314,7 +314,7 @@ const About = () => {
             >
               Be clear and concise
             </h2>
-            <p className="mx-auto mt-2 max-w-2xl text-pretty text-left text-lg font-normal text-gray-600 sm:text-lg dark:text-gray-200">
+            <p className="mx-auto mt-2 max-w-2xl text-pretty text-left text-lg font-normal text-gray-800 sm:text-lg dark:text-gray-200">
               Our team strives to be clear and concise about any small press
               talks or presentations on product showcasing and customer
               interactions. This helps everyone to know what we want to archive.
@@ -328,7 +328,7 @@ const About = () => {
             >
               Be constructive and innovative
             </h2>
-            <p className="mx-auto mt-2 max-w-2xl text-pretty text-left text-lg font-normal text-gray-600 sm:text-lg dark:text-gray-200">
+            <p className="mx-auto mt-2 max-w-2xl text-pretty text-left text-lg font-normal text-gray-800 sm:text-lg dark:text-gray-200">
               Constructivity and innovation brings one the ability to build and
               implement <b> "out of the box" </b> ideas and makes problem
               solving easier.
