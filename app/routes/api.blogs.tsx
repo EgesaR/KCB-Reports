@@ -34,8 +34,6 @@ export const loader: LoaderFunction = async () => {
       },
     });
 
-    console.log("API Response:", blogs); // Debugging log
-
     // Transform backend response to match frontend expectations
     const formattedBlogs: BlogResponse[] = blogs.map((blog) => ({
       id: blog.id,

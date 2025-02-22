@@ -1,4 +1,4 @@
-const Button = ({ children, btnType }) => {
+const Button = ({ children, btnType, className }) => {
   const btnClasses = {
     className:
       btnType === "alternative"
@@ -6,7 +6,7 @@ const Button = ({ children, btnType }) => {
         : "text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800",
   };
   return (
-    <button type="button" className={btnClasses.className}>
+    <button type="button" className={`${btnClasses.className} ${className}`}>
       {children}
     </button>
   );

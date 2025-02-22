@@ -2,7 +2,7 @@
   // These tasks will run in order when initializing your CodeSandbox project.
   "setupTasks": [
     {
-      "command": "npm install && npx prisma generate",
+      "command": "npm install && npm run postinstall",
       "name": "Installing Dependencies"
     }
   ],

@@ -5,13 +5,23 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
   useNavigation,
 } from "@remix-run/react";
+
 import type { LinksFunction } from "@remix-run/node";
 import Navbar from "~/components/Navbar";
 import Footer from "~/components/Footer";
 
 import styles from "./tailwind.css?url";
+import { type IStaticMethods } from "preline/preline";
+import { useEffect } from "react";
+
+declare global {
+  interface Window {
+    HSStaticMethods: IStaticMethods;
+  }
+}
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles },
@@ -24,6 +34,15 @@ export const links: LinksFunction = () => [
 export default function App() {
   const navigation = useNavigation();
   const isLoading = navigation.state !== "idle";
+  const location = useLocation();
+
+  useEffect(() => {
+    import("preline/preline")
+      .then(() => {
+        window.HSStaticMethods.autoInit();
+      })
+      .catch((err) => console.error("Failed to load Preline:", err));
+  }, [location.pathname]);
 
   return (
     <html lang="en" data-theme="light">
@@ -33,22 +52,22 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="overflow-x-hidden bg-white dark:bg-gray-950">
-        {/* Show a loading bar or spinner when navigating */}
+      {/* Make body full height and use flex to push footer down */}
+      <body className="overflow-x-hidden bg-white dark:bg-neutral-950 flex flex-col min-h-screen">
         {isLoading && (
           <div className="fixed top-0 left-0 w-full h-1 bg-green-500 animate-pulse z-50" />
         )}
-
         <Navbar />
-
-        <main className="min-h-screen">
+        {/* Make `main` grow so it takes up available space */}
+        <main className="flex-grow">
           <Outlet />
+          <Footer />
         </main>
 
-        <Footer />
         <ScrollRestoration />
         <Scripts />
       </body>
     </html>
   );
 }
+

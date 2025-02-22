@@ -12,32 +12,51 @@ model Blog {
   id          String   @id @default(uuid())
   name        String
   description String
-  imageUrl    String?  @db.VarChar(512) // Increased length for long URLs
-  selfLink    String?  @db.VarChar(512) // Also increase for consistency
+  imageUrl    String?  @db.VarChar(512)
+  selfLink    String?  @db.VarChar(512)
   publishedAt DateTime
   updatedAt   DateTime @updatedAt
   posts       Post[]
   pages       Page[]
+
+  @@index([id])
 }
 
 model Post {
-  id          String     @id @default(uuid())
-  title       String
-  content     String
-  blogId      String
-  publishedAt DateTime   @default(now())
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  blog        Blog       @relation(fields: [blogId], references: [id])
-  categories  Category[] @relation("PostCategories")
+  id            String   @id @default(uuid())
+  slug          String   @unique
+  title         String
+  imageUrl      String?
+  author        String
+  publishedAt   DateTime @default(now())
+  readingTime   Int?
+  introduction  String?
+  content       String
+  tableOfContents Json?
+  conclusion    String?
+  authorBio     String?
+  
+  blogId        String
+  blog          Blog     @relation(fields: [blogId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  status        String   @default("published")
+
+  // Many-to-Many Relations with Join Tables
+  categories    Category[]     @relation("PostCategories")
+  postCategories PostCategories[] // Opposite relation to PostCategories
+  relatedPostsFrom RelatedPosts[] @relation("Post_RelatedPosts") // Opposite relation for 'post' in RelatedPosts
+  relatedPostsTo   RelatedPosts[] @relation("Post_RelatedPosts_Related") // Opposite relation for 'relatedPost' in RelatedPosts
 
   @@index([blogId])
 }
 
 model Category {
-  id    String @id @default(uuid())
-  name  String @unique
-  posts Post[] @relation("PostCategories")
+  id             String   @id @default(uuid())
+  name           String   @unique
+  posts          Post[]   @relation("PostCategories")
+  postCategories PostCategories[] // Opposite relation to PostCategories
 }
 
 model Page {
@@ -52,11 +71,24 @@ model Page {
   @@index([blogId])
 }
 
+// Join Table for Post ↔ Categories (Many-to-Many)
 model PostCategories {
-  A String
-  B String
+  postId     String
+  categoryId String
 
-  @@unique([A, B], map: "_PostCategories_AB_unique")
-  @@index([B], map: "_PostCategories_B_index")
-  @@map("_PostCategories")
+  post       Post     @relation(fields: [postId], references: [id], name: "PostCategories")
+  category   Category @relation(fields: [categoryId], references: [id], name: "PostCategories")
+
+  @@unique([postId, categoryId])
+}
+
+// Join Table for Related Posts (Many-to-Many, Self-Referencing)
+model RelatedPosts {
+  postId        String
+  relatedPostId String
+
+  post          Post @relation(fields: [postId], references: [id], name: "Post_RelatedPosts")
+  relatedPost   Post @relation(fields: [relatedPostId], references: [id], name: "Post_RelatedPosts_Related")
+
+  @@unique([postId, relatedPostId])
 }
