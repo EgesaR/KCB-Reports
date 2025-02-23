@@ -53,17 +53,13 @@ export default function App() {
         <Links />
       </head>
       {/* Make body full height and use flex to push footer down */}
-      <body className="overflow-x-hidden bg-white dark:bg-neutral-950 flex flex-col min-h-screen">
+      <body className="overflow-x-hidden bg-white dark:bg-neutral-950">
         {isLoading && (
           <div className="fixed top-0 left-0 w-full h-1 bg-green-500 animate-pulse z-50" />
         )}
         <Navbar />
-        {/* Make `main` grow so it takes up available space */}
-        <main className="flex-grow">
           <Outlet />
           <Footer />
-        </main>
-
         <ScrollRestoration />
         <Scripts />
       </body>

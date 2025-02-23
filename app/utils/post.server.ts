@@ -1,17 +1,11 @@
 import { prisma } from "~/utils/prisma.server";
+import { nanoid } from "nanoid"; // For generating a unique slug
 
-// Fetch all blogs
-export async function getBlogs() {
-  return await prisma.blog.findMany({
-    select: { id: true, name: true },
-  });
-}
-
-// Create a new post
 export async function createPost(
   title: string,
   content: string,
-  blogId: string
+  blogId: string,
+  author: string
 ) {
   // Ensure blogId exists before creating a post
   const blogExists = await prisma.blog.findUnique({ where: { id: blogId } });
@@ -20,6 +14,27 @@ export async function createPost(
   }
 
   return await prisma.post.create({
-    data: { title, content, blogId },
+    data: {
+      title,
+      content,
+      blogId,
+      author,
+      slug: nanoid(10), // Generate a unique slug
+      publishedAt: new Date(), // Default to now
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      status: "published", // Default status
+    },
+  });
+}
+
+// Fetch all posts
+export async function getPosts() {
+  return await prisma.post.findMany({
+    select: {
+      id: true,
+      title: true,
+      blogId: true,
+    },
   });
 }

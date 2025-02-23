@@ -43,7 +43,7 @@ const benefitCards = [
     icon: "K",
     title: "",
     subtitle: "",
-  }
+  },
 ];
 
 export default function Index() {
@@ -113,38 +113,76 @@ export default function Index() {
         </h1>
         <div className="grid grid-cols-3 gap-8 mt-4 px-8">
           {benefitCards.map((benefitCard, idx) => (
-            <div key={idx} className="flex flex-col bg-white border shadow-sm rounded-xl p-4 md:p-8 dark:bg-neutral-900 dark:border-neutral-700 dark:shadow-neutral-700/70">
-              <div className="text-3xl font-medium text-black dark:text-white">
-                {benefitCard.icon}
+            <div
+              key={idx}
+              className="bg-white dark:bg-gray-800 rounded-lg px-6 py-8 ring shadow-xl ring-gray-900/5"
+            >
+              <div>
+                <span className="inline-flex items-center justify-center rounded-md bg-indigo-500 p-2 shadow-lg">
+                  <svg
+                    className="h-6 w-6 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  ></svg>
+                </span>
               </div>
-              <h3 className="text-lg font-bold mt-10 text-gray-800 dark:text-white">
-                {benefitCard.title}
+              <h3 className="text-gray-900 dark:text-white mt-5 text-base font-medium tracking-tight ">
+                {benefitCard.icon}
               </h3>
-              <p className="mt-4 text-gray-500 dark:text-neutral-400">
-                {benefitCard.subtitle}
+              <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm ">
+                {benefitCard.title}
               </p>
-              <a
-                className="mt-3 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-blue-600 decoration-2 hover:text-blue-700 hover:underline focus:underline focus:outline-none focus:text-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-600 dark:focus:text-blue-600"
-                href="#"
-              >
-                Card link
-                <svg
-                  className="shrink-0 size-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="m9 18 6-6-6-6"></path>
-                </svg>
-              </a>
             </div>
           ))}
+        </div>
+      </section>
+      <section className="mt-16 flex flex-col items-center pt-[12rem] py-16 gap-[100px] px-8 text-white">
+        <div className="w-full h-[80vh] grid gap-3 grid-cols-2 odd:flex-row even:flex-row-reverse py-4">
+          <div className="flex-1 max-w-[480px] flex flex-col gap-4 items-center justify-center">
+            <h1 className="text-[52px] text-neutral-100">Hello Wolrd</h1>
+            <p className="text-[17px] text-left text-[#455366] w-[55%] dark:text-neutral-300">
+              Hello people
+            </p>
+          </div>
+          <div className="flex-1 flex items-center">
+            <img
+              src="https://images.pexels.com/photos/924824/pexels-photo-924824.jpeg?auto=compress&cs=tinysrgb&w=600"
+              alt=""
+              className="rounded-[24px] max-w-full w-full h-3/4 sm:h-1/2"
+            />
+          </div>
+        </div>
+        <div className="w-full h-[80vh] grid gap-3 grid-cols-2 odd:flex-row even:flex-row-reverse py-4">
+          <div className="flex-1 max-w-[480px] flex flex-col gap-4 items-center justify-center">
+            <h1 className="text-[52px] text-neutral-100">Hello Wolrd</h1>
+            <p className="text-[17px] text-left text-[#455366] w-[55%] dark:text-neutral-300">
+              Hello people
+            </p>
+          </div>
+          <div className="flex-1 flex items-center">
+            <img
+              src="https://images.pexels.com/photos/1762851/pexels-photo-1762851.jpeg?auto=compress&cs=tinysrgb&w=600"
+              alt=""
+              className="rounded-[24px] max-w-full w-full h-3/4 sm:h-1/2"
+            />
+          </div>
+        </div>
+        <div className="w-full h-[80vh] grid gap-3 grid-cols-2 odd:flex-row even:flex-row-reverse py-4">
+          <div className="flex-1 max-w-[480px] flex flex-col gap-4 items-center justify-center">
+            <h1 className="text-[52px] text-neutral-100">Hello Wolrd</h1>
+            <p className="text-[17px] text-left text-[#455366] w-[55%] dark:text-neutral-300">
+              Hello people
+            </p>
+          </div>
+          <div className="flex-1 flex items-center">
+            <img
+              src="https://images.pexels.com/photos/380337/pexels-photo-380337.jpeg?auto=compress&cs=tinysrgb&w=600"
+              alt=""
+              className="rounded-[24px] max-w-full w-full h-3/4 sm:h-1/2"
+            />
+          </div>
         </div>
       </section>
     </div>
