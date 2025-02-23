@@ -57,9 +57,7 @@ export default function App() {
         {isLoading && (
           <div className="fixed top-0 left-0 w-full h-1 bg-green-500 animate-pulse z-50" />
         )}
-        <Navbar />
           <Outlet />
-          <Footer />
         <ScrollRestoration />
         <Scripts />
       </body>
