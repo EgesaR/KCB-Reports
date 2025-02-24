@@ -1,5 +1,7 @@
 // app/routes/users/new.tsx
 import { useActionData, Form } from "@remix-run/react";
+import Stepper from "~/components/Stepper";
+//import "~/styles/styles.css";
 
 interface ActionData {
   error?: string;
@@ -9,8 +11,14 @@ export default function CreateUserPage() {
   const actionData = useActionData<ActionData>();
 
   return (
-    <div className="text-black dark:text-white h-screen max-h-screen flex">
-      <div className="bg-gradient-to-bl from-blue-300 via-sky-300 to-purple-400 w-full h-full flex justify-center items-center relative dark:from-blue-600 dark:via-sky-600 dark:to-purple-700">
+    <div className="text-black dark:text-black h-screen max-h-screen flex">
+      <Stepper />
+    </div>
+  );
+}
+
+/*
+<div className="bg-gradient-to-bl from-blue-300 via-sky-300 to-purple-400 w-full h-full flex justify-center items-center relative dark:from-blue-600 dark:via-sky-600 dark:to-purple-700">
         <div
           className="h-full w-full opacity-5 absolute inset-0"
           style={{
@@ -18,7 +26,7 @@ export default function CreateUserPage() {
           }}
         />
         <div className="h-[80%] w-[75%] flex flex-col justify-center z-10 bg-white/30 px-8 rounded-md backdrop-blur-md gap-6">
-          <h1 className="text-7xl">Let's make a difference</h1>
+          <h1 className="text-7xl sm:text-6xl">Let's make a difference</h1>
           <p className="text-neutral-200 text-lg">
             Let's build the next big thing for our eduction.
           </p>
@@ -72,11 +80,4 @@ export default function CreateUserPage() {
           </Form>
         </div>
       </div>
-    </div>
-  );
-}
-
-/*
-<h1>Create User</h1>
-
 */

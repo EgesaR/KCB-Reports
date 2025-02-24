@@ -1,3 +1,5 @@
+import { Outlet } from "@remix-run/react";
+
 export default function AuthPage({
   children,
 }: {
@@ -5,7 +7,7 @@ export default function AuthPage({
 }) {
   return (
     <div className="h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-6 rounded-lg shadow-md w-96">{children}</div>
+      <Outlet />
     </div>
   );
 }
