@@ -79,7 +79,7 @@ const Navbar = () => {
           >
             Log in <span aria-hidden="true">&rarr;</span>
           </button>
-          <Link to="/signup">
+          <Link to="/auth/signup">
             <button
               type="button"
               class="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"

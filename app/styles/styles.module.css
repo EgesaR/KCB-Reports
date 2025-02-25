@@ -69,7 +69,7 @@ nav h2 {
   display: none;
 }
 
-.step-indicator span {
+.stepIndicator span {
   height: 36px;
   width: 36px;
   border: 1px solid var(--pastel-blue);
@@ -81,7 +81,7 @@ nav h2 {
   font-weight: 700;
 }
 
-.step-indicator.active span {
+.stepIndicator.active span {
   background-color: var(--pastel-blue);
   color: var(--marine-blue);
 }
@@ -130,11 +130,11 @@ nav h2 {
   /*color: var(--cool-gray);*/
 }
 
-.personal-info input.error {
+.personalInfo input.error {
   border-color: var(--strawberry-red);
 }
 
-.personal-info label {
+.personalInfo label {
   color: var(--marine-blue);
   font-weight: 400;
   font-size: 12px;
@@ -142,22 +142,22 @@ nav h2 {
   margin-bottom: 12px;
 }
 
-.personal-info label div {
+.personalInfo label div {
   display: flex;
   justify-content: space-between;
 }
 
-.personal-info span.error {
+.personalInfo span.error {
   color: var(--strawberry-red);
   font-weight: 700;
 }
 
-.plan-selection input {
+.planSelection input {
   visibility: hidden;
   position: absolute;
 }
 
-.plan-selection label {
+.planSelection label {
   display: flex;
   align-items: flex-start;
   gap: 16px;
@@ -169,37 +169,37 @@ nav h2 {
   transition: border-color 150ms ease-in;
 }
 
-.plan-selection label:hover {
+.planSelection label:hover {
   border-color: var(--marine-blue);
 }
 
-.plan-selection input[type="radio"]:checked + label {
+.planSelection input[type="radio"]:checked + label {
   border-color: var(--marine-blue);
 }
 
-.plan-selection div {
+.planSelection div {
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
-.plan-selection h3 {
+.planSelection h3 {
   font-weight: 500;
   color: var(--marine-blue);
   font-size: 16px;
 }
 
-.plan-selection p {
+.planSelection p {
   color: var(--cool-gray);
   font-size: 14px;
 }
 
-.plan-selection .yearly-information {
+.planSelection .yearly-information {
   color: var(--marine-blue);
   font-size: 12px;
 }
 
-.button-month-year {
+.buttonMonthYear {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -207,7 +207,7 @@ nav h2 {
   gap: 16px;
 }
 
-.button-month-year label {
+.buttonMonthYear label {
   height: 18px;
   background-color: var(--marine-blue);
   border-radius: 9px;
@@ -220,35 +220,35 @@ nav h2 {
   cursor: pointer;
 }
 
-.button-month-year label .dot {
+.buttonMonthYear label .dot {
   height: 60%;
   aspect-ratio: 1 / 1;
   background-color: var(--alabaster);
   border-radius: 100%;
 }
 
-.button-month-year strong {
+.buttonMonthYear strong {
   color: var(--cool-gray);
 }
 
-.button-month-year strong.active {
+.buttonMonthYear strong.active {
   color: var(--marine-blue);
 }
 
-.button-month-year input[type="checkbox"]:checked + label {
+.buttonMonthYear input[type="checkbox"]:checked + label {
   justify-content: flex-end;
 }
 
-.button-month-year input {
+.buttonMonthYear input {
   display: none;
 }
 
-.addon-selection input {
+.addonSelection input {
   position: absolute;
   opacity: 0;
 }
 
-.addon-selection label {
+.addonSelection label {
   display: flex;
   gap: 12px;
   align-items: center;
@@ -260,11 +260,11 @@ nav h2 {
   transition: border-color 150ms ease-in;
 }
 
-.addon-selection label:hover {
+.addonSelection label:hover {
   border-color: var(--marine-blue);
 }
 
-.addon-selection label .checkmark {
+.addonSelection label .checkmark {
   height: 18px;
   width: 18px;
   background-color: transparent;
@@ -273,16 +273,16 @@ nav h2 {
   position: relative;
 }
 
-.addon-selection input[type="checkbox"]:checked + label .checkmark {
+.addonSelection input[type="checkbox"]:checked + label .checkmark {
   background-color: var(--purplish-blue);
   border-color: var(--purplish-blue);
 }
 
-.addon-selection input[type="checkbox"]:checked + label {
+.addonSelection input[type="checkbox"]:checked + label {
   border-color: var(--marine-blue);
 }
 
-.addon-selection label .checkmark:after {
+.addonSelection label .checkmark:after {
   content: "";
   position: absolute;
   display: none;
@@ -290,11 +290,11 @@ nav h2 {
   left: 50%;
 }
 
-.addon-selection input[type="checkbox"]:checked + label .checkmark:after {
+.addonSelection input[type="checkbox"]:checked + label .checkmark:after {
   display: block;
 }
 
-.addon-selection label .checkmark:after {
+.addonSelection label .checkmark:after {
   width: 6px;
   height: 10px;
   border: solid white;
@@ -304,7 +304,7 @@ nav h2 {
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
-.addon-selection .input-info {
+.addonSelection .input-info {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -312,88 +312,88 @@ nav h2 {
   flex: 1;
 }
 
-.addon-selection h3 {
+.addonSelection h3 {
   color: var(--marine-blue);
   font-size: 14px;
   font-weight: 500;
 }
 
-.addon-selection p {
+.addonSelection p {
   font-size: 12px;
   color: var(--cool-gray);
 }
 
-.addon-selection .extra-price {
+.addonSelection .extra-price {
   color: var(--purplish-blue);
 }
 
-.finishing-up {
+.finishingUp {
   padding: 12px;
   font-size: 14px;
   color: var(--cool-gray);
 }
 
-.finishing-up li {
+.finishingUp li {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
 }
 
-.finishing-up li > div {
+.finishingUp li > div {
   display: flex;
   flex-direction: column;
   align-items: start;
 }
 
-.finishing-up li strong {
+.finishingUp li strong {
   font-weight: 500;
   color: var(--marine-blue);
 }
 
-.finishing-up li span {
+.finishingUp li span {
   color: var(--marine-blue);
 }
 
-.finishing-up li:first-of-type > strong {
+.finishingUp li:first-of-type > strong {
   font-weight: 700;
 }
 
-.finishing-up button {
+.finishingUp button {
   text-decoration: underline;
   font-weight: 500;
 }
 
-.finishing-up hr {
+.finishingUp hr {
   border: none;
   background-color: var(--light-gray);
   height: 1px;
   margin-block: 12px;
 }
 
-.finishing-up .total-cost {
+.finishingUp .total-cost {
   margin-top: 28px;
 }
 
-.finishing-up .total-cost strong {
+.finishingUp .total-cost strong {
   color: var(--purplish-blue);
   font-weight: 700;
   font-size: 16px;
 }
 
-.thank-you {
+.thankYou {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.thank-you img {
+.thankYou img {
   height: 64px;
   width: 64px;
   margin-block: 48px 24px;
 }
 
-.thank-you p {
+.thankYou p {
   color: var(--cool-gray);
   text-align: center;
   padding-inline: 4px;
@@ -401,11 +401,11 @@ nav h2 {
   font-size: 15px;
 }
 
-.step .navigation-buttons {
+.step .navigationButtons {
   display: none;
 }
 
-.navigation-buttons {
+.navigationButtons {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -419,16 +419,16 @@ nav h2 {
   z-index: 999;
 }
 
-.navigation-buttons .back {
+.navigationButtons .back {
   color: var(--cool-gray);
   transition: color 150ms ease-in;
 }
 
-.navigation-buttons .back:hover {
+.navigationButtons .back:hover {
   color: var(--marine-blue);
 }
 
-.navigation-buttons .next {
+.navigationButtons .next {
   background-color: var(--marine-blue);
   color: var(--white);
   padding: 8px 16px;
@@ -436,16 +436,16 @@ nav h2 {
   transition: opacity 150ms ease-in;
 }
 
-.navigation-buttons .next:hover {
+.navigationButtons .next:hover {
   opacity: 0.85;
 }
 
-.navigation-buttons .next.final {
+.navigationButtons .next.final {
   background-color: var(--purplish-blue);
   transition: opacity 150ms ease-in;
 }
 
-.navigation-buttons .next.final:hover {
+.navigationButtons .next.final:hover {
   opacity: 0.6;
 }
 
@@ -466,7 +466,7 @@ nav h2 {
     position: relative;
   }
 
-  .navigation-buttons {
+  .navigationButtons {
     display: none;
   }
 
@@ -498,56 +498,56 @@ nav h2 {
     align-items: start;
   }
 
-  .step-indicator {
+  .stepIndicator {
     display: flex;
     align-items: center;
     gap: 16px;
   }
 
-  .step-indicator > div {
+  .stepIndicator > div {
     display: flex;
     flex-direction: column;
   }
 
-  .step-indicator p,
-  .step-indicator h2 {
+  .stepIndicator p,
+  .stepIndicator h2 {
     display: block;
     text-transform: uppercase;
   }
 
-  .step-indicator p {
+  .stepIndicator p {
     font-weight: 400;
     font-size: 14px;
     color: var(--light-blue);
   }
 
-  .step-indicator h2 {
+  .stepIndicator h2 {
     font-weight: 700;
     color: white;
   }
 
-  .plan-selection {
+  .planSelection {
     display: flex;
     justify-content: space-between;
     gap: 24px;
   }
 
-  .plan-selection label {
+  .planSelection label {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     flex: 1;
     gap: 48px;
   }
-  .plan-selection div {
+  .planSelection div {
     flex: unset;
   }
 
-  .thank-you {
+  .thankYou {
     justify-content: center;
   }
 
-  .step .navigation-buttons {
+  .step .navigationButtons {
     display: flex;
     right: calc(48px + 24px);
     left: unset;

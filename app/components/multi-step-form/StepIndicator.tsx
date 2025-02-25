@@ -1,6 +1,7 @@
 import { useStore } from "@nanostores/react";
 import { motion } from "framer-motion";
 import { currentStep } from "./StepProvider";
+import styles from "~/styles/styles.module.css";  // Import CSS module styles
 
 const indicator = {
   active: {
@@ -17,11 +18,12 @@ function StepIndicator() {
   const $currentStep = useStore(currentStep);
 
   return (
-    <ul>
-      <li className={`step-indicator`}>
+    <ul className={styles.stepIndicatorContainer}>
+      <li className={styles.stepIndicator}>
         <motion.span
           animate={$currentStep === 1 ? "active" : "inactive"}
           variants={indicator}
+          className={styles.stepNumber}
         >
           1
         </motion.span>
@@ -30,10 +32,11 @@ function StepIndicator() {
           <h2>Your info</h2>
         </div>
       </li>
-      <li className={`step-indicator`}>
+      <li className={styles.stepIndicator}>
         <motion.span
           animate={$currentStep === 2 ? "active" : "inactive"}
           variants={indicator}
+          className={styles.stepNumber}
         >
           2
         </motion.span>
@@ -42,10 +45,11 @@ function StepIndicator() {
           <h2>Select plan</h2>
         </div>
       </li>
-      <li className={`step-indicator`}>
+      <li className={styles.stepIndicator}>
         <motion.span
           animate={$currentStep === 3 ? "active" : "inactive"}
           variants={indicator}
+          className={styles.stepNumber}
         >
           3
         </motion.span>
@@ -54,10 +58,11 @@ function StepIndicator() {
           <h2>Add-ons</h2>
         </div>
       </li>
-      <li className={`step-indicator`}>
+      <li className={styles.stepIndicator}>
         <motion.span
           animate={$currentStep >= 4 ? "active" : "inactive"}
           variants={indicator}
+          className={styles.stepNumber}
         >
           4
         </motion.span>
