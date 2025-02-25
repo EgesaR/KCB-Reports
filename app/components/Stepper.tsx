@@ -1,20 +1,18 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import AddonItem from "./multi-step-form/AddonItem";
 import CheckoutList from "./multi-step-form/CheckoutList";
 import PersonalInfo from "./multi-step-form/PersonalInfo";
 import PlanItem from "./multi-step-form/PlanItem";
 import Step from "./multi-step-form/Step";
 import StepIndicator from "./multi-step-form/StepIndicator";
 import StepNavigation from "./multi-step-form/StepNavigation";
-import { addonData, planData } from "./multi-step-form/StepProvider";
-import SubscriptionTimeToggle from "./multi-step-form/SubscriptionTimeToggle";
+import { addonData, roleList } from "./multi-step-form/StepProvider";
 
 const Stepper = () => {
   const [showSignUpStepper, setShowSignUpStepper] = useState(false);
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-white">
+    <main className="max-h-screen h-screen overflow-hidden flex flex-col items-center justify-center">
       {!showSignUpStepper && (
         <div className="h-full w-full grid place-content-center">
           <motion.div
@@ -24,9 +22,12 @@ const Stepper = () => {
             className="flex justify-center items-center min-h-screen w-full bg-gradient-to-r from-blue-500 to-purple-600 p-6"
           >
             <div className="w-full max-w-2xl bg-white shadow-2xl rounded-2xl p-14 text-center">
-              <h2 className="text-4xl font-bold text-gray-800">Welcome to KCB Reports</h2>
+              <h2 className="text-4xl font-bold text-gray-800">
+                Welcome to KCB Reports
+              </h2>
               <p className="text-gray-500 mt-2">
-                Your go-to hub for smart, smooth, and powerful reporting! Get ready for the next big leap in education! 🚀🔥
+                Your go-to hub for smart, smooth, and powerful reporting! Get
+                ready for the next big leap in education! 🚀🔥
               </p>
               <button
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg mt-14"
@@ -39,52 +40,77 @@ const Stepper = () => {
         </div>
       )}
       {showSignUpStepper && (
-        <section className="w-full max-w-4xl bg-white shadow-lg rounded-lg p-8 flex flex-row gap-6">
-          <nav className="w-full">
+        <section className="w-full hh-full max-w-4xl p-8 flex flex-row gap-6">
+          <nav>
             <StepIndicator />
           </nav>
-          <Step step={1}>
-            <h1 className="text-2xl font-bold text-blue-900">Personal info</h1>
-            <p className="text-gray-500">Please provide your name, email address, and phone number.</p>
-            <PersonalInfo />
-          </Step>
 
-          <Step step={2}>
-            <h1 className="text-2xl font-bold text-blue-900">Select your role</h1>
-            <p className="text-gray-500">You have the option of monthly or yearly billing.</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {planData.map((plan) => (
-                <PlanItem key={plan.title} src={`/assets/icon-${plan.title.toLowerCase()}.svg`} plan={plan} />
-              ))}
-            </div>
-            <SubscriptionTimeToggle />
-          </Step>
+          <main>
+            <section className="step">
+              <nav>
+                <StepIndicator />
+              </nav>
+              {/* Personal Info */}
+              <Step step={1}>
+                <h1>Personal info</h1>
+                <p className="description">
+                  We’d love to know you better! Please enter your name, email,
+                  and phone number.
+                </p>
 
-          <Step step={3}>
-            <h1 className="text-2xl font-bold text-blue-900">Pick add-ons</h1>
-            <p className="text-gray-500">Add-ons help enhance your experience.</p>
-            <div className="grid gap-4">
-              {addonData.map((addon) => (
-                <AddonItem key={addon.title} addon={addon} />
-              ))}
-            </div>
-          </Step>
+                <PersonalInfo />
+              </Step>
+              {/* Role Selection */}
+              <Step step={2}>
+                <h1>Select your role</h1>
+                <p className="description">
+                  Select if you are teacher, parent or admin
+                </p>
 
-          <Step step={4}>
-            <h1 className="text-2xl font-bold text-blue-900">Finishing up</h1>
-            <p className="text-gray-500">Double-check everything before confirming.</p>
-            <CheckoutList />
-          </Step>
+                <div className="plan-selection">
+                  {roleList.map((role, idx) => (
+                    <PlanItem
+                      key={idx}
+                      src={`/assets/icon-${role.title.toLowerCase()}.svg`}
+                      role={role}
+                    />
+                  ))}
+                </div>
+              </Step>
+              <Step step={3}>
+                <h1>Pick add-ons</h1>
+                <p className="description">
+                  Add-ons help enhance your gaming experience.
+                </p>
 
-          <Step step={5}>
-            <article className="text-center flex flex-col items-center">
-              <img src="/assets/icon-thank-you.svg" alt="Thank You" width={80} height={80} className="mb-4" />
-              <h1 className="text-2xl font-bold text-blue-900">Thank you!</h1>
-              <p className="text-gray-500 max-w-md">
-                Thanks for confirming your subscription! If you ever need support, please feel free to email us.
-              </p>
-            </article>
-          </Step>
+              </Step>
+
+              <Step step={4}>
+                <h1>Finishing up</h1>
+                <p className="description">
+                  Double-check everything looks OK before confirming.
+                </p>
+
+                <CheckoutList />
+              </Step>
+
+              <Step step={5}>
+                <article className="thank-you">
+                  <img
+                    src={`/assets/icon-thank-you.svg`}
+                    alt="red check icon"
+                  />
+                  <h1>Thank you!</h1>
+                  <p>
+                    Thanks for confirming your subscription! We hope you have
+                    fun using our platform. If you ever need support, please
+                    feel free to email us at support@loremgaming.com.
+                  </p>
+                </article>
+              </Step>
+              <StepNavigation />
+            </section>
+          </main>
 
           <StepNavigation />
         </section>

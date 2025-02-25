@@ -2,8 +2,6 @@ import { atom, map } from "nanostores";
 
 export const currentStep = atom(1);
 
-export const isSubscriptionTimeMonthly = atom(true);
-
 export type AddonType = {
   title: string;
   description: string;
@@ -29,27 +27,23 @@ export const addonData: AddonType[] = [
   },
 ];
 
-export type PlanType = {
+export type roleType = {
   title: string;
-  dollarPerMonth: number;
 };
 
-export const planData: PlanType[] = [
+export const roleList: roleType[] = [
   {
-    title: "Arcade",
-    dollarPerMonth: 9,
+    title: "Teacher",
   },
   {
-    title: "Advanced",
-    dollarPerMonth: 12,
+    title: "Parent",
   },
   {
-    title: "Pro",
-    dollarPerMonth: 15,
+    title: "Admin",
   },
 ];
 
-export const subscriptionPlan = atom<PlanType>(planData[0]);
+export const currentRole = atom<roleType>(roleList[0]);
 
 export const addons = atom<AddonType[]>([]);
 
@@ -57,4 +51,5 @@ export const user = map<Record<string, string | null>>({
   name: null,
   email: null,
   phone: null,
+  password: null
 });

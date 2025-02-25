@@ -9,6 +9,7 @@ function StepNavigation() {
   const $user = useStore(user);
 
   function handleBack() {
+    console.log("Clicked")
     if ($currentStep > 1) currentStep.set(currentStep.get() - 1);
   }
 
@@ -29,6 +30,7 @@ function StepNavigation() {
 
   return (
     <div className="navigation-buttons">
+      current: {$currentStep}
       <button className="back" style={backStyle} onClick={handleBack}>
         Go Back
       </button>

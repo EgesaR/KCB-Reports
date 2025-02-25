@@ -1,27 +1,22 @@
 import { useStore } from "@nanostores/react";
 import {
-  isSubscriptionTimeMonthly,
-  PlanType,
-  subscriptionPlan,
+  roleType,
+  roleList,
+  currentRole
 } from "./StepProvider";
 
 type Props = {
   src: string;
-  plan: PlanType;
+  role: roleType;
 };
 
-function PlanItem({ src, plan }: Props) {
-  const $isSubscriptionTimeMonthly = useStore(isSubscriptionTimeMonthly);
-  const $subscriptionPlan = useStore(subscriptionPlan);
+function PlanItem({ src, role }: Props) {
+  const $currentRole = useStore(currentRole);
 
-  const itemCost = $isSubscriptionTimeMonthly
-    ? plan.dollarPerMonth
-    : plan.dollarPerMonth * 10;
-
-  const lowerCaseTitle = plan.title.toLowerCase();
+  const lowerCaseTitle = role.title.toLowerCase();
 
   function handleSubscriptionChange() {
-    subscriptionPlan.set(plan);
+    currentRole.set(role);
   }
 
   return (
@@ -29,21 +24,15 @@ function PlanItem({ src, plan }: Props) {
       <input
         name="plan"
         type="radio"
-        checked={plan.title === $subscriptionPlan.title}
-        value={plan.title}
+        checked={role.title === $currentRole.title}
+        value={role.title}
         onChange={handleSubscriptionChange}
         id={`plan-${lowerCaseTitle}`}
       />
-      <label htmlFor={`plan-${lowerCaseTitle}`}>
-        <img src={src} alt={plan.title} />
+      <label htmlFor={`role-${lowerCaseTitle}`}>
+        <img src={src} alt={role.title} />
         <div>
-          <h3>{plan.title}</h3>
-          <p>
-            ${itemCost}/{$isSubscriptionTimeMonthly ? "mo" : "yr"}
-          </p>
-          {$isSubscriptionTimeMonthly ? null : (
-            <p className="yearly-information">2 months free</p>
-          )}
+          <h3>{role.title}</h3>
         </div>
       </label>
     </>
