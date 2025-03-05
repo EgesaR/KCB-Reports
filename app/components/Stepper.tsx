@@ -41,7 +41,7 @@ const Stepper = () => {
       )}
       {showSignUpStepper && (
         <section className="w-full hh-full max-w-4xl p-8 flex flex-row gap-6">
-          <nav>
+          <nav className="stepper-nav">
             <StepIndicator />
           </nav>
 
