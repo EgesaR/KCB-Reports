@@ -54,7 +54,7 @@ export default function App() {
         <Links />
       </head>
       {/* Make body full height and use flex to push footer down */}
-      <body className="overflow-x-hidden bg-white dark:bg-neutral-950">
+      <body className="overflow-x-hidden bg-white dark:bg-neutral-950 text-black">
         {isLoading && (
           <div className="fixed top-0 left-0 w-full h-1 bg-green-500 animate-pulse z-50" />
         )}
