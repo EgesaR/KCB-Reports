@@ -141,7 +141,9 @@ export default function Index() {
       <section className="mt-16 flex flex-col items-center pt-[12rem] py-16 gap-[100px] px-8 text-white">
         <div className="w-full h-[80vh] grid gap-3 grid-cols-2 odd:flex-row even:flex-row-reverse py-4">
           <div className="flex-1 max-w-[480px] flex flex-col gap-4 items-center justify-center">
-            <h1 className="text-[52px] text-neutral-100">Hello Wolrd</h1>
+            <h1 className="text-[52px] text-black dark:text-neutral-100">
+              Hello Wolrd
+            </h1>
             <p className="text-[17px] text-left text-[#455366] w-[55%] dark:text-neutral-300">
               Hello people
             </p>
@@ -156,7 +158,9 @@ export default function Index() {
         </div>
         <div className="w-full h-[80vh] grid gap-3 grid-cols-2 odd:flex-row even:flex-row-reverse py-4">
           <div className="flex-1 max-w-[480px] flex flex-col gap-4 items-center justify-center">
-            <h1 className="text-[52px] text-neutral-100">Hello Wolrd</h1>
+            <h1 className="text-[52px] text-black dark:text-neutral-100">
+              Hello Wolrd
+            </h1>
             <p className="text-[17px] text-left text-[#455366] w-[55%] dark:text-neutral-300">
               Hello people
             </p>
@@ -171,7 +175,9 @@ export default function Index() {
         </div>
         <div className="w-full h-[80vh] grid gap-3 grid-cols-2 odd:flex-row even:flex-row-reverse py-4">
           <div className="flex-1 max-w-[480px] flex flex-col gap-4 items-center justify-center">
-            <h1 className="text-[52px] text-neutral-100">Hello Wolrd</h1>
+            <h1 className="text-[52px] text-black dark:text-neutral-100">
+              Hello Wolrd
+            </h1>
             <p className="text-[17px] text-left text-[#455366] w-[55%] dark:text-neutral-300">
               Hello people
             </p>
