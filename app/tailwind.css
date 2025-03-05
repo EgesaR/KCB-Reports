@@ -45,15 +45,15 @@ main {
   z-index: 99;
 }
 
-nav ul {
+.stepper-nav ul {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 20px;
 }
 
-nav p,
-nav h2 {
+.stepper-nav p,
+.stepper-nav h2 {
   display: none;
 }
 
