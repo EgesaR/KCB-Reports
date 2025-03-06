@@ -1,6 +1,5 @@
 import { Link, NavLink } from "@remix-run/react";
 import { useState } from "react";
-import Button from "./Button";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,13 +14,13 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="bg-white dark:bg-black/50 text-black fixed top-0 left-0 w-full z-20">
+    <header className="bg-white dark:bg-black/50 text-black fixed top-0 left-0 w-full z-50 shadow-md">
       <nav
         className="mx-auto flex max-w-7xl items-center justify-between p-6 py-4 lg:px-8"
         aria-label="Global"
       >
         {/* Logo */}
-        <div className="flex lg:flex-1">
+        <div className="flex">
           <Link to="/" className="-m-1.5 p-1.5">
             <h1 className="text-2xl font-semibold text-green-600/80 dark:text-green-300/90">
               KCB Reports
@@ -55,7 +54,9 @@ const Navbar = () => {
         </div>
 
         {/* Desktop Links */}
-        <div className="hidden lg:flex lg:gap-x-12">
+        <div className="hidden lg:flex lg:gap-x-12 bg-red-500">
+          {" "}
+          {/* TEMP DEBUG CLASS */}
           {links.map((link) => (
             <NavLink
               key={link.link}
@@ -82,7 +83,7 @@ const Navbar = () => {
           <Link to="/auth/signup">
             <button
               type="button"
-              class="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+              className="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
             >
               Get Started
             </button>
