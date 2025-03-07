@@ -1,30 +1,26 @@
 import React, { useState, useRef } from "react";
 import { useStore } from "@nanostores/react";
 import { user } from "./StepProvider";
-import { atom } from "nanostores";
-
-// Atom to track the currently selected field
-export const selectedField = atom<string | null>(null);
 
 function PersonalInfo() {
   const $user = useStore(user);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [errors, setErrors] = useState({
     email: "",
     phone: "",
     password: "",
   });
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^\+?[0-9]{7,15}$/;
-  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple email validation
+  const phoneRegex = /^\+?[0-9]{7,15}$/; // Accepts 7-15 digits, optional '+' at the start
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // Minimum 8 characters, 1 letter, 1 number
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
     user.setKey(name, value);
 
-    // Validate inputs
+    // Validate inputs on change
     setErrors((prevErrors) => {
       const newErrors = { ...prevErrors };
 
@@ -44,8 +40,14 @@ function PersonalInfo() {
     });
   }
 
-  function handleFocus(field: string) {
-    selectedField.set(field); // Update the selected field in the global state
+  function handleKeyDown(
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) {
+    if (e.key === "Enter" && inputRefs.current[index + 1]) {
+      e.preventDefault();
+      inputRefs.current[index + 1]?.focus(); // Focus the next input
+    }
   }
 
   return (
@@ -70,7 +72,7 @@ function PersonalInfo() {
             }
             value={$user[field] ?? ""}
             onChange={handleChange}
-            onFocus={() => handleFocus(field)} // Set the active field on focus
+            onKeyDown={(e) => handleKeyDown(e, index)}
             ref={(el) => (inputRefs.current[index] = el)}
             required
             className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm ${

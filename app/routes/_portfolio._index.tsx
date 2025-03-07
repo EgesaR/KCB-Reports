@@ -139,7 +139,7 @@ export default function Index() {
         </div>
       </section>
       <section className="mt-16 flex flex-col items-center pt-[12rem] py-16 gap-[100px] px-8 text-white">
-        <div className="w-full h-[80vh] grid gap-3 grid-cols-2 odd:flex-row even:flex-row-reverse py-4">
+        <div className="w-full h-[60vh] grid gap-3 grid-cols-2 odd:flex-row even:flex-row-reverse py-4">
           <div className="flex-1 max-w-[480px] flex flex-col gap-4 items-center justify-center">
             <h1 className="text-[52px] text-black dark:text-neutral-100">
               Hello Wolrd
@@ -152,11 +152,11 @@ export default function Index() {
             <img
               src="https://images.pexels.com/photos/924824/pexels-photo-924824.jpeg?auto=compress&cs=tinysrgb&w=600"
               alt=""
-              className="rounded-[24px] max-w-full w-full h-3/4 sm:h-1/2"
+              className="rounded-[24px] max-w-full w-full h-3/4 sm:h-full"
             />
           </div>
         </div>
-        <div className="w-full h-[80vh] grid gap-3 grid-cols-2 odd:flex-row even:flex-row-reverse py-4">
+        <div className="w-full h-[60vh] grid gap-3 grid-cols-2 odd:flex-row even:flex-row-reverse py-4">
           <div className="flex-1 max-w-[480px] flex flex-col gap-4 items-center justify-center">
             <h1 className="text-[52px] text-black dark:text-neutral-100">
               Hello Wolrd
@@ -169,11 +169,11 @@ export default function Index() {
             <img
               src="https://images.pexels.com/photos/1762851/pexels-photo-1762851.jpeg?auto=compress&cs=tinysrgb&w=600"
               alt=""
-              className="rounded-[24px] max-w-full w-full h-3/4 sm:h-1/2"
+              className="rounded-[24px] max-w-full w-full h-3/4 sm:h-full"
             />
           </div>
         </div>
-        <div className="w-full h-[80vh] grid gap-3 grid-cols-2 odd:flex-row even:flex-row-reverse py-4">
+        <div className="w-full h-[60vh] grid gap-3 grid-cols-2 odd:flex-row even:flex-row-reverse py-4">
           <div className="flex-1 max-w-[480px] flex flex-col gap-4 items-center justify-center">
             <h1 className="text-[52px] text-black dark:text-neutral-100">
               Hello Wolrd
@@ -186,7 +186,7 @@ export default function Index() {
             <img
               src="https://images.pexels.com/photos/380337/pexels-photo-380337.jpeg?auto=compress&cs=tinysrgb&w=600"
               alt=""
-              className="rounded-[24px] max-w-full w-full h-3/4 sm:h-1/2"
+              className="rounded-[24px] max-w-full w-full h-3/4 sm:h-full"
             />
           </div>
         </div>

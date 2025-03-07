@@ -11,7 +11,7 @@ export default function CreateUserPage() {
   const actionData = useActionData<ActionData>();
 
   return (
-    <div className="text-black dark:text-black h-screen max-h-screen flex">
+    <div className="text-black dark:text-black h-screen w-full max-h-screen flex">
       <Stepper />
     </div>
   );

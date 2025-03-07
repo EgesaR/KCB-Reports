@@ -1,71 +1,82 @@
 import { useStore } from "@nanostores/react";
 import { motion } from "framer-motion";
-import { currentStep } from "./StepProvider";
-
-const indicator = {
-  active: {
-    backgroundColor: "var(--pastel-blue)",
-    color: "var(--marine-blue)",
-  },
-  inactive: {
-    backgroundColor: "rgba(0,0,0,0)",
-    color: "rgba(255,255,255,1)",
-  },
-};
+import { currentStep, stepStatuses } from "./StepProvider";
 
 function StepIndicator() {
-  const $currentStep = useStore(currentStep);
+  const $currentStep = useStore(currentStep); // Get the current step number
+  const $stepStatuses = useStore(stepStatuses); // Get statuses for all steps
 
   return (
-    <ul>
-      <li className={`step-indicator`}>
-        <motion.span
-          animate={$currentStep === 1 ? "active" : "inactive"}
-          variants={indicator}
-        >
-          1
-        </motion.span>
-        <div>
-          <p>Step 1</p>
-          <h2>Your info</h2>
-        </div>
-      </li>
-      <li className={`step-indicator`}>
-        <motion.span
-          animate={$currentStep === 2 ? "active" : "inactive"}
-          variants={indicator}
-        >
-          2
-        </motion.span>
-        <div>
-          <p>Step 2</p>
-          <h2>Select plan</h2>
-        </div>
-      </li>
-      <li className={`step-indicator`}>
-        <motion.span
-          animate={$currentStep === 3 ? "active" : "inactive"}
-          variants={indicator}
-        >
-          3
-        </motion.span>
-        <div>
-          <p>Step 3</p>
-          <h2>Add-ons</h2>
-        </div>
-      </li>
-      <li className={`step-indicator`}>
-        <motion.span
-          animate={$currentStep >= 4 ? "active" : "inactive"}
-          variants={indicator}
-        >
-          4
-        </motion.span>
-        <div>
-          <p>Step 4</p>
-          <h2>Summary</h2>
-        </div>
-      </li>
+    <ul className="relative flex flex-col items-center gap-y-4">
+      {[1, 2, 3, 4].map((step, index) => {
+        const status = $stepStatuses[step]; // Retrieve the status of the step
+
+        return (
+          <li key={step} className="flex flex-col items-center gap-y-2 group">
+            {/* Step Indicator */}
+            <span
+              className={`min-w-7 min-h-7 flex justify-center items-center text-xs font-medium rounded-full ${
+                $currentStep === step
+                  ? "bg-blue-600 text-white"
+                  : status === "success"
+                  ? "bg-green-500 text-white"
+                  : status === "failure"
+                  ? "bg-red-500 text-white"
+                  : "bg-gray-100 text-gray-800"
+              }`}
+            >
+              {/* Display logic */}
+              {$currentStep === step || status === "pending" ? (
+                step
+              ) : status === "success" ? (
+                <motion.svg
+                  className="size-3"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </motion.svg>
+              ) : status === "failure" ? (
+                <motion.svg
+                  className="size-3"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                >
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                  <line x1="6" y1="18" x2="18" y2="6" />
+                </motion.svg>
+              ) : null}
+            </span>
+
+            {/* Divider */}
+            {index < 3 && (
+              <div
+                className={`w-1 bg-gray-200 h-10 ${
+                  status === "success"
+                    ? "bg-green-500"
+                    : status === "failure"
+                    ? "bg-red-500"
+                    : "bg-gray-200"
+                }`}
+              ></div>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }

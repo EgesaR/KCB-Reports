@@ -1,7 +1,41 @@
 import { atom, map } from "nanostores";
 
+// Tracks the current step number (1 to 4)
 export const currentStep = atom(1);
 
+// Tracks the status of each step: "success", "failure", or "pending"
+export const stepStatuses = atom<Record<number, string>>({
+  1: "pending",
+  2: "pending",
+  3: "pending",
+  4: "pending",
+});
+
+// Tracks the user's current selections and data
+export const user = map<Record<string, string | null>>({
+  name: null,
+  email: null,
+  phone: null,
+  password: null,
+});
+
+// Tracks the currently selected field (e.g., "email", "phone", etc.)
+export const selectedField = atom<string | null>(null);
+
+// Tracks roles (e.g., Teacher, Parent, Admin)
+export type roleType = {
+  title: string;
+};
+
+export const roleList: roleType[] = [
+  { title: "Teacher" },
+  { title: "Parent" },
+  { title: "Admin" },
+];
+
+export const currentRole = atom<roleType>(roleList[0]);
+
+// Tracks selected addons
 export type AddonType = {
   title: string;
   description: string;
@@ -14,7 +48,6 @@ export const addonData: AddonType[] = [
     description: "Access to multiplayer games",
     dollarPerMonth: 1,
   },
-
   {
     title: "Larger storage",
     description: "Extra 1TB of cloud save",
@@ -27,29 +60,4 @@ export const addonData: AddonType[] = [
   },
 ];
 
-export type roleType = {
-  title: string;
-};
-
-export const roleList: roleType[] = [
-  {
-    title: "Teacher",
-  },
-  {
-    title: "Parent",
-  },
-  {
-    title: "Admin",
-  },
-];
-
-export const currentRole = atom<roleType>(roleList[0]);
-
 export const addons = atom<AddonType[]>([]);
-
-export const user = map<Record<string, string | null>>({
-  name: null,
-  email: null,
-  phone: null,
-  password: null
-});
