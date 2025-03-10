@@ -16,7 +16,8 @@ import Footer from "~/components/Footer";
 import styles from "./tailwind.css?url";
 import { type IStaticMethods } from "preline/preline";
 import { useEffect } from "react";
-
+import { ThemeProvider } from "@material-tailwind/react";
+ 
 declare global {
   interface Window {
     HSStaticMethods: IStaticMethods;

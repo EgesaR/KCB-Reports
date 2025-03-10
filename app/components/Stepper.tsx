@@ -3,14 +3,22 @@ import { motion } from "framer-motion";
 import CheckoutList from "./multi-step-form/CheckoutList";
 import PersonalInfo from "./multi-step-form/PersonalInfo";
 import RoleItem from "./multi-step-form/RoleItem";
+import TeacherProfileForm from "./multi-step-form/TeacherProfileForm";
 import Step from "./multi-step-form/Step";
-import StepIndicator from "./multi-step-form/StepIndicator";
+import StepIndicator from "./multi-step-form/StepNavigation";
 import StepNavigation from "./multi-step-form/StepNavigation";
-import { roleList } from "./multi-step-form/StepProvider";
+import { roleList, currentRole, user } from "./multi-step-form/StepProvider";
 import SpecificData from "./multi-step-form/AddonItem";
+import { useStore } from "@nanostores/react";
 
 const Stepper = () => {
   const [showSignUpStepper, setShowSignUpStepper] = useState(false);
+  const selectedRole = useStore(currentRole);
+  const userInfo = useStore(user);
+
+  const handleSelectRole = (role: { title: string }) => {
+    currentRole.set(role);
+  };
 
   return (
     <main className="h-screen w-full overflow-hidden flex flex-col items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600">
@@ -43,13 +51,11 @@ const Stepper = () => {
       ) : (
         // Stepper Screen
         <section className="w-full h-[85%] max-w-4xl p-8 flex gap-6 bg-white shadow-lg rounded-lg">
-          {/* Step Indicator */}
-          <aside className="w-1/4 bg-gray-100 p-4 rounded-lg">
-            <StepIndicator />
-          </aside>
-
           {/* Steps Content */}
           <div className="flex-1 flex flex-col justify-between relative overflow-hidden">
+            <div className="w-full mb-5">
+              <h1 className="text-3xl font-semibold">KCB Reports</h1>
+            </div>
             <motion.section
               initial={{ x: 300 }}
               animate={{ x: 0 }}
@@ -64,7 +70,7 @@ const Stepper = () => {
                 </h1>
                 <p className="text-gray-500 mt-2">
                   We’d love to know you better! Please enter your name, email,
-                  and phone number.
+                  phone number, date of birth, and a short bio.
                 </p>
                 <PersonalInfo />
               </Step>
@@ -81,22 +87,45 @@ const Stepper = () => {
                   {roleList.map((role, idx) => (
                     <RoleItem
                       key={idx}
-                      //src={`/assets/icon-${role.title.toLowerCase()}.svg`}
-                      //role={role}
+                      role={role}
+                      onSelect={handleSelectRole}
                     />
                   ))}
                 </div>
+                {selectedRole && (
+                  <div className="mt-4 text-xl">
+                    Selected Role:{" "}
+                    <span className="font-semibold">{selectedRole.title}</span>
+                  </div>
+                )}
               </Step>
 
-              {/* Step 3: Add-Ons */}
+              {/* Step 3: Additional Info based on Role */}
               <Step step={3}>
-                <h1 className="text-2xl font-bold text-gray-800">
-                  Pick add-ons
-                </h1>
-                <p className="text-gray-500 mt-2">
-                  Enhance your experience with add-ons.
-                </p>
-                <SpecificData />
+                {selectedRole.title === "Teacher" && (
+                  <>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                      Teacher Profile
+                    </h1>
+                    <p className="text-gray-500 mt-2">
+                      Please provide information about your subjects, classes,
+                      and streams.
+                    </p>
+                    <TeacherProfileForm />
+                  </>
+                )}
+                {selectedRole.title !== "Teacher" && (
+                  <>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                      Additional Info
+                    </h1>
+                    <p className="text-gray-500 mt-2">
+                      Please provide any additional information relevant to your
+                      role.
+                    </p>
+                    <SpecificData />
+                  </>
+                )}
               </Step>
 
               {/* Step 4: Finalization */}
