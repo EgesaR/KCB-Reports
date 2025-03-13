@@ -14,6 +14,7 @@ module.exports = withMT({
     extend: {
       fontFamily: {
         inter: ["Inter", "sans-serif"],
+        nunito: ["Nunito", "sans-serif"],
       },
     },
   },

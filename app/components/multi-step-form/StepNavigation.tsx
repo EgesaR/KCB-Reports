@@ -74,7 +74,7 @@ function StepNavigation() {
         Go Back
       </button>
       <button
-        className={`next${$currentStep === maxSteps - 1 ? " final" : ""}`}
+        className={`next ${$currentStep === maxSteps - 1 ? " final" : ""} dark:bg-blue-900`}
         style={nextStyle}
         onClick={handleNext}
         disabled={isNextButtonDisabled}

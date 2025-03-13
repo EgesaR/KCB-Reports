@@ -1,9 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 @import "tailwindcss";
 
 :root {
   /* Primary */
   --marine-blue: hsl(213, 96%, 18%);
-  --purplish-blue: hsl(243, 100%, 62%);
+  --purplish-blue: hsl(243, 82%, 64%);
   --pastel-blue: hsl(228, 100%, 84%);
   --light-blue: hsl(206, 94%, 87%);
   --strawberry-red: hsl(354, 84%, 57%);
@@ -13,6 +14,13 @@
   --magnolia: -hsl(217, 100%, 97%);
   --alabaster: hsl(231, 100%, 99%);
   --white: hsl(0, 0%, 100%);
+}
+
+.nunito-400 {
+  font-family: "Nunito", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
 }
 
 body {
@@ -421,7 +429,7 @@ main {
 }
 
 .navigation-buttons .next {
-  background-color: var(--marine-blue);
+  /*background-color: var(--marine-blue);*/
   color: var(--white);
   padding: 8px 16px;
   border-radius: 4px;
@@ -433,7 +441,7 @@ main {
 }
 
 .navigation-buttons .next.final {
-  background-color: var(--purplish-blue);
+  /*background-color: var(--purplish-blue);*/
   transition: opacity 150ms ease-in;
 }
 

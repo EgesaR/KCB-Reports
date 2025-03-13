@@ -11,12 +11,21 @@ export const stepStatuses = atom<Record<number, string>>({
   4: "pending",
 });
 
+export const teacherProfile = map<Record<string, string | null>>({
+  subjects: null,
+  classes: null,
+  streams: null,
+  departmentGroup: null,
+});
+
+
 // Tracks the user's current selections and data
 export const user = map<Record<string, string | null>>({
   name: null,
-  email: null,
-  phone: null,
-  password: null,
+  dob: null
+  //email: null,
+  //phone: null,
+  //password: null,
 });
 
 // Tracks the currently selected field (e.g., "email", "phone", etc.)

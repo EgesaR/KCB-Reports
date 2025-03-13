@@ -1,57 +1,95 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import CheckoutList from "./multi-step-form/CheckoutList";
 import PersonalInfo from "./multi-step-form/PersonalInfo";
 import RoleItem from "./multi-step-form/RoleItem";
 import TeacherProfileForm from "./multi-step-form/TeacherProfileForm";
 import Step from "./multi-step-form/Step";
-import StepIndicator from "./multi-step-form/StepNavigation";
 import StepNavigation from "./multi-step-form/StepNavigation";
 import { roleList, currentRole, user } from "./multi-step-form/StepProvider";
 import SpecificData from "./multi-step-form/AddonItem";
 import { useStore } from "@nanostores/react";
+import { TiUser } from "react-icons/ti";
 
 const Stepper = () => {
-  const [showSignUpStepper, setShowSignUpStepper] = useState(false);
+  const [timeFrameStep, setTimeFrameStep] = useState(0); // Track the current message
+  const [showSignUpStepper, setShowSignUpStepper] = useState(false); // Control the stepper visibility
   const selectedRole = useStore(currentRole);
   const userInfo = useStore(user);
+
+  useEffect(() => {
+    // Progress through the time frame messages
+    if (timeFrameStep < 3) {
+      const timer = setTimeout(() => {
+        setTimeFrameStep((prev) => prev + 1);
+      }, 2000); // 2-second delay per message
+      return () => clearTimeout(timer); // Cleanup the timer
+    } else {
+      setShowSignUpStepper(true); // Show the stepper after messages
+    }
+  }, [timeFrameStep]);
 
   const handleSelectRole = (role: { title: string }) => {
     currentRole.set(role);
   };
 
+  // Animation variants for Framer Motion
+  const fadeInVariant = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 1 } },
+  };
+
   return (
-    <main className="h-screen w-full overflow-hidden flex flex-col items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600">
+    <main className="h-screen w-full flex flex-col items-center justify-center">
       {!showSignUpStepper ? (
-        // Welcome Screen
-        <div className="flex h-full w-full items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center justify-center w-full h-full bg-gradient-to-r from-blue-500 to-purple-600 p-6"
-          >
-            <div className="w-full max-w-2xl bg-white shadow-2xl rounded-2xl p-14 text-center">
-              <h2 className="text-4xl font-bold text-gray-800">
-                Welcome to KCB Reports
-              </h2>
-              <p className="text-gray-500 mt-4">
-                Your go-to hub for smart, smooth, and powerful reporting! Get
-                ready for the next big leap in education! 🚀🔥
-              </p>
-              <button
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg mt-10"
-                onClick={() => setShowSignUpStepper(true)}
-              >
-                Let's get started
-              </button>
-            </div>
-          </motion.div>
-        </div>
+        <motion.div
+          className="text-center text-black dark:text-white"
+          initial="hidden"
+          animate="visible"
+          variants={fadeInVariant}
+        >
+          {timeFrameStep === 0 && (
+            <motion.h1
+              key="hello"
+              initial="hidden"
+              animate="visible"
+              variants={fadeInVariant}
+              className="text-4xl font-bold text-gray-800"
+            >
+              Hello
+            </motion.h1>
+          )}
+          {timeFrameStep === 1 && (
+            <motion.h1
+              key="welcome"
+              initial="hidden"
+              animate="visible"
+              variants={fadeInVariant}
+              className="text-4xl font-bold text-gray-800"
+            >
+              Welcome to KCB Reports
+            </motion.h1>
+          )}
+          {timeFrameStep === 2 && (
+            <motion.h1
+              key="begin"
+              initial="hidden"
+              animate="visible"
+              variants={fadeInVariant}
+              className="text-4xl font-bold text-gray-800"
+            >
+              Let's begin by creating your account
+            </motion.h1>
+          )}
+        </motion.div>
       ) : (
-        // Stepper Screen
-        <section className="w-full h-[85%] max-w-4xl p-8 flex gap-6 bg-white shadow-lg rounded-lg">
+        <section className="h-[85%] w-full flex p-8 gap-6 max-w-4xl bg-gray-800/10 rounded-xl bg-clip-padding backdrop-filter backdrop-blur-3xl bg-opacity-0 shadow-2xl">
           {/* Steps Content */}
+          <div className="flex-1 grid place-content-center">
+            <div className="h-28 w-28 bg-neutral-200/20 rounded-full">
+              <TiUser className="size-28 text-white" />
+            </div>
+          </div>
           <div className="flex-1 flex flex-col justify-between relative overflow-hidden">
             <div className="w-full mb-5">
               <h1 className="text-3xl font-semibold">KCB Reports</h1>
@@ -66,7 +104,7 @@ const Stepper = () => {
               {/* Step 1: Personal Info */}
               <Step step={1}>
                 <h1 className="text-2xl font-bold text-gray-800">
-                  Personal info
+                  Personal Info
                 </h1>
                 <p className="text-gray-500 mt-2">
                   We’d love to know you better! Please enter your name, email,
@@ -137,30 +175,6 @@ const Stepper = () => {
                   Double-check everything looks OK before confirming.
                 </p>
                 <CheckoutList />
-              </Step>
-
-              {/* Step 5: Thank You */}
-              <Step step={5}>
-                <article className="text-center">
-                  <img
-                    src={`/assets/icon-thank-you.svg`}
-                    alt="Thank you"
-                    className="mx-auto mb-6"
-                  />
-                  <h1 className="text-2xl font-bold text-gray-800">
-                    Thank you!
-                  </h1>
-                  <p className="text-gray-500 mt-2">
-                    Thanks for confirming your subscription! We hope you enjoy
-                    using our platform. If you ever need support, email us at{" "}
-                    <a
-                      href="mailto:support@loremgaming.com"
-                      className="text-blue-600 underline"
-                    >
-                      support@loremgaming.com
-                    </a>
-                  </p>
-                </article>
               </Step>
             </motion.section>
 

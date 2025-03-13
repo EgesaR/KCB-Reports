@@ -85,9 +85,8 @@ const Navbar = () => {
           </Link>
         </div>
       </nav>
-
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-10 bg-white dark:bg-gray-900 px-6 py-6">
+        <div className="hidden fixed inset-0 z-10 bg-white dark:bg-gray-900 px-6 py-6">
           <div className="flex items-center justify-between">
             <button
               type="button"

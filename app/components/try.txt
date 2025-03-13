@@ -1,3 +1,77 @@
+import { useState } from "react";
+import { useStore } from "@nanostores/react";
+import { user } from "./StepProvider";
+
+const PersonalInfo = () => {
+  const userInfo = useStore(user);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [dob, setDob] = useState("");
+  const [bio, setBio] = useState("");
+  const [profileUrl, setProfileUrl] = useState("");
+
+  const handleSave = () => {
+    user.set({ ...userInfo, name, email, phone, dob, bio, profileUrl });
+  };
+
+  return (
+    <div className="flex flex-col space-y-4">
+      <input
+        type="text"
+        placeholder="Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        className="border p-2 rounded"
+      />
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="border p-2 rounded"
+      />
+      <input
+        type="tel"
+        placeholder="Phone"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        className="border p-2 rounded"
+      />
+      <input
+        type="date"
+        placeholder="Date of Birth"
+        value={dob}
+        onChange={(e) => setDob(e.target.value)}
+        className="border p-2 rounded"
+      />
+      <textarea
+        placeholder="Bio"
+        value={bio}
+        onChange={(e) => setBio(e.target.value)}
+        className="border p-2 rounded"
+      />
+      <input
+        type="url"
+        placeholder="Profile URL"
+        value={profileUrl}
+        onChange={(e) => setProfileUrl(e.target.value)}
+        className="border p-2 rounded"
+      />
+      <button
+        onClick={handleSave}
+        className="bg-blue-600 text-white p-2 rounded"
+      >
+        Save
+      </button>
+    </div>
+  );
+};
+
+export default PersonalInfo;
+
+
+
 import { useStore } from "@nanostores/react";
 import { motion } from "framer-motion";
 import { currentStep } from "./StepProvider";

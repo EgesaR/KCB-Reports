@@ -1,15 +1,22 @@
 import { useState } from "react";
 import { useStore } from "@nanostores/react";
-import { user } from "./StepProvider";
+import { teacherProfile } from "./StepProvider";
 
 const TeacherProfileForm = () => {
   const [subjects, setSubjects] = useState("");
   const [classes, setClasses] = useState("");
   const [streams, setStreams] = useState("");
-  const userInfo = useStore(user);
+  const [departmentGroup, setDepartmentGroup] = useState("");
+  const teacherInfo = useStore(teacherProfile);
 
   const handleSave = () => {
-    user.set({ ...userInfo, subjects, classes, streams });
+    teacherProfile.set({
+      ...teacherInfo,
+      subjects,
+      classes,
+      streams,
+      departmentGroup,
+    });
   };
 
   return (
@@ -35,7 +42,17 @@ const TeacherProfileForm = () => {
         onChange={(e) => setStreams(e.target.value)}
         className="border p-2 rounded"
       />
-      <button onClick={handleSave} className="bg-blue-600 text-white p-2 rounded">
+      <input
+        type="text"
+        placeholder="Department Group"
+        value={departmentGroup}
+        onChange={(e) => setDepartmentGroup(e.target.value)}
+        className="border p-2 rounded"
+      />
+      <button
+        onClick={handleSave}
+        className="bg-blue-600 text-white p-2 rounded"
+      >
         Save
       </button>
     </div>
