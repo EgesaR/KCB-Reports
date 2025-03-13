@@ -54,7 +54,7 @@ const Stepper = () => {
               initial="hidden"
               animate="visible"
               variants={fadeInVariant}
-              className="text-4xl font-bold text-gray-800"
+              className="text-4xl font-bold text-gray-800 dark:text-white"
             >
               Hello
             </motion.h1>
@@ -65,7 +65,7 @@ const Stepper = () => {
               initial="hidden"
               animate="visible"
               variants={fadeInVariant}
-              className="text-4xl font-bold text-gray-800"
+              className="text-4xl font-bold text-gray-800 dark:text-white"
             >
               Welcome to KCB Reports
             </motion.h1>
@@ -76,7 +76,7 @@ const Stepper = () => {
               initial="hidden"
               animate="visible"
               variants={fadeInVariant}
-              className="text-4xl font-bold text-gray-800"
+              className="text-4xl font-bold text-gray-800 dark:text-white"
             >
               Let's begin by creating your account
             </motion.h1>
