@@ -21,7 +21,7 @@ export default defineConfig({
   },
   server: {
     allowedHosts: [
-      "xnkqff-5173.csb.app",
+      "skhxl4-5173.csb.app",
       "localhost",
       "kcb-reports.vercel.app",
     ],

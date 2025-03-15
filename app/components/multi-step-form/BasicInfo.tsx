@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, startTransition } from "react";
 import { useStore } from "@nanostores/react";
 import { user, currentStep, stepStatuses } from "./StepProvider";
 
-const PersonalInfo = () => {
+const BasicInfo = () => {
   const userInfo = useStore(user); // Access global user store
   const $currentStep = useStore(currentStep); // Current step
   const $stepStatuses = useStore(stepStatuses); // Step statuses
@@ -63,7 +63,7 @@ const PersonalInfo = () => {
         <div key={field} className="flex flex-col gap-2">
           <label
             htmlFor={field}
-            className="block text-sm font-medium text-gray-900"
+            className="block text-sm font-medium text-gray-900 dark:text-neutral-200"
           >
             {field.charAt(0).toUpperCase() + field.slice(1)}
           </label>
@@ -75,7 +75,7 @@ const PersonalInfo = () => {
             onChange={handleChange}
             onBlur={handleAutoSave} // Trigger save on blur
             ref={(el) => (inputRefs.current[index] = el)}
-            className={`border rounded p-2 ${
+            className={`border rounded p-2 focus:outline-0 ${
               errors[field as keyof typeof errors]
                 ? "border-red-500"
                 : "border-neutral-300"
@@ -93,4 +93,4 @@ const PersonalInfo = () => {
   );
 };
 
-export default PersonalInfo;
+export default BasicInfo;

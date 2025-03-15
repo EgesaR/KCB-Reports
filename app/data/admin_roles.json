@@ -1,0 +1,54 @@
+[
+  {
+    "id": 1,
+    "adminRole": "Head Teacher"
+  },
+  {
+    "id": 2,
+    "adminRole": "Deputy Head Teacher"
+  },
+  {
+    "id": 3,
+    "adminRole": "Head of Department"
+  },
+  {
+    "id": 4,
+    "adminRole": "Class Teacher"
+  },
+  {
+    "id": 5,
+    "adminRole": "Bursar"
+  },
+  {
+    "id": 6,
+    "adminRole": "Games Master/Mistress"
+  },
+  {
+    "id": 7,
+    "adminRole": "Discipline Coordinator"
+  },
+  {
+    "id": 8,
+    "adminRole": "Counselor"
+  },
+  {
+    "id": 9,
+    "adminRole": "Patron/Matron"
+  },
+  {
+    "id": 10,
+    "adminRole": "Director of Studies (O'Level)"
+  },
+  {
+    "id": 11,
+    "adminRole": "Director of Studies (A'Level)"
+  },
+  {
+    "id": 12,
+    "adminRole": "Director of Studies (Upper Primary)"
+  },
+  {
+    "id": 13,
+    "adminRole": "Director of Studies (Lower Primary)"
+  }
+]

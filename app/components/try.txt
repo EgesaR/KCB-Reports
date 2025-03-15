@@ -1,3 +1,26 @@
+const options: Option[] = [
+  { value: "1", title: "English Language", type: "Language", color: "text-blue-400 border-blue-400", Icon: FaLanguage },
+  { value: "2", title: "Mathematics", type: "Science", color: "text-green-400 border-green-400", Icon: FaAtom },
+  { value: "3", title: "History and Political Education", type: "Social Studies", color: "text-yellow-400 border-yellow-400", Icon: FaBook },
+  { value: "4", title: "Geography", type: "Social Studies", color: "text-yellow-400 border-yellow-400", Icon: FaBook },
+  { value: "5", title: "Biology", type: "Science", color: "text-green-400 border-green-400", Icon: FaFlask },
+  { value: "6", title: "Physics", type: "Science", color: "text-green-400 border-green-400", Icon: FaAtom },
+  { value: "7", title: "Chemistry", type: "Science", color: "text-green-400 border-green-400", Icon: FaFlask },
+  { value: "8", title: "Physical Education", type: "Sports", color: "text-red-400 border-red-400", Icon: FaSeedling },
+  { value: "9", title: "Religious Education [CRE or IRE]", type: "Religion", color: "text-purple-400 border-purple-400", Icon: FaBook },
+  { value: "10", title: "Entrepreneurship", type: "Business", color: "text-orange-400 border-orange-400", Icon: FaCode, disabled: true },
+  { value: "11", title: "ICT", type: "Technology", color: "text-cyan-400 border-cyan-400", Icon: FaCode },
+  { value: "12", title: "Art and Design", type: "Arts", color: "text-pink-400 border-pink-400", Icon: FaPaintBrush },
+  { value: "13", title: "Performing Arts", type: "Arts", color: "text-pink-400 border-pink-400", Icon: FaTheaterMasks },
+  { value: "14", title: "Technology and Design", type: "Technology", color: "text-cyan-400 border-cyan-400", Icon: FaCode },
+  { value: "15", title: "Nutrition and Food Technology", type: "Science", color: "text-green-400 border-green-400", Icon: FaFlask },
+  { value: "16", title: "Agriculture", type: "Agriculture", color: "text-emerald-400 border-emerald-400", Icon: FaSeedling },
+];
+
+
+
+
+
 import { useState } from "react";
 import { useStore } from "@nanostores/react";
 import { user } from "./StepProvider";

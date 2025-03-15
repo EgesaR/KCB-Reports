@@ -1,0 +1,268 @@
+{
+  "subjects": [
+    "English Language",
+    "Mathematics",
+    "History and Political Education",
+    "Geography",
+    "Biology",
+    "Physics",
+    "Chemistry",
+    "Physical Education",
+    "Religious Education (CRE or IRE)",
+    "Entrepreneurship Education",
+    "Information and Communication Technology (ICT)",
+    "Art and Design",
+    "Performing Arts",
+    "Technology and Design",
+    "Nutrition and Food Technology",
+    "Agriculture",
+    "Foreign Languages",
+    "Kiswahili",
+    "Literature in English",
+    "Local Languages"
+  ],
+  "classes": [
+    "Senior 1 (S1)",
+    "Senior 2 (S2)",
+    "Senior 3 (S3)",
+    "Senior 4 (S4)",
+    "Senior 5 (S5)",
+    "Senior 6 (S6)"
+  ],
+  "schools": [
+    {
+      "name": "Gayaza High School",
+      "badge_url": "https://placeholder.com/school1"
+    },
+    {
+      "name": "Namilyango College",
+      "badge_url": "https://placeholder.com/school2"
+    },
+    {
+      "name": "Kibuli Secondary School",
+      "badge_url": "https://placeholder.com/school3"
+    },
+    {
+      "name": "St. Mary’s College Kisubi",
+      "badge_url": "https://placeholder.com/school4"
+    },
+    {
+      "name": "King's College Budo",
+      "badge_url": "https://placeholder.com/school5"
+    },
+    {
+      "name": "Makerere College School",
+      "badge_url": "https://placeholder.com/school6"
+    },
+    {
+      "name": "Mt. St. Mary's Namagunga",
+      "badge_url": "https://placeholder.com/school7"
+    },
+    { "name": "Ntare School", "badge_url": "https://placeholder.com/school8" },
+    { "name": "Jinja College", "badge_url": "https://placeholder.com/school9" },
+    {
+      "name": "Busoga College Mwiri",
+      "badge_url": "https://placeholder.com/school10"
+    },
+    {
+      "name": "St. Henry’s College Kitovu",
+      "badge_url": "https://placeholder.com/school11"
+    },
+    {
+      "name": "Masaka Secondary School",
+      "badge_url": "https://placeholder.com/school12"
+    },
+    {
+      "name": "Mbarara High School",
+      "badge_url": "https://placeholder.com/school13"
+    },
+    {
+      "name": "Seeta High School",
+      "badge_url": "https://placeholder.com/school14"
+    },
+    {
+      "name": "Bishop Cipriano Kihangire",
+      "badge_url": "https://placeholder.com/school15"
+    },
+    {
+      "name": "Trinity College Nabbingo",
+      "badge_url": "https://placeholder.com/school16"
+    },
+    {
+      "name": "Kawempe Muslim Secondary School",
+      "badge_url": "https://placeholder.com/school17"
+    },
+    {
+      "name": "Lubiri Secondary School",
+      "badge_url": "https://placeholder.com/school18"
+    },
+    {
+      "name": "Namirembe Hillside High School",
+      "badge_url": "https://placeholder.com/school19"
+    },
+    {
+      "name": "Mengo Senior School",
+      "badge_url": "https://placeholder.com/school20"
+    },
+    {
+      "name": "St. Lawrence Schools and Colleges",
+      "badge_url": "https://placeholder.com/school21"
+    },
+    {
+      "name": "Iganga Secondary School",
+      "badge_url": "https://placeholder.com/school22"
+    },
+    {
+      "name": "Lubiri High School",
+      "badge_url": "https://placeholder.com/school23"
+    },
+    {
+      "name": "Tororo Girls School",
+      "badge_url": "https://placeholder.com/school24"
+    },
+    {
+      "name": "Kibuli High School",
+      "badge_url": "https://placeholder.com/school25"
+    },
+    {
+      "name": "St. Joseph's Nsambya",
+      "badge_url": "https://placeholder.com/school26"
+    },
+    {
+      "name": "Aga Khan High School",
+      "badge_url": "https://placeholder.com/school27"
+    },
+    {
+      "name": "Victoria High School",
+      "badge_url": "https://placeholder.com/school28"
+    },
+    {
+      "name": "Our Lady of Africa SS",
+      "badge_url": "https://placeholder.com/school29"
+    },
+    {
+      "name": "Ndejje Secondary School",
+      "badge_url": "https://placeholder.com/school30"
+    },
+    {
+      "name": "Katikamu SDA Secondary School",
+      "badge_url": "https://placeholder.com/school31"
+    },
+    {
+      "name": "Light Academy Secondary School",
+      "badge_url": "https://placeholder.com/school32"
+    },
+    {
+      "name": "Bweranyangi Girls’ Secondary School",
+      "badge_url": "https://placeholder.com/school33"
+    },
+    {
+      "name": "Teso College Aloet",
+      "badge_url": "https://placeholder.com/school34"
+    },
+    {
+      "name": "Maryhill High School",
+      "badge_url": "https://placeholder.com/school35"
+    },
+    {
+      "name": "Kigezi High School",
+      "badge_url": "https://placeholder.com/school36"
+    },
+    {
+      "name": "St. Peter's SS Naalya",
+      "badge_url": "https://placeholder.com/school37"
+    },
+    {
+      "name": "Soroti Secondary School",
+      "badge_url": "https://placeholder.com/school38"
+    },
+    {
+      "name": "Kyambogo College School",
+      "badge_url": "https://placeholder.com/school39"
+    },
+    {
+      "name": "Lira Town College",
+      "badge_url": "https://placeholder.com/school40"
+    },
+    {
+      "name": "Kitende Secondary School",
+      "badge_url": "https://placeholder.com/school41"
+    },
+    {
+      "name": "Kassanda Secondary School",
+      "badge_url": "https://placeholder.com/school42"
+    },
+    {
+      "name": "Kololo Senior Secondary School",
+      "badge_url": "https://placeholder.com/school43"
+    },
+    {
+      "name": "Caltec Academy Makerere",
+      "badge_url": "https://placeholder.com/school44"
+    },
+    {
+      "name": "St. Balikuddembe Mitala Maria",
+      "badge_url": "https://placeholder.com/school45"
+    },
+    {
+      "name": "Luwero Secondary School",
+      "badge_url": "https://placeholder.com/school46"
+    },
+    {
+      "name": "St. Julian High School Gayaza",
+      "badge_url": "https://placeholder.com/school47"
+    },
+    {
+      "name": "Gombe Secondary School",
+      "badge_url": "https://placeholder.com/school48"
+    },
+    {
+      "name": "St. Andrew Kaggwa Gombe High School",
+      "badge_url": "https://placeholder.com/school49"
+    },
+    {
+      "name": "Kitgum Comprehensive College",
+      "badge_url": "https://placeholder.com/school50"
+    },
+    {
+      "name": "Nabisunsa Girls School",
+      "badge_url": "https://placeholder.com/school51"
+    },
+    {
+      "name": "Kilembe Secondary School",
+      "badge_url": "https://placeholder.com/school52"
+    },
+    {
+      "name": "Iganga High School",
+      "badge_url": "https://placeholder.com/school53"
+    },
+    {
+      "name": "St. Charles Lwanga Kasasa",
+      "badge_url": "https://placeholder.com/school54"
+    },
+    {
+      "name": "Kabale Secondary School",
+      "badge_url": "https://placeholder.com/school55"
+    },
+    {
+      "name": "Busia Secondary School",
+      "badge_url": "https://placeholder.com/school56"
+    },
+    {
+      "name": "St. Kalemba Secondary School",
+      "badge_url": "https://placeholder.com/school57"
+    },
+    {
+      "name": "Tororo Progressive Academy",
+      "badge_url": "https://placeholder.com/school58"
+    },
+    {
+      "name": "Kamwokya Christian School",
+      "badge_url": "https://placeholder.com/school59"
+    },
+    {
+      "name": "Mvara Secondary School",
+      "badge_url": "https://placeholder.com/school60"
+    }
+  ]
+}
