@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -24,8 +25,8 @@ model Blog {
 
 model Category {
   id    String           @id @default(uuid())
-  name  String           @unique // Unique category name
-  posts PostCategories[] // Many-to-Many relation with posts
+  name  String           @unique
+  posts PostCategories[]
 }
 
 model Page {
@@ -58,7 +59,7 @@ model Post {
   updatedAt        DateTime         @updatedAt
   status           String           @default("published")
   blog             Blog             @relation(fields: [blogId], references: [id])
-  categories       PostCategories[] // Many-to-Many relation with categories
+  categories       PostCategories[]
   relatedPostsFrom RelatedPosts[]   @relation("PostToRelatedPosts")
   relatedPostsTo   RelatedPosts[]   @relation("PostToRelatedPosts_Related")
 
@@ -83,48 +84,30 @@ model RelatedPosts {
   @@id([postId, relatedPostId])
 }
 
-enum RoleEnum {
-  ADMIN
-  PARENT
-  TEACHER
-}
-
 model User {
-  id         String     @id @default(uuid())
-  name       String
-  email      String     @unique
-  password   String
-  // Instead of a primitive list for roles, we use a relation to UserRole join table
-  roles      UserRole[]
-  profileUrl String?
-  dob        DateTime?
-  bio        String?
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-
-  // Optional one-to-one teacher profile
-  teacherProfile TeacherProfile?
-
-  // Report tasks created by admin
-  reportTasks ReportTask[] @relation("AdminReportTasks")
-
-  // Back-relation for tasks assigned to a teacher
-  teacherReportTasks ReportTask[] @relation("TeacherReportTasks")
-
-  // Back-relations for marks:
-  teacherMarks Mark[] @relation("TeacherMarks")
-  adminMarks   Mark[] @relation("AdminMarks")
-  parentMarks  Mark[] @relation("ParentMarks")
-
-  // Relation to students (e.g., as parents)
-  students Student[] @relation("UserStudents")
+  id                 String          @id @default(uuid())
+  name               String
+  email              String          @unique
+  password           String
+  profileUrl         String?
+  dob                DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  roles              UserRole[]
+  teacherProfile     TeacherProfile?
+  reportTasks        ReportTask[]    @relation("AdminReportTasks")
+  teacherReportTasks ReportTask[]    @relation("TeacherReportTasks")
+  teacherMarks       Mark[]          @relation("TeacherMarks")
+  adminMarks         Mark[]          @relation("AdminMarks")
+  parentMarks        Mark[]          @relation("ParentMarks")
+  students           Student[]       @relation("UserStudents")
 }
 
 model UserRole {
   id     String   @id @default(uuid())
   role   RoleEnum
-  user   User     @relation(fields: [userId], references: [id])
   userId String
+  user   User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, role])
 }
@@ -132,13 +115,12 @@ model UserRole {
 model TeacherProfile {
   id              String       @id @default(uuid())
   userId          String       @unique
-  user            User         @relation(fields: [userId], references: [id])
-  subjects        String // You might change this to a relation if needed
+  subjects        String
   classes         String
   streams         String
-  // Many-to-many relation with Department; implicit many-to-many
-  departments     Department[]
   departmentGroup String?
+  user            User         @relation(fields: [userId], references: [id])
+  departments     Department[]
 }
 
 model Department {
@@ -152,29 +134,17 @@ model ReportTask {
   title       String
   description String?
   createdAt   DateTime @default(now())
-  // The admin that created this report task
   createdById String
-  createdBy   User     @relation("AdminReportTasks", fields: [createdById], references: [id])
-  // Optional relation to a teacher
   teacherId   String?
+  createdBy   User     @relation("AdminReportTasks", fields: [createdById], references: [id])
   teacher     User?    @relation("TeacherReportTasks", fields: [teacherId], references: [id])
 }
 
 model Student {
-  id             String    @id @default(uuid())
-  name           String
-  sex            String
-  schoolId       String
-  lin            String?
-  profileUrl     String?
-  house          String?
-  classEntryDate DateTime?
-  classes        String
-  stream         String
-  subjects       String
-  marks          Mark[]
-  // Relation to users (for example, as parents)
-  users          User[]    @relation("UserStudents")
+  id    String @id @default(uuid())
+  name  String
+  marks Mark[]
+  users User[] @relation("UserStudents")
 }
 
 model Mark {
@@ -183,17 +153,50 @@ model Mark {
   examinationName String
   mark            Float
   createdAt       DateTime @default(now())
+  studentId       String
+  teacherId       String?
+  adminId         String?
+  parentId        String?
+  student         Student  @relation(fields: [studentId], references: [id])
+  teacher         User?    @relation("TeacherMarks", fields: [teacherId], references: [id])
+  admin           User?    @relation("AdminMarks", fields: [adminId], references: [id])
+  parent          User?    @relation("ParentMarks", fields: [parentId], references: [id])
+}
 
-  studentId String
-  student   Student @relation(fields: [studentId], references: [id])
+model School {
+  id      String  @id
+  name    String  @unique
+  address String?
+}
 
-  // Optional relations with teacher, admin, parent
-  teacherId String?
-  teacher   User?   @relation("TeacherMarks", fields: [teacherId], references: [id])
+model SchoolAssociation {
+  id       String @id
+  userId   String
+  schoolId String
 
-  adminId String?
-  admin   User?   @relation("AdminMarks", fields: [adminId], references: [id])
+  @@unique([userId, schoolId])
+}
 
-  parentId String?
-  parent   User?   @relation("ParentMarks", fields: [parentId], references: [id])
+model DepartmentToTeacherProfile {
+  A String
+  B String
+
+  @@unique([A, B], map: "_DepartmentToTeacherProfile_AB_unique")
+  @@index([B], map: "_DepartmentToTeacherProfile_B_index")
+  @@map("_DepartmentToTeacherProfile")
+}
+
+model UserStudents {
+  A String
+  B String
+
+  @@unique([A, B], map: "_UserStudents_AB_unique")
+  @@index([B], map: "_UserStudents_B_index")
+  @@map("_UserStudents")
+}
+
+enum RoleEnum {
+  ADMIN
+  PARENT
+  TEACHER
 }
