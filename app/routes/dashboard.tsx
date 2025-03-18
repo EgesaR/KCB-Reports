@@ -27,6 +27,9 @@ export default function Dashboard() {
         />
       </div>
       <Sidebar />
+      <div className="h-full w-[95%] px-4">
+
+      </div>
     </div>
   );
 }
