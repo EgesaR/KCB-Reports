@@ -27,8 +27,11 @@ export default function Dashboard() {
         />
       </div>
       <Sidebar />
-      <div className="h-full w-[95%] px-4">
-
+      <div className="h-full w-[95%] px-8 py-6">
+          <div>
+          <h1 className="text-3xl">Hi there</h1>
+            
+          </div>
       </div>
     </div>
   );
