@@ -1,3 +1,16 @@
+<div>
+          <h1 className="text-3xl">Hi there</h1>
+        </div>
+
+import {
+  FaCog,
+  FaChartLine,
+  FaRobot,
+  FaQuestionCircle,
+  FaUsers,
+  FaSync,
+} from "react-icons/fa";
+
 const options: Option[] = [
   { value: "1", title: "English Language", type: "Language", color: "text-blue-400 border-blue-400", Icon: FaLanguage },
   { value: "2", title: "Mathematics", type: "Science", color: "text-green-400 border-green-400", Icon: FaAtom },

@@ -1,5 +1,6 @@
 // app/routes/dashboard.tsx
 import { LoaderFunction, redirect } from "@remix-run/node";
+import { Outlet } from "@remix-run/react";
 import Sidebar from "~/components/Sidebar";
 import { getUserSession } from "~/utils/session.server";
 
@@ -23,15 +24,12 @@ export default function Dashboard() {
             clipPath:
               "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.7%, 76.1% 97.7%, 74.1% 44.1%)",
           }}
-          className="mx-auto aspect-[1155/678] w-[72.1875rem] bg-gradient-to-tr from-[#ff80b5]/50 to-[#9089fc]/50 opacity-30"
+          className="mx-auto aspect-[1155/678] w-[72.1875rem] bg-gradient-to-tr from-[#ff80b5]/70 via-[#9089fc]/50 to-[#6495ED]/30 opacity-30"
         />
       </div>
       <Sidebar />
       <div className="h-full w-[95%] px-8 py-6 bg-transparent">
-          <div>
-          <h1 className="text-3xl">Hi there</h1>
-            
-          </div>
+        <Outlet />
       </div>
     </div>
   );
