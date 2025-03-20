@@ -1,6 +1,7 @@
 // app/routes/dashboard.tsx
 import { LoaderFunction, redirect } from "@remix-run/node";
 import { Outlet } from "@remix-run/react";
+import Navbar from "~/components/ui/Navbar";
 import Sidebar from "~/components/Sidebar";
 import { getUserSession } from "~/utils/session.server";
 
@@ -28,8 +29,30 @@ export default function Dashboard() {
         />
       </div>
       <Sidebar />
-      <div className="h-full w-[95%] px-8 py-6 bg-transparent">
-        <Outlet />
+      <div className="h-full w-[95%] pl-8 pr-4 pt-1 pb-4 bg-transparent relative">
+        {/* Fixed Navbar */}
+        <div className="h-[5.5%] w-full bg-red-500 absolute top-0 left-0 z-10">
+          <Navbar />
+        </div>
+
+        {/* Scrollable Content */}
+        <div
+          className="h-full w-full pt-[7%] pr-1 mt-2.5 overflow-y-scroll"
+          style={{
+            scrollbarWidth: "none", // Firefox
+            msOverflowStyle: "none", // Internet Explorer/Edge
+          }}
+        >
+          <style>
+            {`
+      /* For Webkit-based browsers like Chrome, Safari */
+      ::-webkit-scrollbar {
+        display: none;
+      }
+      `}
+          </style>
+          <Outlet />
+        </div>
       </div>
     </div>
   );

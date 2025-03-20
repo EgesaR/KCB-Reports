@@ -10,6 +10,8 @@ import {
 import { BiHomeSmile, BiSolidHomeSmile } from "react-icons/bi";
 import { useLocation } from "@remix-run/react"; // Use Remix's `useLocation`
 import { Link } from "@remix-run/react";
+import { FiMenu } from "react-icons/fi";
+import { HomeIcon } from "@heroicons/react/16/solid";
 
 interface SidebarBtnProps {
   text: string;
@@ -89,49 +91,18 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <div className="flex h-screen w-16 flex-col justify-between border-e border-gray-100 bg-white transition-width duration-500">
-      {/* Logo Section */}
-      <div>
-        <div className="inline-flex items-center justify-center p-4">
-          <span className="grid h-10 w-10 place-content-center rounded-lg bg-gray-100 text-xs text-gray-600">
-            L
-          </span>
+    <div className="flex h-screen w-14 flex-col justify-center items-center border-e border-gray-100 bg-[#fef7ff] transition-width duration-500">
+      <div className=" h-full w-full flex flex-col justify-between items-center py-5">
+        <button className="grid place-content-center h-8 w-8 rounded-full hover:bg-gray-200">
+          <FiMenu />
+        </button>
+        <div>
+          <button className="w-full h-10 flex flex-col gap-1 justify-center items-center bg-red-400">
+            <HomeIcon className="size-20" />
+            <span className="">Home</span>
+          </button>
         </div>
-
-        {/* Main Navigation */}
-        <div className="border-t border-gray-100">
-          <div className="px-2 py-4 flex flex-col gap-2.5">
-            {mainButtons.map((button, index) => (
-              <SidebarBtn
-                key={index}
-                text={button.text}
-                icon={button.icon}
-                activeIcon={button.activeIcon}
-                route={button.route}
-                active={location.pathname === button.route}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Navigation */}
-      <div className="border-t border-gray-100 bg-white px-2 py-4 flex flex-col gap-2">
-        {bottomButtons.map((button, index) => (
-          <SidebarBtn
-            key={index}
-            text={button.text}
-            icon={button.icon}
-            route={button.route}
-            active={location.pathname === button.route}
-          />
-        ))}
-        <Link
-          to="/logout"
-          className="group flex w-full justify-center rounded-lg px-2 py-1.5 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-        >
-          Logout
-        </Link>
+        <div>Hello</div>
       </div>
     </div>
   );
