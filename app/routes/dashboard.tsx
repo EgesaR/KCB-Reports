@@ -1,8 +1,8 @@
 // app/routes/dashboard.tsx
 import { LoaderFunction, redirect } from "@remix-run/node";
 import { Outlet } from "@remix-run/react";
-import Navbar from "~/components/ui/Navbar";
-import Sidebar from "~/components/Sidebar";
+//import Sidebar from "~/components/Sidebar";
+//import Navbar from "~/components/ui/Navbar";
 import { getUserSession } from "~/utils/session.server";
 
 export let loader: LoaderFunction = async ({ request }) => {
@@ -28,11 +28,11 @@ export default function Dashboard() {
           className="mx-auto aspect-[1155/678] w-[72.1875rem] bg-gradient-to-tr from-[#ff80b5]/70 via-[#9089fc]/50 to-[#6495ED]/30 opacity-30"
         />
       </div>
-      <Sidebar />
+      {/*<Sidebar />*/}
       <div className="h-full w-[95%] pl-8 pr-4 pt-1 pb-4 bg-transparent relative">
         {/* Fixed Navbar */}
         <div className="h-[5.5%] w-full bg-red-500 absolute top-0 left-0 z-10">
-          <Navbar />
+          {/*<Navbar />*/}
         </div>
 
         {/* Scrollable Content */}

@@ -1,6 +1,5 @@
 import { MetaFunction } from "@remix-run/node";
 import { useState, useEffect } from "react";
-import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { Field, Label, Switch } from "@headlessui/react";
 import { MoonIcon, SunIcon } from "@heroicons/react/24/solid";
 
