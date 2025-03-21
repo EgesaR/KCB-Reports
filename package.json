@@ -27,6 +27,7 @@
     "@tailwindcss/vite": "^4.0.6",
     "@tidbcloud/prisma-adapter": "^5.20.0",
     "@tidbcloud/serverless": "^0.2.0",
+    "@types/pino": "^7.0.5",
     "axios": "^1.8.3",
     "bcryptjs": "^3.0.2",
     "clsx": "^2.1.1",
