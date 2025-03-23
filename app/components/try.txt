@@ -1,226 +1,232 @@
-<div>
-        <div className="inline-flex items-center justify-center p-4">
-          <span className="grid h-10 w-10 place-content-center rounded-lg bg-gray-100 text-xs text-gray-600">
-            L
-          </span>
-        </div>
+import React, { useState } from "react";
+import { BiHomeSmile, BiSolidHomeSmile } from "react-icons/bi";
+import { MdMenu } from "react-icons/md";
+import { FaChartLine, FaRobot, FaUsers, FaSync } from "react-icons/fa";
+import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence, Variants } from "framer-motion";
+import { useSwipeable } from "react-swipeable";
+import { RxCross2 } from "react-icons/rx";
 
-        {/* Main Navigation */}
-        <div className="border-t border-gray-100">
-          <div className="px-2 py-4 flex flex-col gap-2.5">
-            {mainButtons.map((button, index) => (
-              <SidebarBtn
-                key={index}
-                text={button.text}
-                icon={button.icon}
-                activeIcon={button.activeIcon}
-                route={button.route}
-                active={location.pathname === button.route}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Navigation */}
-      <div className="border-t border-gray-100 bg-white px-2 py-4 flex flex-col gap-2">
-        {bottomButtons.map((button, index) => (
-          <SidebarBtn
-            key={index}
-            text={button.text}
-            icon={button.icon}
-            route={button.route}
-            active={location.pathname === button.route}
-          />
-        ))}
-        <Link
-          to="/logout"
-          className="group flex w-full justify-center rounded-lg px-2 py-1.5 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-        >
-          Logout
-        </Link>
-      </div>
-
-<div>
-          <h1 className="text-3xl">Hi there</h1>
-        </div>
-
-import {
-  FaCog,
-  FaChartLine,
-  FaRobot,
-  FaQuestionCircle,
-  FaUsers,
-  FaSync,
-} from "react-icons/fa";
-
-const options: Option[] = [
-  { value: "1", title: "English Language", type: "Language", color: "text-blue-400 border-blue-400", Icon: FaLanguage },
-  { value: "2", title: "Mathematics", type: "Science", color: "text-green-400 border-green-400", Icon: FaAtom },
-  { value: "3", title: "History and Political Education", type: "Social Studies", color: "text-yellow-400 border-yellow-400", Icon: FaBook },
-  { value: "4", title: "Geography", type: "Social Studies", color: "text-yellow-400 border-yellow-400", Icon: FaBook },
-  { value: "5", title: "Biology", type: "Science", color: "text-green-400 border-green-400", Icon: FaFlask },
-  { value: "6", title: "Physics", type: "Science", color: "text-green-400 border-green-400", Icon: FaAtom },
-  { value: "7", title: "Chemistry", type: "Science", color: "text-green-400 border-green-400", Icon: FaFlask },
-  { value: "8", title: "Physical Education", type: "Sports", color: "text-red-400 border-red-400", Icon: FaSeedling },
-  { value: "9", title: "Religious Education [CRE or IRE]", type: "Religion", color: "text-purple-400 border-purple-400", Icon: FaBook },
-  { value: "10", title: "Entrepreneurship", type: "Business", color: "text-orange-400 border-orange-400", Icon: FaCode, disabled: true },
-  { value: "11", title: "ICT", type: "Technology", color: "text-cyan-400 border-cyan-400", Icon: FaCode },
-  { value: "12", title: "Art and Design", type: "Arts", color: "text-pink-400 border-pink-400", Icon: FaPaintBrush },
-  { value: "13", title: "Performing Arts", type: "Arts", color: "text-pink-400 border-pink-400", Icon: FaTheaterMasks },
-  { value: "14", title: "Technology and Design", type: "Technology", color: "text-cyan-400 border-cyan-400", Icon: FaCode },
-  { value: "15", title: "Nutrition and Food Technology", type: "Science", color: "text-green-400 border-green-400", Icon: FaFlask },
-  { value: "16", title: "Agriculture", type: "Agriculture", color: "text-emerald-400 border-emerald-400", Icon: FaSeedling },
-];
-
-
-
-
-
-import { useState } from "react";
-import { useStore } from "@nanostores/react";
-import { user } from "./StepProvider";
-
-const PersonalInfo = () => {
-  const userInfo = useStore(user);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [dob, setDob] = useState("");
-  const [bio, setBio] = useState("");
-  const [profileUrl, setProfileUrl] = useState("");
-
-  const handleSave = () => {
-    user.set({ ...userInfo, name, email, phone, dob, bio, profileUrl });
-  };
-
-  return (
-    <div className="flex flex-col space-y-4">
-      <input
-        type="text"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        className="border p-2 rounded"
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="border p-2 rounded"
-      />
-      <input
-        type="tel"
-        placeholder="Phone"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-        className="border p-2 rounded"
-      />
-      <input
-        type="date"
-        placeholder="Date of Birth"
-        value={dob}
-        onChange={(e) => setDob(e.target.value)}
-        className="border p-2 rounded"
-      />
-      <textarea
-        placeholder="Bio"
-        value={bio}
-        onChange={(e) => setBio(e.target.value)}
-        className="border p-2 rounded"
-      />
-      <input
-        type="url"
-        placeholder="Profile URL"
-        value={profileUrl}
-        onChange={(e) => setProfileUrl(e.target.value)}
-        className="border p-2 rounded"
-      />
-      <button
-        onClick={handleSave}
-        className="bg-blue-600 text-white p-2 rounded"
-      >
-        Save
-      </button>
-    </div>
-  );
-};
-
-export default PersonalInfo;
-
-
-
-import { useStore } from "@nanostores/react";
-import { motion } from "framer-motion";
-import { currentStep } from "./StepProvider";
-
-const indicator = {
-  active: {
-    backgroundColor: "var(--pastel-blue)",
-    color: "var(--marine-blue)",
-  },
-  inactive: {
-    backgroundColor: "rgba(0,0,0,0)",
-    color: "rgba(255,255,255,1)",
-  },
-};
-
-function StepIndicator() {
-  const $currentStep = useStore(currentStep);
-
-  return (
-    <ul>
-      <li className={`step-indicator`}>
-        <motion.span
-          animate={$currentStep === 1 ? "active" : "inactive"}
-          variants={indicator}
-        >
-          1
-        </motion.span>
-        <div>
-          <p>Step 1</p>
-          <h2>Your info</h2>
-        </div>
-      </li>
-      <li className={`step-indicator`}>
-        <motion.span
-          animate={$currentStep === 2 ? "active" : "inactive"}
-          variants={indicator}
-        >
-          2
-        </motion.span>
-        <div>
-          <p>Step 2</p>
-          <h2>Select plan</h2>
-        </div>
-      </li>
-      <li className={`step-indicator`}>
-        <motion.span
-          animate={$currentStep === 3 ? "active" : "inactive"}
-          variants={indicator}
-        >
-          3
-        </motion.span>
-        <div>
-          <p>Step 3</p>
-          <h2>Add-ons</h2>
-        </div>
-      </li>
-      <li className={`step-indicator`}>
-        <motion.span
-          animate={$currentStep >= 4 ? "active" : "inactive"}
-          variants={indicator}
-        >
-          4
-        </motion.span>
-        <div>
-          <p>Step 4</p>
-          <h2>Summary</h2>
-        </div>
-      </li>
-    </ul>
-  );
+interface NavigationRailButtonProps {
+  text: string;
+  icon: React.ReactElement;
+  active?: boolean;
+  badgeCount?: number;
+  expanded?: boolean;
+  index?: number;
 }
 
-export default StepIndicator;
+const NavigationRailButton: React.FC<NavigationRailButtonProps> = ({
+  text,
+  icon,
+  active,
+  badgeCount,
+  expanded = false,
+  index = 0,
+}) => {
+  const [ripple, setRipple] = useState<{ x: number; y: number } | null>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    setRipple({ x, y });
+    setTimeout(() => setRipple(null), 600);
+  };
+
+  const badgeContent =
+    badgeCount !== undefined
+      ? badgeCount > 50
+        ? "50+"
+        : badgeCount.toString()
+      : null;
+
+  return (
+    <motion.div
+      className={`w-full flex ${
+        expanded ? "flex-row items-center" : "flex-col"
+      } gap-${expanded ? "4" : "6"} group relative ${
+        expanded ? "h-[36px] rounded-[50px] px-4" : ""
+      } ${expanded && active ? "bg-[#E8DEF8] dark:bg-[#4A4458]" : ""}`}
+      variants={buttonVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      custom={index}
+    >
+      <div className="flex items-center justify-center relative">
+        {React.cloneElement(icon, {
+          className: `size-5 z-10 group-hover:text-[#4A4458] dark:group-hover:text-[#E8DEF8] ${
+            active ? "text-[#4A4458] dark:text-[#E8DEF8]" : ""
+          }`,
+        })}
+        {!expanded && (
+          <div
+            className="w-[42px] h-[24px] rounded-[12px] absolute -top-[10%] overflow-hidden"
+            onClick={handleClick}
+          >
+            <motion.div
+              className="w-full h-full bg-[#E8DEF8] dark:bg-[#4A4458]"
+              initial={{ scale: 0, borderRadius: "50%" }}
+              animate={{
+                scale: active ? 1 : 0,
+                borderRadius: active ? "12px" : "50%",
+              }}
+              whileHover={{
+                scale: 1,
+                borderRadius: "12px",
+              }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+            />
+            {ripple && (
+              <motion.div
+                className="absolute w-10 h-10 bg-[#4A4458] dark:bg-[#E8DEF8] opacity-50 rounded-full"
+                initial={{ scale: 0, opacity: 1 }}
+                animate={{ scale: 3, opacity: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                style={{
+                  left: ripple.x - 20,
+                  top: ripple.y - 20,
+                }}
+              />
+            )}
+          </div>
+        )}
+      </div>
+      {/* Label - Always Visible */}
+      <motion.label
+        className={`text-[12px] font-[500] group-hover:text-[#1D1B20] dark:group-hover:text-[#E6E0E9]/70 ${
+          active ? "text-[#1D1B20] dark:text-[#E6E0E9]/70 font-[600]" : ""
+        }`}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.2 }}
+      >
+        {text}
+      </motion.label>
+      {/* Badge */}
+      {badgeContent && (
+        <div
+          className={`flex items-center justify-center ${
+            expanded ? "ml-auto" : "absolute top-[-20%] right-[21%]"
+          }`}
+        >
+          <div className="w-auto min-w-[12px] h-[12px] flex items-center justify-center px-1 pt-0.5 rounded-full bg-[#B3261E]">
+            <label className="text-[10px] text-white">{badgeContent}</label>
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
+const buttonVariants: Variants = {
+  hidden: { opacity: 0, x: -50 },
+  visible: (index: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { delay: index * 0.1, duration: 0.3, ease: "easeOut" },
+  }),
+  exit: { opacity: 0, x: -50, transition: { duration: 0.2 } },
+};
+
+const mainButtons = [
+  {
+    text: "Dashboard",
+    icon: <BiHomeSmile className="opacity-75" />,
+    activeIcon: <BiSolidHomeSmile className="opacity-75" />,
+    route: "/dashboard",
+  },
+  {
+    text: "Analysis",
+    icon: <FaChartLine className="opacity-75" />,
+    route: "/dashboard/analysis",
+  },
+  {
+    text: "AI",
+    icon: <FaRobot className="opacity-75" />,
+    route: "/dashboard/ai",
+  },
+  {
+    text: "Departments",
+    icon: <FaUsers className="opacity-75" />,
+    route: "/dashboard/departments",
+    badgeCount: 3,
+  },
+  {
+    text: "Updates",
+    icon: <FaSync className="opacity-75" />,
+    route: "/dashboard/updates",
+    badgeCount: 55,
+  },
+];
+
+const NavigationRail = () => {
+  const location = useLocation();
+  const currentRoute = location.pathname;
+  const [expanded, setExpanded] = useState(false);
+
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => setExpanded(false),
+    onSwipedRight: () => setExpanded(true),
+  });
+
+  return (
+    <motion.div
+      className={`h-full bg-[#FEF7FF] dark:bg-[#141218] text-[#49454F] dark:text-[#E1DBE4] pt-6 transition-all duration-300 ease-in-out ${
+        expanded ? "px-5" : ""
+      }`}
+      style={{ width: expanded ? "25%" : "82px" }}
+      {...swipeHandlers}
+    >
+      <div className="w-full h-[42px] flex flex-col justify-center items-center group mb-8">
+        {!expanded && (
+          <div
+            className="w-[36px] h-[36px] transition-all duration-200 ease-in-out rounded-full hover:text-[#1D1B20] hover:bg-[#1D1B20]/8 dark:hover:text-[#E6E0E9] dark:hover:bg-[#E6E0E9]/8 grid place-content-center cursor-pointer"
+            onClick={() => setExpanded(!expanded)}
+          >
+            <MdMenu className="text-[18px]" />
+          </div>
+        )}
+        {expanded && (
+          <div className="w-full flex items-center justify-between">
+            <h1 className="font-semibold text-[20px]">KCB Reports</h1>
+            <div
+              className="w-[36px] h-[36px] transition-all duration-200 ease-in-out rounded-full hover:text-[#1D1B20] hover:bg-[#1D1B20]/8 dark:hover:text-[#E6E0E9] dark:hover:bg-[#E6E0E9]/8 grid place-content-center cursor-pointer"
+              onClick={() => setExpanded(!expanded)}
+            >
+              <RxCross2 className="text-[18px]" />
+            </div>
+          </div>
+        )}
+      </div>
+      <div
+        className={`w-full flex flex-col ${
+          expanded ? "gap-[16px]" : "gap-[28px]"
+        }`}
+      >
+        <AnimatePresence>
+          {mainButtons.map((button, index) => (
+            <Link to={button.route} key={index}>
+              <NavigationRailButton
+                text={button.text}
+                icon={
+                  currentRoute === button.route
+                    ? button.activeIcon || button.icon
+                    : button.icon
+                }
+                active={currentRoute === button.route}
+                badgeCount={button.badgeCount}
+                expanded={expanded}
+                index={index}
+              />
+            </Link>
+          ))}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+};
+
+export default NavigationRail;
