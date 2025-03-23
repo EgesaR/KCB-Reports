@@ -1,6 +1,7 @@
 // app/routes/dashboard.tsx
 import { LoaderFunction, redirect } from "@remix-run/node";
 import { Outlet } from "@remix-run/react";
+import NavigationRail from "~/components/NavigationRail";
 //import Sidebar from "~/components/Sidebar";
 //import Navbar from "~/components/ui/Navbar";
 import { getUserSession } from "~/utils/session.server";
@@ -29,6 +30,7 @@ export default function Dashboard() {
         />
       </div>
       {/*<Sidebar />*/}
+      <NavigationRail />
       <div className="h-full w-[95%] pl-8 pr-4 pt-1 pb-4 bg-transparent relative">
         {/* Fixed Navbar */}
         <div className="h-[5.5%] w-full bg-red-500 absolute top-0 left-0 z-10">
