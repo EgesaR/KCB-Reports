@@ -1,9 +1,9 @@
 // app/routes/dashboard.tsx
 import { LoaderFunction, redirect } from "@remix-run/node";
-import { Outlet } from "@remix-run/react";
+import { Outlet, useMatches } from "@remix-run/react";
 import NavigationRail from "~/components/NavigationRail";
-//import Sidebar from "~/components/Sidebar";
-//import Navbar from "~/components/ui/Navbar";
+import BottomNavigation from "~/components/BottomNavigation";
+import { useEffect, useState } from "react";
 import { getUserSession } from "~/utils/session.server";
 
 export let loader: LoaderFunction = async ({ request }) => {
@@ -15,8 +15,27 @@ export let loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function Dashboard() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check screen size on mount and resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768); // 768px is the breakpoint for mobile
+    };
+
+    // Initial check
+    handleResize();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div className="w-full h-screen flex overflow-hidden isolate relative text-black dark:text-white bg-white dark:bg-gray-950">
+      {/* Background Gradient */}
       <div
         aria-hidden="true"
         className="absolute inset-x-0 -top-3 -z-10 transform-gpu overflow-hidden px-36 blur-3xl"
@@ -29,9 +48,12 @@ export default function Dashboard() {
           className="mx-auto aspect-[1155/678] w-[72.1875rem] bg-gradient-to-tr from-[#ff80b5]/70 via-[#9089fc]/50 to-[#6495ED]/30 opacity-30"
         />
       </div>
-      {/*<Sidebar />*/}
-      <NavigationRail />
-      <div className="h-full w-[95%] pl-8 pr-4 pt-1 pb-4 bg-transparent relative">
+
+      {/* NavigationRail for Big Screens */}
+      {!isMobile && <NavigationRail />}
+
+      {/* Main Content */}
+      <div className="h-full w-full pl-8 pr-4 pt-1 pb-4 bg-transparent relative">
         {/* Fixed Navbar */}
         <div className="h-[5.5%] w-full bg-red-500 absolute top-0 left-0 z-10">
           {/*<Navbar />*/}
@@ -39,7 +61,7 @@ export default function Dashboard() {
 
         {/* Scrollable Content */}
         <div
-          className="h-full w-full pt-[7%] pr-1 mt-2.5 overflow-y-scroll"
+          className="h-full w-full sm:pt-[7%] pr-1 mt-2.5 overflow-y-scroll pt-[16%]"
           style={{
             scrollbarWidth: "none", // Firefox
             msOverflowStyle: "none", // Internet Explorer/Edge
@@ -47,15 +69,18 @@ export default function Dashboard() {
         >
           <style>
             {`
-      /* For Webkit-based browsers like Chrome, Safari */
-      ::-webkit-scrollbar {
-        display: none;
-      }
-      `}
+              /* For Webkit-based browsers like Chrome, Safari */
+              ::-webkit-scrollbar {
+                display: none;
+              }
+            `}
           </style>
           <Outlet />
         </div>
       </div>
+
+      {/* BottomNavigation for Mobile Screens */}
+      {isMobile && <BottomNavigation />}
     </div>
   );
 }
