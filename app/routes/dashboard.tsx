@@ -1,41 +1,92 @@
-// app/routes/dashboard.tsx
-import { LoaderFunction, redirect } from "@remix-run/node";
-import { Outlet, useMatches } from "@remix-run/react";
+import { LoaderFunction, redirect, json } from "@remix-run/node";
+import { Outlet } from "@remix-run/react";
 import NavigationRail from "~/components/NavigationRail";
 import BottomNavigation from "~/components/BottomNavigation";
-import { useEffect, useState } from "react";
-import { getUserSession } from "~/utils/session.server";
 import AppBar from "~/components/ui/AppBar";
+import {
+  DashboardProvider,
+  useDashboardContext,
+} from "~/context/DashboardContext";
+import { getUserSession } from "~/utils/session.server";
+import { prisma } from "~/db.server";
+import { useEffect } from "react";
+import CryptoJS from "crypto-js";
+import { setEncryptedUserData } from "~/stores/user.store";
 
 export let loader: LoaderFunction = async ({ request }) => {
+  // Step 1: Validate the user's session
   const session = await getUserSession(request);
-  if (!session.has("userId")) {
+  const userId = session.get("userId");
+  if (!userId) {
     return redirect("/auth/signin");
   }
-  return null;
+
+  // Step 2: Fetch user data from Prisma
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      profilePicture: true, // Add fields as needed
+    },
+  });
+
+  if (!user) {
+    return redirect("/auth/signin");
+  }
+
+  // Step 3: Encrypt the user data
+  const ENCRYPTION_SECRET = process.env.ENCRYPTION_SECRET!;
+  console.log("ENCRYPTION",ENCRYPTION_SECRET)
+  const encryptedUserData = CryptoJS.AES.encrypt(
+    JSON.stringify(user),
+    ENCRYPTION_SECRET
+  ).toString();
+
+  // Step 4: Return the encrypted user data
+  return json({ encryptedUserData });
 };
 
 export default function Dashboard() {
-  const [isMobile, setIsMobile] = useState(false);
+  return (
+    <DashboardProvider>
+      <DashboardContent />
+    </DashboardProvider>
+  );
+}
 
-  // Check screen size on mount and resize
+function DashboardContent() {
+  const { isMobile, setIsMobile } = useDashboardContext();
+
   useEffect(() => {
+    // Update screen size state
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768); // 768px is the breakpoint for mobile
+      setIsMobile(window.innerWidth < 768); // Mobile breakpoint
     };
 
-    // Initial check
     handleResize();
-
-    // Add event listener for window resize
     window.addEventListener("resize", handleResize);
-
-    // Cleanup
     return () => window.removeEventListener("resize", handleResize);
+  }, [setIsMobile]);
+
+  useEffect(() => {
+    // Fetch encrypted user data from the loader
+    (async () => {
+      const response = await fetch("/dashboard", { method: "GET" });
+      if (response.ok) {
+        const { encryptedUserData } = await response.json();
+        console.log("Encrypted User Data:", encryptedUserData);
+        // Use nanostores or any state manager to decrypt and store data
+        setEncryptedUserData(encryptedUserData); // Example of using a nanostore
+      } else {
+        console.error("Failed to fetch user data.");
+      }
+    })();
   }, []);
 
   return (
-    <div className="w-full h-screen flex overflow-hidden isolate relative text-black dark:text-white bg-white dark:bg-gray-950">
+    <div className="w-full h-screen flex overflow-hidden isolate relative text-black dark:text-white bg-[#FEF7FF] dark:bg-gray-950">
       {/* Background Gradient */}
       <div
         aria-hidden="true"
@@ -56,7 +107,7 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="h-full w-full pl-8 pr-4 pt-1 pb-4 bg-transparent relative">
         {/* Fixed Navbar */}
-        <div className="h-[7.5%] w-full bg-slate-900/40 absolute top-0 left-0 z-10">
+        <div className="h-[7.5%] w-full bg-white/60 dark:bg-slate-900/40 absolute top-0 left-0 z-10">
           <AppBar />
         </div>
 
