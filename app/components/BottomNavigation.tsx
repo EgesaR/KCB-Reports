@@ -30,7 +30,7 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
           {/* Background Highlight for Active State */}
           {active && (
             <motion.div
-              className="absolute -inset-2 bg-[#E8DEF8] dark:bg-[#4A4458] rounded-full"
+              className="absolute -inset-1 -left-2.5 bg-[#E8DEF8] dark:bg-[#4A4458] -z-10 w-[45px] rounded-[50px]"
               layoutId="activeIndicator"
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             />

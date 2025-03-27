@@ -5,6 +5,7 @@ import NavigationRail from "~/components/NavigationRail";
 import BottomNavigation from "~/components/BottomNavigation";
 import { useEffect, useState } from "react";
 import { getUserSession } from "~/utils/session.server";
+import AppBar from "~/components/ui/AppBar";
 
 export let loader: LoaderFunction = async ({ request }) => {
   const session = await getUserSession(request);
@@ -55,8 +56,8 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="h-full w-full pl-8 pr-4 pt-1 pb-4 bg-transparent relative">
         {/* Fixed Navbar */}
-        <div className="h-[5.5%] w-full bg-red-500 absolute top-0 left-0 z-10">
-          {/*<Navbar />*/}
+        <div className="h-[7.5%] w-full bg-slate-900/40 absolute top-0 left-0 z-10">
+          <AppBar />
         </div>
 
         {/* Scrollable Content */}
