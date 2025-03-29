@@ -190,59 +190,96 @@ const NavigationRail = () => {
   });
 
   return (
-    <motion.div
-      className={`h-full bg-[#FEF7FF] dark:bg-[#141218] text-[#49454F] dark:text-[#E1DBE4] pt-6 transition-all duration-300 ease-in-out ${
-        expanded ? "px-5" : ""
-      }`}
-      style={{ width: expanded ? "25%" : "82px" }}
-      {...swipeHandlers}
-    >
-      <div className="w-full h-[42px] flex flex-col justify-center items-center group mb-8">
-        {!expanded && (
-          <div
-            className="w-[36px] h-[36px] transition-all duration-200 ease-in-out rounded-full hover:text-[#1D1B20] hover:bg-[#1D1B20]/8 dark:hover:text-[#E6E0E9] dark:hover:bg-[#E6E0E9]/8 grid place-content-center cursor-pointer"
-            onClick={() => setExpanded(!expanded)}
-          >
-            <MdMenu className="text-[18px]" />
-          </div>
-        )}
-        {expanded && (
-          <div className="w-full flex items-center justify-between">
-            <h1 className="font-semibold text-[20px]">KCB Reports</h1>
+    <AnimatePresence>
+      <motion.div
+        className={`h-full bg-[#FEF7FF] dark:bg-[#141218] text-[#49454F] dark:text-[#E1DBE4] border-r border-gray-900/20 dark:border-gray-100/20 pt-6 transition-all easeInOut duration-400 ${
+          expanded ? "px-5" : ""
+          }`}
+        style={{ width: expanded ? "25%" : "82px" }}
+        {...swipeHandlers}
+      >
+        <div className="w-full h-[42px] flex flex-col justify-center items-center group mb-8">
+          {!expanded && (
             <div
               className="w-[36px] h-[36px] transition-all duration-200 ease-in-out rounded-full hover:text-[#1D1B20] hover:bg-[#1D1B20]/8 dark:hover:text-[#E6E0E9] dark:hover:bg-[#E6E0E9]/8 grid place-content-center cursor-pointer"
               onClick={() => setExpanded(!expanded)}
             >
-              <RxCross2 className="text-[18px]" />
+              <MdMenu className="text-[18px]" />
             </div>
-          </div>
-        )}
-      </div>
-      <div
-        className={`w-full flex flex-col ${
-          expanded ? "gap-[16px]" : "gap-[28px]"
-        }`}
-      >
-        <AnimatePresence>
-          {mainButtons.map((button, index) => (
-            <Link to={button.route} key={index}>
-              <NavigationRailButton
-                text={button.text}
-                icon={
-                  currentRoute === button.route
-                    ? button.activeIcon || button.icon
-                    : button.icon
-                }
-                active={currentRoute === button.route}
-                badgeCount={button.badgeCount}
-                expanded={expanded}
-                index={index}
-              />
-            </Link>
-          ))}
-        </AnimatePresence>
-      </div>
-    </motion.div>
+          )}
+          {expanded && (
+            <AnimatePresence>
+              <div className="w-full flex items-center justify-between">
+                <AnimatePresence>
+                  <motion.h1
+                    initial={{ opacity: 0, width: "60%" }}
+                    animate={{
+                      opacity: 1,
+                      width: "70%",
+                      transition: {
+                        width: {
+                          duration: 0.4,
+                        },
+                        opacity: {
+                          duration: 0.25,
+                          delay: 0.15,
+                        },
+                      },
+                    }}
+                    exit={{
+                      width: "60%",
+                      opacity: 0,
+                      transition: {
+                        width: {
+                          duration: 0.4,
+                        },
+                        opacity: {
+                          duration: 0.3,
+                        },
+                      },
+                    }}
+                    key="title"
+                    className="font-semibold text-[20px] overflow-hidden"
+                  >
+                    KCB Reports
+                  </motion.h1>
+                </AnimatePresence>
+                <div
+                  className="w-[36px] h-[36px] transition-all duration-200 ease-in-out rounded-full hover:text-[#1D1B20] hover:bg-[#1D1B20]/8 dark:hover:text-[#E6E0E9] dark:hover:bg-[#E6E0E9]/8 grid place-content-center cursor-pointer"
+                  onClick={() => setExpanded(!expanded)}
+                >
+                  <RxCross2 className="text-[18px]" />
+                </div>
+              </div>
+            </AnimatePresence>
+          )}
+        </div>
+        <div
+          className={`w-full flex flex-col ${
+            expanded ? "gap-[16px]" : "gap-[28px]"
+          }`}
+        >
+          <AnimatePresence>
+            {mainButtons.map((button, index) => (
+              <Link to={button.route} key={index}>
+                <NavigationRailButton
+                  text={button.text}
+                  icon={
+                    currentRoute === button.route
+                      ? button.activeIcon || button.icon
+                      : button.icon
+                  }
+                  active={currentRoute === button.route}
+                  badgeCount={button.badgeCount}
+                  expanded={expanded}
+                  index={index}
+                />
+              </Link>
+            ))}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 
