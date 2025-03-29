@@ -1,5 +1,5 @@
 import { LoaderFunction, redirect, json } from "@remix-run/node";
-import { Outlet } from "@remix-run/react";
+import { Outlet, useLoaderData } from "@remix-run/react";
 import NavigationRail from "~/components/NavigationRail";
 import BottomNavigation from "~/components/BottomNavigation";
 import AppBar from "~/components/ui/AppBar";
@@ -28,7 +28,8 @@ export let loader: LoaderFunction = async ({ request }) => {
       id: true,
       email: true,
       name: true,
-      profilePicture: true, // Add fields as needed
+      profileUrl: true, // Changed from profilePicture to profileUrl
+      // Add other fields as needed
     },
   });
 
@@ -37,8 +38,11 @@ export let loader: LoaderFunction = async ({ request }) => {
   }
 
   // Step 3: Encrypt the user data
-  const ENCRYPTION_SECRET = process.env.ENCRYPTION_SECRET!;
-  console.log("ENCRYPTION",ENCRYPTION_SECRET)
+  const ENCRYPTION_SECRET = process.env.ENCRYPTION_SECRET;
+  if (!ENCRYPTION_SECRET) {
+    throw new Error("ENCRYPTION_SECRET is not defined");
+  }
+
   const encryptedUserData = CryptoJS.AES.encrypt(
     JSON.stringify(user),
     ENCRYPTION_SECRET
@@ -49,6 +53,15 @@ export let loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function Dashboard() {
+  const { encryptedUserData } = useLoaderData<typeof loader>();
+
+  useEffect(() => {
+    // Store the encrypted user data when it loads
+    if (encryptedUserData) {
+      setEncryptedUserData(encryptedUserData);
+    }
+  }, [encryptedUserData]);
+
   return (
     <DashboardProvider>
       <DashboardContent />
@@ -69,21 +82,6 @@ function DashboardContent() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [setIsMobile]);
-
-  useEffect(() => {
-    // Fetch encrypted user data from the loader
-    (async () => {
-      const response = await fetch("/dashboard", { method: "GET" });
-      if (response.ok) {
-        const { encryptedUserData } = await response.json();
-        console.log("Encrypted User Data:", encryptedUserData);
-        // Use nanostores or any state manager to decrypt and store data
-        setEncryptedUserData(encryptedUserData); // Example of using a nanostore
-      } else {
-        console.error("Failed to fetch user data.");
-      }
-    })();
-  }, []);
 
   return (
     <div className="w-full h-screen flex overflow-hidden isolate relative text-black dark:text-white bg-[#FEF7FF] dark:bg-gray-950">
@@ -115,18 +113,11 @@ function DashboardContent() {
         <div
           className="h-full w-full sm:pt-[7%] pr-1 mt-2.5 overflow-y-scroll pt-[16%]"
           style={{
-            scrollbarWidth: "none", // Firefox
-            msOverflowStyle: "none", // Internet Explorer/Edge
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
           }}
         >
-          <style>
-            {`
-              /* For Webkit-based browsers like Chrome, Safari */
-              ::-webkit-scrollbar {
-                display: none;
-              }
-            `}
-          </style>
+          <style>{`::-webkit-scrollbar { display: none; }`}</style>
           <Outlet />
         </div>
       </div>

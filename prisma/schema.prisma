@@ -1,3 +1,6 @@
+// ======================
+// Configuration
+// ======================
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
@@ -9,36 +12,39 @@ datasource db {
   relationMode = "prisma"
 }
 
+// ======================
+// Enums
+// ======================
+enum RoleEnum {
+  ADMIN
+  PARENT
+  TEACHER
+}
+
+// ======================
+// Admin Domain
+// ======================
+model AdminRole {
+  id        Int             @id @default(autoincrement())
+  roleName  String          @unique
+  userRoles UserAdminRole[]
+}
+
+// ======================
+// Blog Domain
+// ======================
 model Blog {
-  id          String   @id @default(uuid())
+  id          String     @id @default(uuid())
   name        String
   description String
-  imageUrl    String?  @db.VarChar(512)
-  selfLink    String?  @db.VarChar(512)
+  imageUrl    String?    @db.VarChar(512)
+  selfLink    String?    @db.VarChar(512)
   publishedAt DateTime
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime   @updatedAt
   posts       Post[]
   pages       Page[]
 
   @@index([id])
-}
-
-model Category {
-  id    String           @id @default(uuid())
-  name  String           @unique
-  posts PostCategories[]
-}
-
-model Page {
-  id          String   @id @default(uuid())
-  title       String
-  content     String
-  blogId      String
-  publishedAt DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  blog        Blog     @relation(fields: [blogId], references: [id])
-
-  @@index([blogId])
 }
 
 model Post {
@@ -66,6 +72,27 @@ model Post {
   @@index([blogId])
 }
 
+model Category {
+  id    String           @id @default(uuid())
+  name  String           @unique
+  posts PostCategories[]
+}
+
+model Page {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  blogId      String
+  publishedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  blog        Blog     @relation(fields: [blogId], references: [id])
+
+  @@index([blogId])
+}
+
+// ======================
+// Blog Relation Tables
+// ======================
 model PostCategories {
   postId     String
   categoryId String
@@ -84,23 +111,28 @@ model RelatedPosts {
   @@id([postId, relatedPostId])
 }
 
+// ======================
+// User Domain
+// ======================
 model User {
   id                 String          @id @default(uuid())
   name               String
   email              String          @unique
   password           String
   profileUrl         String?
+  profilePicture     String?
   dob                DateTime?
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   roles              UserRole[]
+  adminRoles         UserAdminRole[]
   teacherProfile     TeacherProfile?
   reportTasks        ReportTask[]    @relation("AdminReportTasks")
   teacherReportTasks ReportTask[]    @relation("TeacherReportTasks")
   teacherMarks       Mark[]          @relation("TeacherMarks")
   adminMarks         Mark[]          @relation("AdminMarks")
   parentMarks        Mark[]          @relation("ParentMarks")
-  students           Student[]       @relation("UserStudents")
+  students           UserStudent[]
 }
 
 model UserRole {
@@ -112,39 +144,39 @@ model UserRole {
   @@unique([userId, role])
 }
 
-model TeacherProfile {
-  id              String       @id @default(uuid())
-  userId          String       @unique
-  subjects        String
-  classes         String
-  streams         String
-  departmentGroup String?
-  user            User         @relation(fields: [userId], references: [id])
-  departments     Department[]
+// ======================
+// Education Domain
+// ======================
+model School {
+  id       String  @id @default(uuid())
+  name     String  @unique
+  address  String?
+  badgeUrl String?
 }
 
-model Department {
-  id              String           @id @default(uuid())
-  name            String
-  teacherProfiles TeacherProfile[]
+model SchoolAssociation {
+  id       String @id @default(uuid())
+  userId   String
+  schoolId String
+
+  @@unique([userId, schoolId])
 }
 
-model ReportTask {
-  id          String   @id @default(uuid())
-  title       String
-  description String?
-  createdAt   DateTime @default(now())
-  createdById String
-  teacherId   String?
-  createdBy   User     @relation("AdminReportTasks", fields: [createdById], references: [id])
-  teacher     User?    @relation("TeacherReportTasks", fields: [teacherId], references: [id])
+model Subject {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+}
+
+model Class {
+  id   Int    @id @default(autoincrement())
+  name String @unique
 }
 
 model Student {
   id    String @id @default(uuid())
   name  String
   marks Mark[]
-  users User[] @relation("UserStudents")
+  users UserStudent[]
 }
 
 model Mark {
@@ -163,40 +195,65 @@ model Mark {
   parent          User?    @relation("ParentMarks", fields: [parentId], references: [id])
 }
 
-model School {
-  id      String  @id
-  name    String  @unique
-  address String?
+// ======================
+// Teacher Domain (Fixed)
+// ======================
+model TeacherProfile {
+  id              String                     @id @default(uuid())
+  userId          String                     @unique
+  subjects        String
+  classes         String
+  streams         String
+  departmentGroup String?
+  user            User                       @relation(fields: [userId], references: [id])
+  departments     DepartmentToTeacherProfile[]
 }
 
-model SchoolAssociation {
-  id       String @id
-  userId   String
-  schoolId String
+model Department {
+  id              String                     @id @default(uuid())
+  name            String
+  teacherProfiles DepartmentToTeacherProfile[]
+}
 
-  @@unique([userId, schoolId])
+model ReportTask {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  createdById String
+  teacherId   String?
+  createdBy   User     @relation("AdminReportTasks", fields: [createdById], references: [id])
+  teacher     User?    @relation("TeacherReportTasks", fields: [teacherId], references: [id])
+}
+
+// ======================
+// Relation Tables (Fixed)
+// ======================
+model UserAdminRole {
+  userId      String
+  adminRoleId Int
+  user        User      @relation(fields: [userId], references: [id])
+  adminRole   AdminRole @relation(fields: [adminRoleId], references: [id])
+
+  @@id([userId, adminRoleId])
+}
+
+model UserStudent {
+  userId    String
+  studentId String
+  user      User    @relation(fields: [userId], references: [id])
+  student   Student @relation(fields: [studentId], references: [id])
+
+  @@id([userId, studentId])
 }
 
 model DepartmentToTeacherProfile {
-  A String
-  B String
+  id           String         @id @default(uuid())
+  department   Department     @relation(fields: [departmentId], references: [id])
+  departmentId String
+  profile      TeacherProfile @relation(fields: [profileId], references: [id])
+  profileId    String
 
-  @@unique([A, B], map: "_DepartmentToTeacherProfile_AB_unique")
-  @@index([B], map: "_DepartmentToTeacherProfile_B_index")
-  @@map("_DepartmentToTeacherProfile")
-}
-
-model UserStudents {
-  A String
-  B String
-
-  @@unique([A, B], map: "_UserStudents_AB_unique")
-  @@index([B], map: "_UserStudents_B_index")
-  @@map("_UserStudents")
-}
-
-enum RoleEnum {
-  ADMIN
-  PARENT
-  TEACHER
+  @@unique([departmentId, profileId])
+  @@map("department_teacher_profile")
 }
