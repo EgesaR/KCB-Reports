@@ -8,6 +8,14 @@ declare global {
 
 if (process.env.NODE_ENV === "production") {
   prisma = new PrismaClient();
+
+  prisma.$use(async (params, next) => {
+    if (params.action === "create") {
+      // Add timestamps to create operations
+      params.args.data.date = new Date();
+    }
+    return next(params);
+  });
 } else {
   if (!global.__prisma) {
     global.__prisma = new PrismaClient();

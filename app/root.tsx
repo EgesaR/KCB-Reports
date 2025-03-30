@@ -8,16 +8,16 @@ import {
   useLocation,
   useNavigation,
 } from "@remix-run/react";
-
 import type { LinksFunction } from "@remix-run/node";
 import Navbar from "~/components/Navbar";
 import Footer from "~/components/Footer";
-
 import styles from "./tailwind.css?url";
 import { type IStaticMethods } from "preline/preline";
 import { useEffect } from "react";
 import { ThemeProvider } from "@material-tailwind/react";
- 
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './utils/queryClient';
+
 declare global {
   interface Window {
     HSStaticMethods: IStaticMethods;
@@ -53,14 +53,15 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      {/* Make body full height and use flex to push footer down */}
       <body className="nunito-400 overflow-x-hidden bg-white dark:bg-neutral-950 text-black">
-        {isLoading && (
-          <div className="fixed top-0 left-0 w-full h-1 bg-green-500 animate-pulse z-50" />
-        )}
-        <Outlet />
-        <ScrollRestoration />
-        <Scripts />
+        <QueryClientProvider client={queryClient}>
+          {isLoading && (
+            <div className="fixed top-0 left-0 w-full h-1 bg-green-500 animate-pulse z-50" />
+          )}
+          <Outlet />
+          <ScrollRestoration />
+          <Scripts />
+        </QueryClientProvider>
       </body>
     </html>
   );

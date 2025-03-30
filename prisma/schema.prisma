@@ -2,8 +2,7 @@
 // Configuration
 // ======================
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -21,77 +20,105 @@ enum RoleEnum {
   TEACHER
 }
 
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  ERROR
+  TEST
+  GENERAL
+  ALERT
+  SUCCESS
+}
+
 // ======================
 // Admin Domain
 // ======================
 model AdminRole {
   id        Int             @id @default(autoincrement())
-  roleName  String          @unique
+  roleName  String          @unique @db.VarChar(50)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
   userRoles UserAdminRole[]
+
+  @@index([roleName])
 }
 
 // ======================
 // Blog Domain
 // ======================
 model Blog {
-  id          String     @id @default(uuid())
-  name        String
-  description String
-  imageUrl    String?    @db.VarChar(512)
-  selfLink    String?    @db.VarChar(512)
+  id          String   @id @default(uuid())
+  name        String   @db.VarChar(100)
+  description String   @db.Text
+  imageUrl    String?  @db.VarChar(512)
+  selfLink    String?  @db.VarChar(512)
   publishedAt DateTime
-  updatedAt   DateTime   @updatedAt
+  updatedAt   DateTime @updatedAt
   posts       Post[]
   pages       Page[]
 
-  @@index([id])
+  @@index([publishedAt])
+  @@index([updatedAt])
 }
 
 model Post {
   id               String           @id @default(uuid())
-  slug             String           @unique
-  title            String
-  imageUrl         String?
-  author           String
+  slug             String           @unique @db.VarChar(255)
+  title            String           @db.VarChar(200)
+  imageUrl         String?          @db.VarChar(512)
+  author           String           @db.VarChar(100)
   publishedAt      DateTime         @default(now())
   readingTime      Int?
-  introduction     String?
-  content          String
+  introduction     String?          @db.Text
+  content          String           @db.Text
   tableOfContents  Json?
-  conclusion       String?
-  authorBio        String?
+  conclusion       String?          @db.Text
+  authorBio        String?          @db.VarChar(200)
   blogId           String
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
-  status           String           @default("published")
+  status           PostStatus       @default(PUBLISHED)
   blog             Blog             @relation(fields: [blogId], references: [id])
   categories       PostCategories[]
   relatedPostsFrom RelatedPosts[]   @relation("PostToRelatedPosts")
   relatedPostsTo   RelatedPosts[]   @relation("PostToRelatedPosts_Related")
 
   @@index([blogId])
+  @@index([slug])
+  @@index([publishedAt])
+  @@index([status])
+  @@index([author])
 }
 
 model Category {
   id    String           @id @default(uuid())
-  name  String           @unique
+  name  String           @unique @db.VarChar(50)
   posts PostCategories[]
+
+  @@index([name])
 }
 
 model Page {
   id          String   @id @default(uuid())
-  title       String
-  content     String
+  title       String   @db.VarChar(200)
+  content     String   @db.Text
   blogId      String
   publishedAt DateTime @default(now())
   updatedAt   DateTime @updatedAt
   blog        Blog     @relation(fields: [blogId], references: [id])
 
   @@index([blogId])
+  @@index([title])
 }
 
 // ======================
-// Blog Relation Tables
+// Blog Relations
 // ======================
 model PostCategories {
   postId     String
@@ -100,6 +127,7 @@ model PostCategories {
   category   Category @relation(fields: [categoryId], references: [id])
 
   @@id([postId, categoryId])
+  @@index([categoryId])
 }
 
 model RelatedPosts {
@@ -109,6 +137,7 @@ model RelatedPosts {
   relatedPost   Post   @relation("PostToRelatedPosts_Related", fields: [relatedPostId], references: [id])
 
   @@id([postId, relatedPostId])
+  @@index([relatedPostId])
 }
 
 // ======================
@@ -116,11 +145,11 @@ model RelatedPosts {
 // ======================
 model User {
   id                 String          @id @default(uuid())
-  name               String
-  email              String          @unique
-  password           String
-  profileUrl         String?
-  profilePicture     String?
+  name               String          @db.VarChar(100)
+  email              String          @unique @db.VarChar(255)
+  password           String          @db.VarChar(255)
+  profileUrl         String?         @db.VarChar(512)
+  profilePicture     String?         @db.VarChar(512)
   dob                DateTime?
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
@@ -133,6 +162,10 @@ model User {
   adminMarks         Mark[]          @relation("AdminMarks")
   parentMarks        Mark[]          @relation("ParentMarks")
   students           UserStudent[]
+  notifications      Notification[]  @relation("UserNotifications")
+
+  @@index([email])
+  @@index([createdAt])
 }
 
 model UserRole {
@@ -142,49 +175,88 @@ model UserRole {
   user   User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, role])
+  @@index([role])
+}
+
+// ======================
+// Notification System
+// ======================
+model Notification {
+  id        String           @id @default(uuid())
+  title     String
+  message   String
+  type      NotificationType @default(GENERAL)
+  userId    String
+  user      User             @relation("UserNotifications", fields: [userId], references: [id])
+  date      DateTime         @default(now())
+  read      Boolean          @default(false)
+  archived  Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  metadata  Json?
+
+  @@index([userId])
+  @@index([type])
+  @@index([date])
+  @@map("notifications") // Explicit table name mapping
 }
 
 // ======================
 // Education Domain
 // ======================
 model School {
-  id       String  @id @default(uuid())
-  name     String  @unique
-  address  String?
-  badgeUrl String?
+  id        String   @id @default(uuid())
+  name      String   @unique @db.VarChar(100)
+  address   String?  @db.VarChar(255)
+  badgeUrl  String?  @db.VarChar(512)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
 }
 
 model SchoolAssociation {
-  id       String @id @default(uuid())
-  userId   String
-  schoolId String
+  id        String   @id @default(uuid())
+  userId    String
+  schoolId  String
+  createdAt DateTime @default(now())
 
   @@unique([userId, schoolId])
+  @@index([schoolId])
 }
 
 model Subject {
   id   Int    @id @default(autoincrement())
-  name String @unique
+  name String @unique @db.VarChar(50)
+
+  @@index([name])
 }
 
 model Class {
   id   Int    @id @default(autoincrement())
-  name String @unique
+  name String @unique @db.VarChar(50)
+
+  @@index([name])
 }
 
 model Student {
-  id    String @id @default(uuid())
-  name  String
-  marks Mark[]
-  users UserStudent[]
+  id        String        @id @default(uuid())
+  name      String        @db.VarChar(100)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  marks     Mark[]
+  users     UserStudent[]
+
+  @@index([name])
 }
 
 model Mark {
   id              String   @id @default(uuid())
-  subject         String
-  examinationName String
+  subject         String   @db.VarChar(50)
+  examinationName String   @db.VarChar(100)
   mark            Float
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
   studentId       String
   teacherId       String?
   adminId         String?
@@ -193,58 +265,79 @@ model Mark {
   teacher         User?    @relation("TeacherMarks", fields: [teacherId], references: [id])
   admin           User?    @relation("AdminMarks", fields: [adminId], references: [id])
   parent          User?    @relation("ParentMarks", fields: [parentId], references: [id])
+
+  @@index([studentId])
+  @@index([subject])
+  @@index([createdAt])
 }
 
 // ======================
-// Teacher Domain (Fixed)
+// Teacher Domain
 // ======================
 model TeacherProfile {
-  id              String                     @id @default(uuid())
-  userId          String                     @unique
-  subjects        String
-  classes         String
-  streams         String
-  departmentGroup String?
-  user            User                       @relation(fields: [userId], references: [id])
+  id              String                       @id @default(uuid())
+  userId          String                       @unique
+  subjects        String                       @db.Text
+  classes         String                       @db.Text
+  streams         String                       @db.Text
+  departmentGroup String?                      @db.VarChar(100)
+  createdAt       DateTime                     @default(now())
+  updatedAt       DateTime                     @updatedAt
+  user            User                         @relation(fields: [userId], references: [id])
   departments     DepartmentToTeacherProfile[]
+
+  @@index([userId])
 }
 
 model Department {
-  id              String                     @id @default(uuid())
-  name            String
+  id              String                       @id @default(uuid())
+  name            String                       @db.VarChar(100)
+  createdAt       DateTime                     @default(now())
+  updatedAt       DateTime                     @updatedAt
   teacherProfiles DepartmentToTeacherProfile[]
+
+  @@index([name])
 }
 
 model ReportTask {
   id          String   @id @default(uuid())
-  title       String
-  description String?
+  title       String   @db.VarChar(200)
+  description String?  @db.Text
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   createdById String
   teacherId   String?
   createdBy   User     @relation("AdminReportTasks", fields: [createdById], references: [id])
   teacher     User?    @relation("TeacherReportTasks", fields: [teacherId], references: [id])
+
+  @@index([createdById])
+  @@index([teacherId])
+  @@index([createdAt])
 }
 
 // ======================
-// Relation Tables (Fixed)
+// Relation Tables
 // ======================
 model UserAdminRole {
   userId      String
   adminRoleId Int
+  createdAt   DateTime  @default(now())
   user        User      @relation(fields: [userId], references: [id])
   adminRole   AdminRole @relation(fields: [adminRoleId], references: [id])
 
   @@id([userId, adminRoleId])
+  @@index([adminRoleId])
 }
 
 model UserStudent {
   userId    String
   studentId String
-  user      User    @relation(fields: [userId], references: [id])
-  student   Student @relation(fields: [studentId], references: [id])
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  student   Student  @relation(fields: [studentId], references: [id])
 
   @@id([userId, studentId])
+  @@index([studentId])
 }
 
 model DepartmentToTeacherProfile {
@@ -253,7 +346,10 @@ model DepartmentToTeacherProfile {
   departmentId String
   profile      TeacherProfile @relation(fields: [profileId], references: [id])
   profileId    String
+  createdAt    DateTime       @default(now())
 
   @@unique([departmentId, profileId])
+  @@index([departmentId])
+  @@index([profileId])
   @@map("department_teacher_profile")
 }

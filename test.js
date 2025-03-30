@@ -1,3 +1,45 @@
+// seed.js
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+
+const prisma = new PrismaClient();
+
+async function seed() {
+  try {
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        name: "Egesa Raymond",
+        email: "egesaraymond644@gmail.com",
+        password: await bcrypt.hash("3f7jer03", 10),
+        roles: {
+          create: [{ role: "ADMIN" }],
+        },
+        // Add other required fields from your schema
+        profilePicture: null,
+        dob: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      include: {
+        roles: true,
+      },
+    });
+
+    console.log("Created user:", user);
+  } catch (error) {
+    console.error("Error seeding data:", error);
+    process.exit(1);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+seed()
+  .then(() => process.exit(0))
+  .catch(() => process.exit(1));
+
+  
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -302,44 +344,43 @@ main()
     await prisma.$disconnect();
   });
 
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
 
-  import { PrismaClient } from "@prisma/client";
-  const prisma = new PrismaClient();
+const adminRoles = [
+  { roleName: "Head Teacher" },
+  { roleName: "Deputy Head Teacher" },
+  { roleName: "Head of Department" },
+  { roleName: "Class Teacher" },
+  { roleName: "Bursar" },
+  { roleName: "Games Master/Mistress" },
+  { roleName: "Discipline Coordinator" },
+  { roleName: "Counselor" },
+  { roleName: "Patron/Matron" },
+  { roleName: "Director of Studies (O'Level)" },
+  { roleName: "Director of Studies (A'Level)" },
+  { roleName: "Director of Studies (Upper Primary)" },
+  { roleName: "Director of Studies (Lower Primary)" },
+];
 
-  const adminRoles = [
-    { roleName: "Head Teacher" },
-    { roleName: "Deputy Head Teacher" },
-    { roleName: "Head of Department" },
-    { roleName: "Class Teacher" },
-    { roleName: "Bursar" },
-    { roleName: "Games Master/Mistress" },
-    { roleName: "Discipline Coordinator" },
-    { roleName: "Counselor" },
-    { roleName: "Patron/Matron" },
-    { roleName: "Director of Studies (O'Level)" },
-    { roleName: "Director of Studies (A'Level)" },
-    { roleName: "Director of Studies (Upper Primary)" },
-    { roleName: "Director of Studies (Lower Primary)" },
-  ];
+async function main() {
+  console.log("Seeding admin roles...");
 
-  async function main() {
-    console.log("Seeding admin roles...");
+  await prisma.$transaction([
+    prisma.adminRole.createMany({
+      data: adminRoles,
+      skipDuplicates: true,
+    }),
+  ]);
 
-    await prisma.$transaction([
-      prisma.adminRole.createMany({
-        data: adminRoles,
-        skipDuplicates: true,
-      }),
-    ]);
+  console.log("Admin roles seeded successfully!");
+}
 
-    console.log("Admin roles seeded successfully!");
-  }
-
-  main()
-    .catch((e) => {
-      console.error("Error seeding admin roles:", e);
-      process.exit(1);
-    })
-    .finally(async () => {
-      await prisma.$disconnect();
-    });
+main()
+  .catch((e) => {
+    console.error("Error seeding admin roles:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
