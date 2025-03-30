@@ -18,6 +18,7 @@ enum RoleEnum {
   ADMIN
   PARENT
   TEACHER
+  STUDENT
 }
 
 enum PostStatus {
@@ -36,8 +37,88 @@ enum NotificationType {
   SUCCESS
 }
 
+enum ThemePreference {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
 // ======================
-// Admin Domain
+// User Domain (Enhanced)
+// ======================
+model User {
+  id                 String          @id @default(uuid())
+  name               String          @db.VarChar(100)
+  email              String          @unique @db.VarChar(255)
+  password           String          @db.VarChar(255)
+  profileUrl         String?         @db.VarChar(512)
+  profilePicture     String?         @db.VarChar(512)
+  dob                DateTime?
+  title              String?         @db.VarChar(100)  // Added for settings
+  contact            String?         @db.VarChar(100)  // Added for settings
+  department         String?         @db.VarChar(100)  // Added for settings
+  studentId          String?         @db.VarChar(50)   // Added for settings
+  themePreference    ThemePreference @default(SYSTEM)  // Added for settings
+  accentColor        String?         @default("#3b82f6") // Added for settings
+  highContrast       Boolean         @default(false)   // Added for settings
+  reportFont         String?         @default("Arial") // Added for settings
+  institutionalLogo  String?         @db.VarChar(512)  // Added for settings
+  twoFactorEnabled   Boolean         @default(false)   // Added for settings
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  roles              UserRole[]
+  adminRoles         UserAdminRole[]
+  teacherProfile     TeacherProfile?
+  reportTasks        ReportTask[]    @relation("AdminReportTasks")
+  teacherReportTasks ReportTask[]    @relation("TeacherReportTasks")
+  teacherMarks       Mark[]          @relation("TeacherMarks")
+  adminMarks         Mark[]          @relation("AdminMarks")
+  parentMarks        Mark[]          @relation("ParentMarks")
+  students           UserStudent[]
+  notifications      Notification[]  @relation("UserNotifications")
+  sessions           Session[]       // Added for session management
+  userSubjects       UserSubject[]   // Added for subjects association
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+// Added for session management
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  ipAddress String
+  userAgent String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Enhanced Subject model for many-to-many with users
+model Subject {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique @db.VarChar(50)
+  description String?      @db.Text
+  userSubjects UserSubject[]
+
+  @@index([name])
+}
+
+model UserSubject {
+  userId    String
+  subjectId Int
+  user      User     @relation(fields: [userId], references: [id])
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+
+  @@id([userId, subjectId])
+  @@index([subjectId])
+}
+
+// ======================
+// Rest of your models (unchanged)
 // ======================
 model AdminRole {
   id        Int             @id @default(autoincrement())
@@ -49,9 +130,6 @@ model AdminRole {
   @@index([roleName])
 }
 
-// ======================
-// Blog Domain
-// ======================
 model Blog {
   id          String   @id @default(uuid())
   name        String   @db.VarChar(100)
@@ -117,9 +195,6 @@ model Page {
   @@index([title])
 }
 
-// ======================
-// Blog Relations
-// ======================
 model PostCategories {
   postId     String
   categoryId String
@@ -140,34 +215,6 @@ model RelatedPosts {
   @@index([relatedPostId])
 }
 
-// ======================
-// User Domain
-// ======================
-model User {
-  id                 String          @id @default(uuid())
-  name               String          @db.VarChar(100)
-  email              String          @unique @db.VarChar(255)
-  password           String          @db.VarChar(255)
-  profileUrl         String?         @db.VarChar(512)
-  profilePicture     String?         @db.VarChar(512)
-  dob                DateTime?
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
-  roles              UserRole[]
-  adminRoles         UserAdminRole[]
-  teacherProfile     TeacherProfile?
-  reportTasks        ReportTask[]    @relation("AdminReportTasks")
-  teacherReportTasks ReportTask[]    @relation("TeacherReportTasks")
-  teacherMarks       Mark[]          @relation("TeacherMarks")
-  adminMarks         Mark[]          @relation("AdminMarks")
-  parentMarks        Mark[]          @relation("ParentMarks")
-  students           UserStudent[]
-  notifications      Notification[]  @relation("UserNotifications")
-
-  @@index([email])
-  @@index([createdAt])
-}
-
 model UserRole {
   id     String   @id @default(uuid())
   role   RoleEnum
@@ -178,9 +225,6 @@ model UserRole {
   @@index([role])
 }
 
-// ======================
-// Notification System
-// ======================
 model Notification {
   id        String           @id @default(uuid())
   title     String
@@ -198,12 +242,9 @@ model Notification {
   @@index([userId])
   @@index([type])
   @@index([date])
-  @@map("notifications") // Explicit table name mapping
+  @@map("notifications")
 }
 
-// ======================
-// Education Domain
-// ======================
 model School {
   id        String   @id @default(uuid())
   name      String   @unique @db.VarChar(100)
@@ -223,13 +264,6 @@ model SchoolAssociation {
 
   @@unique([userId, schoolId])
   @@index([schoolId])
-}
-
-model Subject {
-  id   Int    @id @default(autoincrement())
-  name String @unique @db.VarChar(50)
-
-  @@index([name])
 }
 
 model Class {
@@ -271,9 +305,6 @@ model Mark {
   @@index([createdAt])
 }
 
-// ======================
-// Teacher Domain
-// ======================
 model TeacherProfile {
   id              String                       @id @default(uuid())
   userId          String                       @unique
@@ -315,9 +346,6 @@ model ReportTask {
   @@index([createdAt])
 }
 
-// ======================
-// Relation Tables
-// ======================
 model UserAdminRole {
   userId      String
   adminRoleId Int
