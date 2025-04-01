@@ -310,7 +310,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         throw new Response(`Invalid intent: ${intent}`, { status: 400 });
     }
 
-    return redirect("/settings");
+    return redirect("/dashboard/settings");
   } catch (error) {
     console.error("Settings update failed:", error);
     return json({ error: "Failed to update settings" }, { status: 500 });
