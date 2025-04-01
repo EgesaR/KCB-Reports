@@ -1,6 +1,3 @@
-// ======================
-// Configuration
-// ======================
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,41 +8,6 @@ datasource db {
   relationMode = "prisma"
 }
 
-// ======================
-// Enums
-// ======================
-enum RoleEnum {
-  ADMIN
-  PARENT
-  TEACHER
-  STUDENT
-}
-
-enum PostStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-}
-
-enum NotificationType {
-  INFO
-  WARNING
-  ERROR
-  TEST
-  GENERAL
-  ALERT
-  SUCCESS
-}
-
-enum ThemePreference {
-  LIGHT
-  DARK
-  SYSTEM
-}
-
-// ======================
-// User Domain (Enhanced)
-// ======================
 model User {
   id                 String          @id @default(uuid())
   name               String          @db.VarChar(100)
@@ -54,18 +16,18 @@ model User {
   profileUrl         String?         @db.VarChar(512)
   profilePicture     String?         @db.VarChar(512)
   dob                DateTime?
-  title              String?         @db.VarChar(100)  // Added for settings
-  contact            String?         @db.VarChar(100)  // Added for settings
-  department         String?         @db.VarChar(100)  // Added for settings
-  studentId          String?         @db.VarChar(50)   // Added for settings
-  themePreference    ThemePreference @default(SYSTEM)  // Added for settings
-  accentColor        String?         @default("#3b82f6") // Added for settings
-  highContrast       Boolean         @default(false)   // Added for settings
-  reportFont         String?         @default("Arial") // Added for settings
-  institutionalLogo  String?         @db.VarChar(512)  // Added for settings
-  twoFactorEnabled   Boolean         @default(false)   // Added for settings
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
+  accentColor        String?         @default("#3b82f6")
+  contact            String?         @db.VarChar(100)
+  department         String?         @db.VarChar(100)
+  highContrast       Boolean         @default(false)
+  institutionalLogo  String?         @db.VarChar(512)
+  reportFont         String?         @default("Arial")
+  studentId          String?         @db.VarChar(50)
+  themePreference    ThemePreference @default(SYSTEM)
+  title              String?         @db.VarChar(100)
+  twoFactorEnabled   Boolean         @default(false)
   roles              UserRole[]
   adminRoles         UserAdminRole[]
   teacherProfile     TeacherProfile?
@@ -76,32 +38,30 @@ model User {
   parentMarks        Mark[]          @relation("ParentMarks")
   students           UserStudent[]
   notifications      Notification[]  @relation("UserNotifications")
-  sessions           Session[]       // Added for session management
-  userSubjects       UserSubject[]   // Added for subjects association
+  sessions           Session[]
+  userSubjects       UserSubject[]
 
   @@index([email])
   @@index([createdAt])
 }
 
-// Added for session management
 model Session {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
   ipAddress String
   userAgent String
   createdAt DateTime @default(now())
   expiresAt DateTime
-  
+  user      User     @relation(fields: [userId], references: [id])
+
   @@index([userId])
   @@index([expiresAt])
 }
 
-// Enhanced Subject model for many-to-many with users
 model Subject {
-  id          Int          @id @default(autoincrement())
-  name        String       @unique @db.VarChar(50)
-  description String?      @db.Text
+  id           Int           @id @default(autoincrement())
+  name         String        @unique @db.VarChar(50)
+  description  String?       @db.Text
   userSubjects UserSubject[]
 
   @@index([name])
@@ -112,14 +72,10 @@ model UserSubject {
   subjectId Int
   user      User     @relation(fields: [userId], references: [id])
   subject   Subject  @relation(fields: [subjectId], references: [id])
-
   @@id([userId, subjectId])
-  @@index([subjectId])
 }
 
-// ======================
-// Rest of your models (unchanged)
-// ======================
+
 model AdminRole {
   id        Int             @id @default(autoincrement())
   roleName  String          @unique @db.VarChar(50)
@@ -231,13 +187,13 @@ model Notification {
   message   String
   type      NotificationType @default(GENERAL)
   userId    String
-  user      User             @relation("UserNotifications", fields: [userId], references: [id])
   date      DateTime         @default(now())
   read      Boolean          @default(false)
   archived  Boolean          @default(false)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
   metadata  Json?
+  user      User             @relation("UserNotifications", fields: [userId], references: [id])
 
   @@index([userId])
   @@index([type])
@@ -290,11 +246,11 @@ model Mark {
   examinationName String   @db.VarChar(100)
   mark            Float
   createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
   studentId       String
   teacherId       String?
   adminId         String?
   parentId        String?
+  updatedAt       DateTime @updatedAt
   student         Student  @relation(fields: [studentId], references: [id])
   teacher         User?    @relation("TeacherMarks", fields: [teacherId], references: [id])
   admin           User?    @relation("AdminMarks", fields: [adminId], references: [id])
@@ -335,9 +291,9 @@ model ReportTask {
   title       String   @db.VarChar(200)
   description String?  @db.Text
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
   createdById String
   teacherId   String?
+  updatedAt   DateTime @updatedAt
   createdBy   User     @relation("AdminReportTasks", fields: [createdById], references: [id])
   teacher     User?    @relation("TeacherReportTasks", fields: [teacherId], references: [id])
 
@@ -370,14 +326,43 @@ model UserStudent {
 
 model DepartmentToTeacherProfile {
   id           String         @id @default(uuid())
-  department   Department     @relation(fields: [departmentId], references: [id])
   departmentId String
-  profile      TeacherProfile @relation(fields: [profileId], references: [id])
   profileId    String
   createdAt    DateTime       @default(now())
+  department   Department     @relation(fields: [departmentId], references: [id])
+  profile      TeacherProfile @relation(fields: [profileId], references: [id])
 
   @@unique([departmentId, profileId])
   @@index([departmentId])
   @@index([profileId])
   @@map("department_teacher_profile")
+}
+
+enum RoleEnum {
+  ADMIN
+  PARENT
+  TEACHER
+  STUDENT
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  ERROR
+  TEST
+  GENERAL
+  ALERT
+  SUCCESS
+}
+
+enum ThemePreference {
+  LIGHT
+  DARK
+  SYSTEM
 }

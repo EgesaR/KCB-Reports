@@ -50,16 +50,17 @@ export const action: ActionFunction = async ({ request }) => {
       { status: 400 }
     );
   }
-
+  console.log({ email, password })
   // Check if user exists
   const user = await prisma.user.findUnique({ where: { email } });
+  console.log({ user })
   if (!user) {
     return json<ActionData>(
       { formError: "Invalid email or password", fields: { email, password } },
       { status: 400 }
     );
   }
-
+  console.log({ password, user:user.password})
   // Verify password
   const isCorrectPassword = await bcrypt.compare(password, user.password);
   if (!isCorrectPassword) {

@@ -19,9 +19,8 @@ import { prisma } from "~/db.server";
 import type { User, Session, Subject, UserRole } from "@prisma/client";
 
 // ======================
-// Types
+// Type Definitions
 // ======================
-type Theme = "light" | "dark";
 
 const settingTypes = [
   "text",
@@ -29,50 +28,45 @@ const settingTypes = [
   "toggle",
   "dropdown",
   "multi-select",
-  "radio",
-  "number",
-  "color-picker",
-  "image-upload",
   "button",
   "session-list",
+  "image-upload",
+  "color-picker",
+  "number",
 ] as const;
 
 type SettingType = (typeof settingTypes)[number];
 
-interface SettingBase {
+interface SettingBase<T extends SettingType> {
   id: string;
   label: string;
+  type: T;
   role?: "student" | "teacher" | "admin";
   warning?: boolean;
 }
 
-interface TextSetting extends SettingBase {
-  type: "text" | "password" | "number";
+interface TextSetting extends SettingBase<"text" | "password" | "number"> {
   min?: number;
   max?: number;
 }
 
-interface ToggleSetting extends SettingBase {
-  type: "toggle";
-}
+interface ToggleSetting extends SettingBase<"toggle"> {}
 
-interface DropdownSetting extends SettingBase {
-  type: "dropdown";
+interface DropdownSetting extends SettingBase<"dropdown"> {
   options: string[];
 }
 
-interface MultiSelectSetting extends SettingBase {
-  type: "multi-select";
+interface MultiSelectSetting extends SettingBase<"multi-select"> {
   options: string[];
 }
 
-interface ButtonSetting extends SettingBase {
-  type: "button";
-}
+interface ButtonSetting extends SettingBase<"button"> {}
 
-interface SessionListSetting extends SettingBase {
-  type: "session-list";
-}
+interface SessionListSetting extends SettingBase<"session-list"> {}
+
+interface ImageUploadSetting extends SettingBase<"image-upload"> {}
+
+interface ColorPickerSetting extends SettingBase<"color-picker"> {}
 
 type Setting =
   | TextSetting
@@ -80,7 +74,9 @@ type Setting =
   | DropdownSetting
   | MultiSelectSetting
   | ButtonSetting
-  | SessionListSetting;
+  | SessionListSetting
+  | ImageUploadSetting
+  | ColorPickerSetting;
 
 interface SettingsSection {
   id: string;
@@ -94,6 +90,18 @@ interface SettingsTab {
   icon?: string;
   items: SettingsSection[];
 }
+
+// ======================
+// Helper Functions
+// ======================
+
+function createSetting<T extends Setting>(setting: T): T {
+  return setting;
+}
+
+// ======================
+// Loader Types
+// ======================
 
 interface LoaderData {
   user: {
@@ -126,191 +134,93 @@ interface LoaderData {
 }
 
 // ======================
-// Helper Functions
-// ======================
-const createSettingsData = (
-  roles: string[],
-  allSubjects: string[],
-  availableDepartments: string[],
-  availableFonts: string[]
-): SettingsTab[] => {
-  const isTeacher = roles.includes("TEACHER");
-  const isStudent = roles.includes("STUDENT");
-
-  const profileSettings: SettingsTab = {
-    id: "profile",
-    label: "Profile",
-    items: [
-      {
-        id: "personal-info",
-        label: "Personal Information",
-        settings: [
-          { id: "name", label: "Name", type: "text" },
-          { id: "title", label: "Title/Role", type: "text" },
-          { id: "contact", label: "Contact Details", type: "text" },
-          { id: "profile-pic", label: "Profile Picture", type: "image-upload" },
-        ],
-      },
-      {
-        id: "professional-details",
-        label: "Professional Details",
-        settings: [
-          {
-            id: "department",
-            label: "Department/Faculty",
-            type: "dropdown",
-            options: availableDepartments,
-          },
-          ...(isTeacher
-            ? [
-                {
-                  id: "subjects",
-                  label: "Subjects Taught",
-                  type: "multi-select",
-                  options: allSubjects,
-                },
-              ]
-            : []),
-          ...(isStudent
-            ? [
-                {
-                  id: "student-id",
-                  label: "Student ID/Roll Number",
-                  type: "text",
-                },
-              ]
-            : []),
-        ],
-      },
-    ],
-  };
-
-  const accountSettings: SettingsTab = {
-    id: "account",
-    label: "Account",
-    items: [
-      {
-        id: "security",
-        label: "Login & Security",
-        settings: [
-          { id: "change-password", label: "Change Password", type: "password" },
-          { id: "2fa", label: "Two-Factor Authentication", type: "toggle" },
-          {
-            id: "active-sessions",
-            label: "Linked Devices",
-            type: "session-list",
-          },
-        ],
-      },
-      {
-        id: "data",
-        label: "Data Management",
-        settings: [
-          { id: "export-data", label: "Export Data", type: "button" },
-          {
-            id: "delete-account",
-            label: "Delete Account",
-            type: "button",
-            warning: true,
-          },
-        ],
-      },
-    ],
-  };
-
-  const appearanceSettings: SettingsTab = {
-    id: "appearance",
-    label: "Appearance",
-    items: [
-      {
-        id: "theme",
-        label: "Theme Customization",
-        settings: [
-          { id: "dark-mode", label: "Dark Mode", type: "toggle" },
-          { id: "accent-color", label: "Accent Color", type: "color-picker" },
-          { id: "high-contrast", label: "High Contrast Mode", type: "toggle" },
-        ],
-      },
-      {
-        id: "report-styling",
-        label: "Report Styling",
-        settings: [
-          {
-            id: "report-font",
-            label: "Default Font",
-            type: "dropdown",
-            options: availableFonts,
-          },
-          { id: "institutional-logo", label: "Add Logo", type: "image-upload" },
-        ],
-      },
-    ],
-  };
-
-  return [profileSettings, accountSettings, appearanceSettings];
-};
-
-// ======================
 // Loader
 // ======================
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
   if (!userId) throw new Response("Unauthorized", { status: 401 });
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      sessions: {
-        orderBy: { createdAt: "desc" },
-        where: { expiresAt: { gt: new Date() } },
-      },
-      userSubjects: {
-        include: {
-          subject: true,
+  try {
+    // Get user with all available fields
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        profilePicture: true,
+        accentColor: true,
+        contact: true,
+        department: true,
+        highContrast: true,
+        institutionalLogo: true,
+        reportFont: true,
+        studentId: true,
+        themePreference: true,
+        title: true,
+        twoFactorEnabled: true,
+        roles: {
+          select: {
+            role: true,
+          },
         },
       },
-      roles: true,
-    },
-  });
+    });
 
-  if (!user) throw new Response("User not found", { status: 404 });
+    if (!user) throw new Response("User not found", { status: 404 });
 
-  const allSubjects = await prisma.subject.findMany();
+    // Get related data in parallel
+    const [userSubjects, sessions, allSubjects] = await Promise.all([
+      prisma.userSubject.findMany({
+        where: { userId },
+        include: { subject: { select: { name: true } } },
+      }),
+      prisma.session.findMany({
+        where: {
+          userId,
+          expiresAt: { gt: new Date() },
+        },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          ipAddress: true,
+          userAgent: true,
+          createdAt: true,
+        },
+      }),
+      prisma.subject.findMany({
+        select: { name: true },
+      }),
+    ]);
 
-  return json<LoaderData>({
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      title: user.title || null,
-      contact: user.contact || null,
-      profilePicture: user.profilePicture || null,
-      department: user.department || null,
-      studentId: user.studentId || null,
-      darkMode: user.themePreference === "DARK",
-      accentColor: user.accentColor || null,
-      highContrast: user.highContrast || false,
-      reportFont: user.reportFont || null,
-      institutionalLogo: user.institutionalLogo || null,
-      twoFactorEnabled: user.twoFactorEnabled || false,
-      subjects: user.userSubjects.map((us) => us.subject.name),
-      sessions: user.sessions.map((session) => ({
-        id: session.id,
-        ipAddress: session.ipAddress,
-        userAgent: session.userAgent,
-        createdAt: session.createdAt.toISOString(),
-      })),
-      roles: user.roles.map((role) => role.role),
-    },
-    allSubjects: allSubjects.map((subject) => subject.name),
-    availableDepartments: ["Science", "Arts", "Mathematics"],
-    availableFonts: ["Arial", "Times New Roman", "Calibri"],
-  });
+    return json<LoaderData>({
+      user: {
+        ...user,
+        darkMode: user.themePreference === "DARK",
+        subjects: userSubjects.map((us) => us.subject.name),
+        sessions: sessions.map((session) => ({
+          id: session.id,
+          ipAddress: session.ipAddress,
+          userAgent: session.userAgent,
+          createdAt: session.createdAt.toISOString(),
+        })),
+        roles: user.roles.map((role) => role.role),
+      },
+      allSubjects: allSubjects.map((subject) => subject.name),
+      availableDepartments: ["Science", "Arts", "Mathematics"],
+      availableFonts: ["Arial", "Times New Roman", "Calibri"],
+    });
+  } catch (error) {
+    console.error("Settings loader error:", error);
+    throw new Response("Internal Server Error", { status: 500 });
+  }
 };
 
 // ======================
 // Action
 // ======================
+
 export const action = async ({ request }: ActionFunctionArgs) => {
   const userId = await getUserId(request);
   if (!userId) throw new Response("Unauthorized", { status: 401 });
@@ -410,6 +320,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 // ======================
 // UI Components
 // ======================
+
 const SessionList = ({
   sessions,
 }: {
@@ -682,6 +593,9 @@ const SaveButton = React.memo(
 // ======================
 // Main Component
 // ======================
+
+type Theme = "light" | "dark";
+
 export default function SettingsPage() {
   const { user, allSubjects, availableDepartments, availableFonts } =
     useLoaderData<typeof loader>();
@@ -708,6 +622,175 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState<Theme>(user.darkMode ? "dark" : "light");
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const createSettingsData = useCallback(
+    (
+      roles: string[],
+      allSubjects: string[],
+      availableDepartments: string[],
+      availableFonts: string[]
+    ): SettingsTab[] => {
+      const isTeacher = roles.includes("TEACHER");
+      const isStudent = roles.includes("STUDENT");
+
+      const profileSettings: SettingsTab = {
+        id: "profile",
+        label: "Profile",
+        items: [
+          {
+            id: "personal-info",
+            label: "Personal Information",
+            settings: [
+              createSetting<TextSetting>({
+                id: "name",
+                label: "Name",
+                type: "text",
+              }),
+              createSetting<TextSetting>({
+                id: "title",
+                label: "Title/Role",
+                type: "text",
+              }),
+              createSetting<TextSetting>({
+                id: "contact",
+                label: "Contact Details",
+                type: "text",
+              }),
+              createSetting<ImageUploadSetting>({
+                id: "profile-pic",
+                label: "Profile Picture",
+                type: "image-upload",
+              }),
+            ],
+          },
+          {
+            id: "professional-details",
+            label: "Professional Details",
+            settings: [
+              createSetting<DropdownSetting>({
+                id: "department",
+                label: "Department/Faculty",
+                type: "dropdown",
+                options: availableDepartments,
+              }),
+              ...(isTeacher
+                ? [
+                    createSetting<MultiSelectSetting>({
+                      id: "subjects",
+                      label: "Subjects Taught",
+                      type: "multi-select",
+                      options: allSubjects,
+                    }),
+                  ]
+                : []),
+              ...(isStudent
+                ? [
+                    createSetting<TextSetting>({
+                      id: "student-id",
+                      label: "Student ID/Roll Number",
+                      type: "text",
+                    }),
+                  ]
+                : []),
+            ],
+          },
+        ],
+      };
+
+      const accountSettings: SettingsTab = {
+        id: "account",
+        label: "Account",
+        items: [
+          {
+            id: "security",
+            label: "Login & Security",
+            settings: [
+              createSetting<TextSetting>({
+                id: "change-password",
+                label: "Change Password",
+                type: "password",
+              }),
+              createSetting<ToggleSetting>({
+                id: "2fa",
+                label: "Two-Factor Authentication",
+                type: "toggle",
+              }),
+              createSetting<SessionListSetting>({
+                id: "active-sessions",
+                label: "Linked Devices",
+                type: "session-list",
+              }),
+            ],
+          },
+          {
+            id: "data",
+            label: "Data Management",
+            settings: [
+              createSetting<ButtonSetting>({
+                id: "export-data",
+                label: "Export Data",
+                type: "button",
+              }),
+              createSetting<ButtonSetting>({
+                id: "delete-account",
+                label: "Delete Account",
+                type: "button",
+                warning: true,
+              }),
+            ],
+          },
+        ],
+      };
+
+      const appearanceSettings: SettingsTab = {
+        id: "appearance",
+        label: "Appearance",
+        items: [
+          {
+            id: "theme",
+            label: "Theme Customization",
+            settings: [
+              createSetting<ToggleSetting>({
+                id: "dark-mode",
+                label: "Dark Mode",
+                type: "toggle",
+              }),
+              createSetting<ColorPickerSetting>({
+                id: "accent-color",
+                label: "Accent Color",
+                type: "color-picker",
+              }),
+              createSetting<ToggleSetting>({
+                id: "high-contrast",
+                label: "High Contrast Mode",
+                type: "toggle",
+              }),
+            ],
+          },
+          {
+            id: "report-styling",
+            label: "Report Styling",
+            settings: [
+              createSetting<DropdownSetting>({
+                id: "report-font",
+                label: "Default Font",
+                type: "dropdown",
+                options: availableFonts,
+              }),
+              createSetting<ImageUploadSetting>({
+                id: "institutional-logo",
+                label: "Add Logo",
+                type: "image-upload",
+              }),
+            ],
+          },
+        ],
+      };
+
+      return [profileSettings, accountSettings, appearanceSettings];
+    },
+    []
+  );
+
   const SETTINGS_DATA = useMemo(
     () =>
       createSettingsData(
@@ -716,7 +799,13 @@ export default function SettingsPage() {
         availableDepartments,
         availableFonts
       ),
-    [user.roles, allSubjects, availableDepartments, availableFonts]
+    [
+      user.roles,
+      allSubjects,
+      availableDepartments,
+      availableFonts,
+      createSettingsData,
+    ]
   );
 
   useEffect(() => {

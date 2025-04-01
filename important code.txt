@@ -1,0 +1,12 @@
+USE `kcb-reports`;
+
+-- Update with the pre-generated bcrypt hash
+
+UPDATE `User` 
+SET password = '$2b$10$QVNExUassmpyXaIuosyxx.l5ehuGEN5F6OePxWc/FiGgmNuqdQT9O',
+    updatedAt = NOW()
+WHERE email = 'egesaraymond644@gmail.com';
+
+-- Verify
+SELECT email, LEFT(password, 10) AS password_prefix FROM `User` 
+WHERE email = 'egesaraymond644@gmail.com';

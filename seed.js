@@ -1,195 +1,359 @@
-// app/utils/test-notifications.js
-export const generateTestNotifications = (userId, count = 20) => {
-  const now = new Date();
+// seed.js
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import readline from "readline";
 
-  const notificationTemplates = [
-    {
-      type: "MESSAGE",
-      title: "New Message",
-      message: "You have a new message from a friend",
-      priority: 1,
-    },
-    {
-      type: "FRIEND_REQUEST",
-      title: "Friend Request",
-      message: "You have a new friend request",
-      priority: 1,
-    },
-    {
-      type: "LIKE",
-      title: "Post Liked",
-      message: "Someone liked your post",
-      priority: 2,
-    },
-    {
-      type: "COMMENT",
-      title: "New Comment",
-      message: "Someone commented on your post",
-      priority: 2,
-    },
-    {
-      type: "MENTION",
-      title: "You Were Mentioned",
-      message: "You were mentioned in a post",
-      priority: 1,
-    },
-    {
-      type: "EVENT",
-      title: "Upcoming Event",
-      message: "You have an event coming up soon",
-      priority: 3,
-    },
-    {
-      type: "REMINDER",
-      title: "Reminder",
-      message: "This is a reminder for your task",
-      priority: 3,
-    },
-    {
-      type: "SYSTEM",
-      title: "System Update",
-      message: "New system update available",
-      priority: 4,
-    },
-    {
-      type: "PROMOTION",
-      title: "Special Offer",
-      message: "Check out this limited time offer",
-      priority: 5,
-    },
-    {
-      type: "SECURITY",
-      title: "Security Alert",
-      message: "Unusual login attempt detected",
-      priority: 1,
-    },
-    {
-      type: "ACHIEVEMENT",
-      title: "New Achievement",
-      message: "You unlocked a new achievement!",
-      priority: 2,
-    },
-    {
-      type: "WELCOME",
-      title: "Welcome!",
-      message: "Thanks for joining our platform",
-      priority: 5,
-    },
-    {
-      type: "NEWSLETTER",
-      title: "Newsletter",
-      message: "Our monthly newsletter is here",
-      priority: 5,
-    },
-    {
-      type: "ORDER",
-      title: "Order Confirmation",
-      message: "Your order has been confirmed",
-      priority: 3,
-    },
-    {
-      type: "SHIPPING",
-      title: "Shipping Update",
-      message: "Your order has shipped",
-      priority: 3,
-    },
-    {
-      type: "SUPPORT",
-      title: "Support Ticket",
-      message: "Your support request was received",
-      priority: 2,
-    },
-    {
-      type: "FEEDBACK",
-      title: "Feedback Request",
-      message: "How was your experience?",
-      priority: 4,
-    },
-    {
-      type: "PASSWORD",
-      title: "Password Changed",
-      message: "Your password was recently changed",
-      priority: 1,
-    },
-    {
-      type: "VERIFICATION",
-      title: "Verify Email",
-      message: "Please verify your email address",
-      priority: 1,
-    },
-    {
-      type: "INVITE",
-      title: "Invitation",
-      message: "You have been invited to join a group",
-      priority: 2,
-    },
-  ];
+const prisma = new PrismaClient();
 
-  // Sort by priority (lower numbers = higher priority)
-  const sortedTemplates = [...notificationTemplates].sort(
-    (a, b) => (a.priority || 5) - (b.priority || 5)
-  );
+// Data templates
+const adminRoles = [
+  { roleName: "Head Teacher" },
+  { roleName: "Deputy Head Teacher" },
+  { roleName: "Head of Department" },
+  { roleName: "Class Teacher" },
+  { roleName: "Bursar" },
+  { roleName: "Games Master/Mistress" },
+  { roleName: "Discipline Coordinator" },
+  { roleName: "Counselor" },
+  { roleName: "Patron/Matron" },
+  { roleName: "Director of Studies (O'Level)" },
+  { roleName: "Director of Studies (A'Level)" },
+  { roleName: "Director of Studies (Upper Primary)" },
+  { roleName: "Director of Studies (Lower Primary)" },
+];
 
-  return Array.from({ length: count }, (_, i) => {
-    const template = sortedTemplates[i % sortedTemplates.length];
-    return {
-      ...template,
-      userId,
-      date: new Date(now.getTime() - i * 60000), // 1 minute apart
-      read: false,
-      archived: false,
-    };
-  });
-};
+const subjects = [
+  "English Language",
+  "Mathematics",
+  "History and Political Education",
+  "Geography",
+  "Biology",
+  "Physics",
+  "Chemistry",
+  "Physical Education",
+  "Religious Education (CRE or IRE)",
+  "Entrepreneurship Education",
+  "Information and Communication Technology (ICT)",
+  "Art and Design",
+  "Performing Arts",
+  "Technology and Design",
+  "Nutrition and Food Technology",
+  "Agriculture",
+  "Foreign Languages",
+  "Kiswahili",
+  "Literature in English",
+  "Local Languages",
+];
 
-export const postTestNotifications = async (userId, options = {}) => {
-  const { batchSize = 5, delayBetweenBatches = 500 } = options;
-  const notifications = generateTestNotifications(userId);
-  const results = [];
+const classes = [
+  "Senior 1 (S1)",
+  "Senior 2 (S2)",
+  "Senior 3 (S3)",
+  "Senior 4 (S4)",
+  "Senior 5 (S5)",
+  "Senior 6 (S6)",
+];
 
-  for (let i = 0; i < notifications.length; i += batchSize) {
-    const batch = notifications.slice(i, i + batchSize);
+const schools = [
+  { name: "Gayaza High School", badgeUrl: "https://placeholder.com/school1" },
+  { name: "Namilyango College", badgeUrl: "https://placeholder.com/school2" },
+  {
+    name: "Kibuli Secondary School",
+    badgeUrl: "https://placeholder.com/school3",
+  },
+  {
+    name: "St. Mary's College Kisubi",
+    badgeUrl: "https://placeholder.com/school4",
+  },
+  { name: "King's College Budo", badgeUrl: "https://placeholder.com/school5" },
+  {
+    name: "Makerere College School",
+    badgeUrl: "https://placeholder.com/school6",
+  },
+  {
+    name: "Mt. St. Mary's Namagunga",
+    badgeUrl: "https://placeholder.com/school7",
+  },
+  { name: "Ntare School", badgeUrl: "https://placeholder.com/school8" },
+  { name: "Jinja College", badgeUrl: "https://placeholder.com/school9" },
+  {
+    name: "Busoga College Mwiri",
+    badgeUrl: "https://placeholder.com/school10",
+  },
+  {
+    name: "St. Henry's College Kitovu",
+    badgeUrl: "https://placeholder.com/school11",
+  },
+  {
+    name: "Masaka Secondary School",
+    badgeUrl: "https://placeholder.com/school12",
+  },
+  { name: "Mbarara High School", badgeUrl: "https://placeholder.com/school13" },
+  { name: "Seeta High School", badgeUrl: "https://placeholder.com/school14" },
+  {
+    name: "Bishop Cipriano Kihangire",
+    badgeUrl: "https://placeholder.com/school15",
+  },
+  {
+    name: "Trinity College Nabbingo",
+    badgeUrl: "https://placeholder.com/school16",
+  },
+  {
+    name: "Kawempe Muslim Secondary School",
+    badgeUrl: "https://placeholder.com/school17",
+  },
+  {
+    name: "Lubiri Secondary School",
+    badgeUrl: "https://placeholder.com/school18",
+  },
+  {
+    name: "Namirembe Hillside High School",
+    badgeUrl: "https://placeholder.com/school19",
+  },
+  { name: "Mengo Senior School", badgeUrl: "https://placeholder.com/school20" },
+  {
+    name: "St. Lawrence Schools and Colleges",
+    badgeUrl: "https://placeholder.com/school21",
+  },
+  {
+    name: "Iganga Secondary School",
+    badgeUrl: "https://placeholder.com/school22",
+  },
+  { name: "Lubiri High School", badgeUrl: "https://placeholder.com/school23" },
+  { name: "Tororo Girls School", badgeUrl: "https://placeholder.com/school24" },
+  { name: "Kibuli High School", badgeUrl: "https://placeholder.com/school25" },
+  {
+    name: "St. Joseph's Nsambya",
+    badgeUrl: "https://placeholder.com/school26",
+  },
+  {
+    name: "Aga Khan High School",
+    badgeUrl: "https://placeholder.com/school27",
+  },
+  {
+    name: "Victoria High School",
+    badgeUrl: "https://placeholder.com/school28",
+  },
+  {
+    name: "Our Lady of Africa SS",
+    badgeUrl: "https://placeholder.com/school29",
+  },
+  {
+    name: "Ndejje Secondary School",
+    badgeUrl: "https://placeholder.com/school30",
+  },
+  {
+    name: "Katikamu SDA Secondary School",
+    badgeUrl: "https://placeholder.com/school31",
+  },
+  {
+    name: "Light Academy Secondary School",
+    badgeUrl: "https://placeholder.com/school32",
+  },
+  {
+    name: "Bweranyangi Girls' Secondary School",
+    badgeUrl: "https://placeholder.com/school33",
+  },
+  { name: "Teso College Aloet", badgeUrl: "https://placeholder.com/school34" },
+  {
+    name: "Maryhill High School",
+    badgeUrl: "https://placeholder.com/school35",
+  },
+  { name: "Kigezi High School", badgeUrl: "https://placeholder.com/school36" },
+  {
+    name: "St. Peter's SS Naalya",
+    badgeUrl: "https://placeholder.com/school37",
+  },
+  {
+    name: "Soroti Secondary School",
+    badgeUrl: "https://placeholder.com/school38",
+  },
+  {
+    name: "Kyambogo College School",
+    badgeUrl: "https://placeholder.com/school39",
+  },
+  { name: "Lira Town College", badgeUrl: "https://placeholder.com/school40" },
+  {
+    name: "Kitende Secondary School",
+    badgeUrl: "https://placeholder.com/school41",
+  },
+  {
+    name: "Kassanda Secondary School",
+    badgeUrl: "https://placeholder.com/school42",
+  },
+  {
+    name: "Kololo Senior Secondary School",
+    badgeUrl: "https://placeholder.com/school43",
+  },
+  {
+    name: "Kiira College Butiki",
+    badgeUrl: "https://placeholder.com/school60",
+  },
+  {
+    name: "Caltec Academy Makerere",
+    badgeUrl: "https://placeholder.com/school44",
+  },
+  {
+    name: "St. Balikuddembe Mitala Maria",
+    badgeUrl: "https://placeholder.com/school45",
+  },
+  {
+    name: "Luwero Secondary School",
+    badgeUrl: "https://placeholder.com/school46",
+  },
+  {
+    name: "St. Julian High School Gayaza",
+    badgeUrl: "https://placeholder.com/school47",
+  },
+  {
+    name: "Gombe Secondary School",
+    badgeUrl: "https://placeholder.com/school48",
+  },
+  {
+    name: "St. Andrew Kaggwa Gombe High School",
+    badgeUrl: "https://placeholder.com/school49",
+  },
+  {
+    name: "Kitgum Comprehensive College",
+    badgeUrl: "https://placeholder.com/school50",
+  },
+  {
+    name: "Nabisunsa Girls School",
+    badgeUrl: "https://placeholder.com/school51",
+  },
+  {
+    name: "Kilembe Secondary School",
+    badgeUrl: "https://placeholder.com/school52",
+  },
+  { name: "Iganga High School", badgeUrl: "https://placeholder.com/school53" },
+  {
+    name: "St. Charles Lwanga Kasasa",
+    badgeUrl: "https://placeholder.com/school54",
+  },
+  {
+    name: "Kabale Secondary School",
+    badgeUrl: "https://placeholder.com/school55",
+  },
+  {
+    name: "Busia Secondary School",
+    badgeUrl: "https://placeholder.com/school56",
+  },
+  {
+    name: "St. Kalemba Secondary School",
+    badgeUrl: "https://placeholder.com/school57",
+  },
+  {
+    name: "Tororo Progressive Academy",
+    badgeUrl: "https://placeholder.com/school58",
+  },
+  {
+    name: "Kamwokya Christian School",
+    badgeUrl: "https://placeholder.com/school59",
+  },
+  {
+    name: "Mvara Secondary School",
+    badgeUrl: "https://placeholder.com/school60",
+  },
+];
 
-    try {
-      const batchResults = await Promise.all(
-        batch.map((notification) =>
-          fetch("/notifications", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams({
-              intent: "create",
-              title: notification.title,
-              message: notification.message,
-              type: notification.type,
-            }),
-          }).then(async (res) => {
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            return res.json();
-          })
-        )
-      );
+// Interactive prompts
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
-      results.push(...batchResults);
+async function prompt(question) {
+  return new Promise((resolve) => rl.question(question, resolve));
+}
 
-      // Add delay between batches except for the last one
-      if (i + batchSize < notifications.length) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, delayBetweenBatches)
-        );
-      }
-    } catch (error) {
-      console.error(`Error posting batch ${i / batchSize + 1}:`, error);
-      // Push error results for the failed batch
-      batch.forEach(() => {
-        results.push({
-          success: false,
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
-      });
-    }
+async function promptForAccount() {
+  const createAccount = await prompt("Create admin account? (y/n): ");
+  if (createAccount.toLowerCase() !== "y") return null;
+
+  const name = await prompt("Admin name: ");
+  const email = await prompt("Admin email: ");
+  const password = await prompt("Admin password: ");
+  rl.close();
+
+  return { name, email, password };
+}
+
+async function createUserAccount({ name, email, password, roles = ["ADMIN"] }) {
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
+    console.log(`User ${email} exists`);
+    return existingUser;
   }
 
-  return results;
-};
+  const user = await prisma.user.create({
+    data: {
+      name,
+      email,
+      password: await bcrypt.hash(password, 10),
+      profilePicture: null,
+      dob: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      roles: { create: roles.map((role) => ({ role })) },
+    },
+    include: { roles: true },
+  });
+
+  return user;
+}
+
+async function seedDatabase() {
+  await prisma.$transaction(async (tx) => {
+    // Insert subjects
+    await tx.subject.createMany({
+      data: subjects.map((name) => ({ name })),
+      skipDuplicates: true,
+    });
+
+    // Insert classes
+    await tx.class.createMany({
+      data: classes.map((name) => ({ name })),
+      skipDuplicates: true,
+    });
+
+    // Insert schools
+    await tx.school.createMany({
+      data: schools,
+      skipDuplicates: true,
+    });
+
+    // Insert admin roles
+    await tx.adminRole.createMany({
+      data: adminRoles,
+      skipDuplicates: true,
+    });
+  });
+}
+
+async function seed() {
+  try {
+    // Prompt for admin account creation
+    const accountDetails = await promptForAccount();
+    const user = await createUserAccount(
+      accountDetails || {
+        name: "Egesa Raymond",
+        email: "egesaraymond644@gmail.com",
+        password: "3f7jer03",
+        roles: ["ADMIN"],
+      }
+    );
+
+    console.log(`Created admin user:`, user.email);
+
+    // Seed all database tables
+    await seedDatabase();
+    console.log("Database seeded successfully");
+  } catch (error) {
+    console.error("Seeding failed:", error);
+    process.exit(1);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+seed().then(() => process.exit(0));
