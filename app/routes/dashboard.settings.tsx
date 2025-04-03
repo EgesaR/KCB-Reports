@@ -333,19 +333,26 @@ const SessionList = ({
   };
 
   return (
-    <div className="session-list">
+    <div className="space-y-3">
       {sessions.map((session) => (
-        <div key={session.id} className="session-item">
-          <div className="session-info">
-            <div className="session-device">{session.userAgent}</div>
-            <div className="session-ip">{session.ipAddress}</div>
-            <div className="session-date">
+        <div
+          key={session.id}
+          className="flex items-center justify-between p-3 rounded-lg bg-gray-100 dark:bg-gray-700"
+        >
+          <div className="space-y-1">
+            <div className="font-medium text-gray-900 dark:text-gray-100">
+              {session.userAgent}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              {session.ipAddress}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-500">
               {new Date(session.createdAt).toLocaleString()}
             </div>
           </div>
           <button
             onClick={() => handleRevokeSession(session.id)}
-            className="session-revoke"
+            className="px-3 py-1 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             disabled={fetcher.state !== "idle"}
           >
             {fetcher.state === "idle" ? "Revoke" : "Revoking..."}
@@ -361,11 +368,9 @@ const ThemeToggle = React.memo(
     <button
       onClick={toggleTheme}
       aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-      className="theme-toggle"
+      className="fixed bottom-6 right-6 w-12 h-12 rounded-full grid place-items-center bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors z-50"
     >
-      <span className={`theme-icon ${theme}`}>
-        {theme === "light" ? "🌙" : "☀️"}
-      </span>
+      <span className="text-xl">{theme === "light" ? "🌙" : "☀️"}</span>
     </button>
   )
 );
@@ -380,18 +385,26 @@ const ToggleSwitch = React.memo(
     checked: boolean;
     onChange: (checked: boolean) => void;
   }) => (
-    <div className="toggle-switch">
+    <div className="relative w-12 h-6">
       <input
         type="checkbox"
         id={id}
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="toggle-input"
+        className="sr-only"
       />
       <label
         htmlFor={id}
-        className={`toggle-label ${checked ? "checked" : ""}`}
-      />
+        className={`block w-full h-full rounded-full cursor-pointer transition-colors ${
+          checked ? "bg-blue-600" : "bg-gray-300"
+        }`}
+      >
+        <span
+          className={`absolute left-1 bottom-1 w-4 h-4 rounded-full bg-white transition-transform ${
+            checked ? "translate-x-6" : ""
+          }`}
+        />
+      </label>
     </div>
   )
 );
@@ -412,7 +425,7 @@ const SelectInput = React.memo(
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="select-input"
+      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
     >
       {options.map((option) => (
         <option key={option} value={option}>
@@ -446,7 +459,7 @@ const MultiSelectInput = React.memo(
         );
         onChange(selected);
       }}
-      className="multi-select-input"
+      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
     >
       {options.map((option) => (
         <option key={option} value={option}>
@@ -478,7 +491,7 @@ const TextInput = React.memo(
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="text-input"
+      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
       min={min}
       max={max}
     />
@@ -501,7 +514,11 @@ const ButtonInput = React.memo(
       id={id}
       type="button"
       onClick={onClick}
-      className={`button-input ${warning ? "warning" : ""}`}
+      className={`px-4 py-2 rounded-md font-medium transition-colors ${
+        warning
+          ? "bg-red-600 text-white hover:bg-red-700"
+          : "bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-500"
+      }`}
     >
       {label}
     </button>
@@ -521,16 +538,20 @@ const TabButton = React.memo(
     <button
       onClick={onClick}
       aria-current={isActive ? "page" : undefined}
-      className={`tab-button ${isActive ? "active" : ""}`}
+      className={`relative px-4 py-2 text-left rounded-md transition-colors ${
+        isActive
+          ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+          : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+      }`}
     >
       {isActive && (
         <motion.span
           layoutId="tab-indicator"
-          className="tab-indicator"
+          className="absolute left-0 top-0 h-full w-1 bg-blue-600 rounded-l-md"
           transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
         />
       )}
-      <span className="tab-label">{tab.label}</span>
+      <span className="block">{tab.label}</span>
     </button>
   )
 );
@@ -543,15 +564,23 @@ const SettingsSection = React.memo(
     section: SettingsSection;
     renderSettingInput: (setting: Setting) => React.ReactNode;
   }) => (
-    <section className="settings-section">
-      <h2 className="section-title">{section.label}</h2>
-      <div className="settings-grid">
+    <section className="mb-8">
+      <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+        {section.label}
+      </h2>
+      <div className="space-y-6">
         {section.settings.map((setting) => (
-          <div key={setting.id} className="setting-row">
-            <label htmlFor={setting.id} className="setting-label">
+          <div
+            key={setting.id}
+            className="grid grid-cols-1 md:grid-cols-3 gap-4"
+          >
+            <label
+              htmlFor={setting.id}
+              className="flex items-center text-gray-700 dark:text-gray-300"
+            >
               {setting.label}
             </label>
-            <div className="setting-input">{renderSettingInput(setting)}</div>
+            <div className="md:col-span-2">{renderSettingInput(setting)}</div>
           </div>
         ))}
       </div>
@@ -567,17 +596,21 @@ const SaveButton = React.memo(
     isSubmitting: boolean;
     onClick: () => void;
   }) => (
-    <div className="save-container">
+    <div className="mt-8 flex justify-end">
       <button
         type="button"
         onClick={onClick}
         disabled={isSubmitting}
-        className="save-button"
+        className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {isSubmitting ? (
           <>
-            <span className="loading-spinner" aria-hidden="true" />
+            <span
+              className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+              aria-hidden="true"
+            />
             <span className="sr-only">Saving</span>
+            Saving...
           </>
         ) : (
           <>
@@ -928,7 +961,7 @@ export default function SettingsPage() {
           return <SessionList sessions={user.sessions} />;
         default:
           return (
-            <div className="unsupported-input">
+            <div className="text-red-500">
               Input type "{setting.type}" not supported
             </div>
           );
@@ -938,48 +971,57 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className={`settings-container ${theme}`}>
-      <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+      <div className="grid grid-cols-1 md:grid-cols-[minmax(250px,300px)_1fr] gap-6 p-6 max-w-7xl mx-auto">
+        <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
 
-      <nav className="settings-nav">
-        {SETTINGS_DATA.map((tab) => (
-          <TabButton
-            key={tab.id}
-            tab={tab}
-            isActive={activeTab === tab.id}
-            onClick={() => setActiveTab(tab.id)}
-          />
-        ))}
-      </nav>
+        <nav className="md:sticky md:top-6 md:h-[calc(100vh-3rem)] overflow-y-auto">
+          <div className="space-y-1">
+            {SETTINGS_DATA.map((tab) => (
+              <TabButton
+                key={tab.id}
+                tab={tab}
+                isActive={activeTab === tab.id}
+                onClick={() => setActiveTab(tab.id)}
+              />
+            ))}
+          </div>
+        </nav>
 
-      <main ref={contentRef} className="settings-content">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            {currentTab && (
-              <>
-                <h1 className="settings-title">{currentTab.label}</h1>
-                {currentTab.items.map((section) => (
-                  <SettingsSection
-                    key={section.id}
-                    section={section}
-                    renderSettingInput={renderSettingInput}
+        <main
+          ref={contentRef}
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 overflow-y-auto h-[calc(100vh-3rem)]"
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              {currentTab && (
+                <>
+                  <h1 className="text-2xl font-bold mb-8">
+                    {currentTab.label}
+                  </h1>
+                  {currentTab.items.map((section) => (
+                    <SettingsSection
+                      key={section.id}
+                      section={section}
+                      renderSettingInput={renderSettingInput}
+                    />
+                  ))}
+                  <SaveButton
+                    isSubmitting={isSubmitting || fetcher.state !== "idle"}
+                    onClick={handleSave}
                   />
-                ))}
-                <SaveButton
-                  isSubmitting={isSubmitting || fetcher.state !== "idle"}
-                  onClick={handleSave}
-                />
-              </>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </main>
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
     </div>
   );
 }

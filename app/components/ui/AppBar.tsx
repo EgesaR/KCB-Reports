@@ -3,9 +3,10 @@
 import React from "react";
 import { IoMenu, IoSearch } from "react-icons/io5";
 import { FaUserCircle } from "react-icons/fa";
-import { RiSettingsLine } from "react-icons/ri";
+import { RiSettingsFill, RiSettingsLine } from "react-icons/ri";
 import { BsBell } from "react-icons/bs";
 import { useDashboardContext } from "~/context/DashboardContext";
+import { useLocation, useNavigate } from "@remix-run/react";
 
 interface AppBarProps {
   unreadCount: number;
@@ -14,7 +15,8 @@ interface AppBarProps {
 
 export const AppBar = ({ unreadCount, onNotificationClick }: AppBarProps) => {
   const { isMobile } = useDashboardContext();
-
+  const navigate = useNavigate();
+  const location = useLocation();
   return (
     <div className="w-full h-full flex items-center justify-between px-2">
       <div className="flex items-center gap-2.5">
@@ -56,8 +58,13 @@ export const AppBar = ({ unreadCount, onNotificationClick }: AppBarProps) => {
         <button
           className="rounded-full border border-transparent p-1.5 text-center text-[21px] transition-all text-slate-600 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
           type="button"
+          onClick={() => navigate("/dashboard/settings")}
         >
-          <RiSettingsLine />
+          {location.pathname === "/dashboard/settings" ? (
+            <RiSettingsFill />
+          ) : (
+            <RiSettingsLine />
+          )}
         </button>
         <button
           className="rounded-full border border-transparent p-1.5 text-center text-[21px] transition-all text-slate-600 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
