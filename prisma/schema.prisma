@@ -70,11 +70,11 @@ model Subject {
 model UserSubject {
   userId    String
   subjectId Int
-  user      User     @relation(fields: [userId], references: [id])
-  subject   Subject  @relation(fields: [subjectId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
   @@id([userId, subjectId])
 }
-
 
 model AdminRole {
   id        Int             @id @default(autoincrement())
@@ -99,6 +99,15 @@ model Blog {
 
   @@index([publishedAt])
   @@index([updatedAt])
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Post {

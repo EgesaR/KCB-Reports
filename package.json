@@ -35,7 +35,7 @@
     "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.4.7",
-    "framer-motion": "^12.4.3",
+    "framer-motion": "^12.6.3",
     "install": "^0.13.0",
     "isbot": "^4.1.0",
     "match-sorter": "^6.3.1",

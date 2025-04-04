@@ -1,6 +1,7 @@
 import withMT from "@material-tailwind/react/utils/withMT";
 import pkg from "@material-tailwind/react";
 const { ThemeProvider } = pkg;
+const { Menu, MenuHandler, MenuList, MenuItem, Avatar, Typography } = pkg;
 const prelinePlugin = require("preline/plugin");
 
 module.exports = withMT({
