@@ -4,9 +4,8 @@ import { json, redirect } from "@remix-run/node";
 import { prisma } from "~/db.server";
 import bcrypt from "bcryptjs";
 import { createUserSession } from "~/utils/session.server";
-import logger from "~/utils/logger.server";
+import { sendMail } from "~/utils/mailer.server";
 import { motion } from "framer-motion";
-import { useState } from "react";
 
 type ActionData = {
   formError?: string;
@@ -17,7 +16,7 @@ type ActionData = {
   };
   fields?: {
     email: string;
-    password?: string; // Made optional
+    password?: string;
     code?: string;
   };
   resetSent?: boolean;
@@ -32,7 +31,6 @@ export const action: ActionFunction = async ({ request }) => {
   const code = formData.get("code");
   const mode = formData.get("mode") || "login";
 
-  // Validate input types
   if (typeof email !== "string") {
     return json<ActionData>(
       { formError: "Form not submitted correctly" },
@@ -40,31 +38,49 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  // Handle password reset request
   if (mode === "reset") {
-    // Generate random 6-digit code
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 1); // Code expires in 1 hour
+    expiresAt.setHours(expiresAt.getHours() + 1);
 
-    // Save reset code to database
     await prisma.passwordReset.upsert({
       where: { email },
       update: { code: resetCode, expiresAt },
       create: { email, code: resetCode, expiresAt },
     });
 
-    // In a real app, you would send the email here
-    logger.info(`Password reset code for ${email}: ${resetCode}`);
+    try {
+      await sendMail({
+        to: email,
+        subject: "Your Password Reset Code",
+        text: `Your password reset code is: ${resetCode}\nThis code will expire in 1 hour.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2563eb;">Password Reset Request</h2>
+            <p>We received a request to reset your password. Here's your verification code:</p>
+            <div style="background: #f3f4f6; padding: 16px; border-radius: 4px; font-size: 24px; font-weight: bold; text-align: center; margin: 16px 0; color: #2563eb;">
+              ${resetCode}
+            </div>
+            <p>This code will expire in 1 hour.</p>
+            <p>If you didn't request this, please ignore this email.</p>
+          </div>
+        `,
+      });
+    } catch (error) {
+      console.error("Failed to send reset email:", error);
+      return json<ActionData>(
+        { formError: "Failed to send reset email. Please try again." },
+        { status: 500 }
+      );
+    }
 
     return json<ActionData>({
       resetSent: true,
-      fields: { email }, // Now valid with optional password
+      fields: { email },
       mode: "reset",
     });
   }
 
-  // Handle code verification and password update
   if (mode === "verify") {
     if (typeof code !== "string" || typeof password !== "string") {
       return json<ActionData>(
@@ -77,7 +93,6 @@ export const action: ActionFunction = async ({ request }) => {
       where: { email, code },
     });
 
-    // Check if code is valid and not expired
     if (!resetRecord || new Date() > resetRecord.expiresAt) {
       return json<ActionData>(
         {
@@ -89,7 +104,6 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    // Validate password
     if (password.length < 6) {
       return json<ActionData>(
         {
@@ -101,14 +115,12 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    // Update user password
     const hashedPassword = await bcrypt.hash(password, 10);
     await prisma.user.update({
       where: { email },
       data: { password: hashedPassword },
     });
 
-    // Delete used reset code
     await prisma.passwordReset.delete({ where: { email } });
 
     return json<ActionData>({
@@ -117,7 +129,6 @@ export const action: ActionFunction = async ({ request }) => {
     });
   }
 
-  // Normal login flow
   if (mode === "login") {
     if (typeof password !== "string") {
       return json<ActionData>(
@@ -128,17 +139,14 @@ export const action: ActionFunction = async ({ request }) => {
 
     const errors: ActionData["fieldErrors"] = {};
 
-    // Email validation
     if (!email.includes("@")) {
       errors.email = "Please enter a valid email address";
     }
 
-    // Password validation
     if (password.length < 6) {
       errors.password = "Password must be at least 6 characters";
     }
 
-    // Return early if validation errors
     if (Object.keys(errors).length > 0) {
       return json<ActionData>(
         { fieldErrors: errors, fields: { email, password }, mode: "login" },
@@ -146,7 +154,6 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    // Check if user exists
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return json<ActionData>(
@@ -159,7 +166,6 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    // Verify password
     const isCorrectPassword = await bcrypt.compare(password, user.password);
     if (!isCorrectPassword) {
       return json<ActionData>(
@@ -172,7 +178,6 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    // Create session and redirect on success
     return createUserSession(user.id, "/dashboard");
   }
 
@@ -182,8 +187,6 @@ export const action: ActionFunction = async ({ request }) => {
 export default function SignInPage() {
   const actionData = useActionData<ActionData>();
   const navigation = useNavigation();
-  const [showReset, setShowReset] = useState(false);
-
   const isLoading = navigation.state === "submitting";
   const currentMode = actionData?.mode || "login";
 
@@ -197,9 +200,9 @@ export default function SignInPage() {
         transition={{ duration: 0.8 }}
       >
         <motion.img
-          src=""
+          src="https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=900"
           alt="Aurora"
-          className="max-w-md rounded-lg shadow-2xl"
+          className="min-w-full min-h-full rounded-lg shadow-2xl"
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -251,7 +254,7 @@ export default function SignInPage() {
               animate={{ opacity: 1 }}
             >
               We've sent a verification code to your email. Please check your
-              inbox.
+              inbox and spam folder.
             </motion.div>
           )}
 
@@ -399,28 +402,35 @@ export default function SignInPage() {
             {/* Forgot password link */}
             {currentMode === "login" && (
               <div className="text-center mt-4">
-                <button
-                  type="button"
-                  className="text-sm text-blue-600 hover:text-blue-800"
-                  onClick={() => setShowReset(true)}
-                >
-                  Forgot your password?
-                </button>
+                <Form method="post">
+                  <input type="hidden" name="mode" value="reset" />
+                  <input
+                    type="hidden"
+                    name="email"
+                    value={actionData?.fields?.email || ""}
+                  />
+                  <button
+                    type="submit"
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    Forgot your password?
+                  </button>
+                </Form>
               </div>
             )}
 
             {/* Back to login link */}
             {(currentMode === "reset" || currentMode === "verify") && (
               <div className="text-center mt-4">
-                <button
-                  type="button"
-                  className="text-sm text-blue-600 hover:text-blue-800"
-                  onClick={() => {
-                    setShowReset(false);
-                  }}
-                >
-                  Back to Sign In
-                </button>
+                <Form method="post">
+                  <input type="hidden" name="mode" value="login" />
+                  <button
+                    type="submit"
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    Back to Sign In
+                  </button>
+                </Form>
               </div>
             )}
           </Form>

@@ -6,15 +6,14 @@ import {
 } from "~/context/DashboardContext";
 import { getUserSession } from "~/utils/session.server";
 import { prisma } from "~/db.server";
-import { useState, useEffect } from "react";
-import CryptoJS from "crypto-js";
-import { setEncryptedUserData } from "~/stores/user.store";
 import { motion } from "framer-motion";
 import { AppBar } from "~/components/ui/AppBar";
 import NavigationRail from "~/components/NavigationRail";
 import BottomNavigation from "~/components/BottomNavigation";
 import { NotificationDrawer } from "~/components/NotificationDrawer";
 import type { Notification } from "~/routes/notifications";
+import CryptoJS from "crypto-js";
+import { useEffect, useState } from "react";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const session = await getUserSession(request);
@@ -42,21 +41,15 @@ export const loader: LoaderFunction = async ({ request }) => {
 export default function Dashboard() {
   const { encryptedUserData } = useLoaderData<{ encryptedUserData: string }>();
 
-  useEffect(() => {
-    if (encryptedUserData) {
-      setEncryptedUserData(encryptedUserData);
-    }
-  }, [encryptedUserData]);
-
   return (
-    <DashboardProvider>
+    <DashboardProvider encryptedUserData={encryptedUserData}>
       <DashboardContent />
     </DashboardProvider>
   );
 }
 
 function DashboardContent() {
-  const { isMobile } = useDashboardContext();
+  const { isMobile, user } = useDashboardContext();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const notificationFetcher = useFetcher<{
@@ -64,12 +57,10 @@ function DashboardContent() {
     unreadCount: number;
   }>();
 
-  // Load initial notifications
   useEffect(() => {
     notificationFetcher.load("/notifications");
   }, []);
 
-  // Update unread count
   useEffect(() => {
     if (notificationFetcher.data?.unreadCount !== undefined) {
       setUnreadCount(notificationFetcher.data.unreadCount);
@@ -77,13 +68,11 @@ function DashboardContent() {
   }, [notificationFetcher.data]);
 
   const handleMarkAsRead = (id: string) => {
-    // API call to mark as read would go here
-    setUnreadCount((prev) => Math.max(0, prev - 1));
+    setUnreadCount((prev: number) => Math.max(0, prev - 1));
   };
 
   const handleArchive = (ids: string[]) => {
-    // API call to archive would go here
-    setUnreadCount((prev) => Math.max(0, prev - ids.length));
+    setUnreadCount((prev: number) => Math.max(0, prev - ids.length));
   };
 
   return (
@@ -100,6 +89,7 @@ function DashboardContent() {
           <AppBar
             unreadCount={unreadCount}
             onNotificationClick={() => setIsNotificationOpen(true)}
+            user={user}
           />
         </motion.div>
 

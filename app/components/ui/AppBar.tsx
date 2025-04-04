@@ -84,6 +84,12 @@ function LogoutDialog({
 interface AppBarProps {
   unreadCount: number;
   onNotificationClick: () => void;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    profileUrl: string;
+  } | null;
 }
 
 export const AppBar = ({ unreadCount, onNotificationClick }: AppBarProps) => {
