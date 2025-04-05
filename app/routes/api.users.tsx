@@ -1,5 +1,5 @@
 import { type ActionFunction, json, redirect } from "@remix-run/node";
-import { prisma } from "~/db.server";
+import { prisma } from "~/utils/prisma.server"
 import bcrypt from "bcryptjs";
 import { createUserSession } from "~/utils/session.server";
 

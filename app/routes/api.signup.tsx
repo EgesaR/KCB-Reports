@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { prisma } from "~/db.server";
+import { prisma } from "~/utils/prisma.server";
 import bcrypt from "bcryptjs";
 import { createUserSession } from "~/utils/session.server";
 import { z } from "zod";

@@ -1,10 +1,10 @@
 import { Form, useActionData, useNavigation } from "@remix-run/react";
 import type { ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { prisma } from "~/db.server";
+import { prisma } from "~/utils/prisma.server";
 import bcrypt from "bcryptjs";
 import { createUserSession } from "~/utils/session.server";
-import { sendMail } from "~/utils/mailer.server";
+import { mailerSend } from "~/utils/mailersend.server";
 import { motion } from "framer-motion";
 
 type ActionData = {
@@ -31,7 +31,6 @@ export const action: ActionFunction = async ({ request }) => {
   const code = formData.get("code");
   const mode = formData.get("mode") || "login";
 
-  // Validate email exists
   if (typeof email !== "string" || !email.includes("@")) {
     return json<ActionData>(
       { formError: "Please enter a valid email address" },
@@ -39,13 +38,11 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  // Password Reset Flow
   if (mode === "reset") {
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 1);
 
-    // Check if user exists
     const userExists = await prisma.user.findUnique({ where: { email } });
     if (!userExists) {
       return json<ActionData>(
@@ -54,16 +51,14 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    // Create or update reset record
     await prisma.passwordReset.upsert({
       where: { email },
       update: { code: resetCode, expiresAt },
       create: { email, code: resetCode, expiresAt },
     });
 
-    // Send reset email
     try {
-      await sendMail({
+      await mailerSend.sendMail({
         to: email,
         subject: "Your Password Reset Code",
         text: `Your password reset code is: ${resetCode}\nThis code will expire in 1 hour.`,
@@ -79,11 +74,14 @@ export const action: ActionFunction = async ({ request }) => {
           </div>
         `,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to send reset email:", error);
       return json<ActionData>(
         {
-          formError: "Failed to send reset email. Please try again later.",
+          formError:
+            error instanceof Error
+              ? error.message
+              : "Failed to send reset email",
           fields: { email },
           mode: "reset",
         },
@@ -98,7 +96,6 @@ export const action: ActionFunction = async ({ request }) => {
     });
   }
 
-  // Password Verification Flow
   if (mode === "verify") {
     if (typeof code !== "string" || typeof password !== "string") {
       return json<ActionData>(
@@ -107,7 +104,6 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    // Validate reset code
     const resetRecord = await prisma.passwordReset.findFirst({
       where: { email, code },
     });
@@ -123,7 +119,6 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    // Validate password strength
     if (password.length < 8) {
       return json<ActionData>(
         {
@@ -135,14 +130,12 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    // Update password
     const hashedPassword = await bcrypt.hash(password, 12);
     await prisma.user.update({
       where: { email },
       data: { password: hashedPassword },
     });
 
-    // Clean up reset record
     await prisma.passwordReset.delete({ where: { email } });
 
     return json<ActionData>({
@@ -151,7 +144,6 @@ export const action: ActionFunction = async ({ request }) => {
     });
   }
 
-  // Login Flow
   if (mode === "login") {
     if (typeof password !== "string" || password.length < 8) {
       return json<ActionData>(
@@ -160,7 +152,6 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    // Find user
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return json<ActionData>(
@@ -173,7 +164,6 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    // Verify password
     const isCorrectPassword = await bcrypt.compare(password, user.password);
     if (!isCorrectPassword) {
       return json<ActionData>(
@@ -186,7 +176,6 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    // Create user session
     return createUserSession(user.id, "/dashboard");
   }
 

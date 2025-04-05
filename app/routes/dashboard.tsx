@@ -5,7 +5,7 @@ import {
   useDashboardContext,
 } from "~/context/DashboardContext";
 import { getUserSession } from "~/utils/session.server";
-import { prisma } from "~/db.server";
+import { prisma } from "~/utils/prisma.server";
 import { motion } from "framer-motion";
 import { AppBar } from "~/components/ui/AppBar";
 import NavigationRail from "~/components/NavigationRail";
