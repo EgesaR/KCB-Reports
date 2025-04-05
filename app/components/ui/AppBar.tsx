@@ -120,7 +120,7 @@ export const AppBar = ({ unreadCount, onNotificationClick }: AppBarProps) => {
 
   return (
     <>
-      <div className="w-full h-full flex items-center justify-between px-2">
+      <div className="w-full h-full flex items-center justify-between px-2 backdrop-blur-xl">
         <div className="flex items-center gap-2.5">
           {isMobile && (
             <>

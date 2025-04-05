@@ -94,8 +94,8 @@ function DashboardContent() {
         </motion.div>
 
         <div
-          className="h-full w-full sm:pt-[7%] pr-1 mt-2.5 overflow-y-auto pt-[16%]"
-          style={{ scrollbarWidth: "none" }}
+          className="h-full w-full sm:pt-[4%] pr-1 mt-2.5 overflow-y-auto pt-[16%]"
+          //style={{ scrollbarWidth: "none" }}
         >
           <Outlet />
         </div>

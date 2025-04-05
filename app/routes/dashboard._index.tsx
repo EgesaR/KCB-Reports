@@ -4,25 +4,23 @@ import { useDashboardContext } from "~/context/DashboardContext";
 
 export default function DashboardIndex() {
   const { user } = useDashboardContext();
-console.log({ user })
   return (
-    <div className="flex flex-col h-full gap-8 p-6">
-      {/* Welcome Header Section */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg dark:from-blue-700 dark:to-blue-800">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-white">
-            Welcome Back, {user?.name || "User"}!
+    <div className="flex flex-col min-h-screen gap-8 p-6">
+      {/* Welcome Header Section - Now with proper height */}
+      <div className="min-h-[40vh] flex flex-col px-10 py-8 rounded-xl shadow-lg bg-gradient-to-r from-[#751d91] via-[#4d1a72] to-[#38185e]">
+        <div className="w-[55%] flex flex-col gap-2">
+          <h1 className="text-white text-3xl font-medium">
+            Good morning, {user?.name || "User"}
           </h1>
-          <p className="text-blue-100 dark:text-blue-200">
-            Here's what's happening with your projects today
+          <p className="text-gray-100 dark:text-gray-200">
+            Track, analyze, and optimize student progress effortlessly. Automate
+            grading, monitor performance trends, and collaborate with teachers
+            seamlessly. Gain data-driven insights for smarter, more efficient
+            education.
           </p>
-        </div>
-        <div className="mt-4 md:mt-0">
-          <img
-            src={user?.profileUrl || "https://via.placeholder.com/120"}
-            alt="User profile"
-            className="h-20 w-20 rounded-full border-4 border-white/30 shadow-lg object-cover"
-          />
+          <button className="bg-neutral-200 dark:bg-neutral-900 hover:bg-neutal-300 dark:hover:bg-neutral-900/90 text-black dark:text-white font-bold py-2 px-4 border border-[#751d91] hover:border-[#761d91b6] rounded-lg w-[20%] mt-4">
+            Get Started
+          </button>
         </div>
       </div>
 

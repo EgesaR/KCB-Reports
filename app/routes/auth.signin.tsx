@@ -31,24 +31,37 @@ export const action: ActionFunction = async ({ request }) => {
   const code = formData.get("code");
   const mode = formData.get("mode") || "login";
 
-  if (typeof email !== "string") {
+  // Validate email exists
+  if (typeof email !== "string" || !email.includes("@")) {
     return json<ActionData>(
-      { formError: "Form not submitted correctly" },
+      { formError: "Please enter a valid email address" },
       { status: 400 }
     );
   }
 
+  // Password Reset Flow
   if (mode === "reset") {
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 1);
 
+    // Check if user exists
+    const userExists = await prisma.user.findUnique({ where: { email } });
+    if (!userExists) {
+      return json<ActionData>(
+        { formError: "No account found with this email address" },
+        { status: 400 }
+      );
+    }
+
+    // Create or update reset record
     await prisma.passwordReset.upsert({
       where: { email },
       update: { code: resetCode, expiresAt },
       create: { email, code: resetCode, expiresAt },
     });
 
+    // Send reset email
     try {
       await sendMail({
         to: email,
@@ -69,7 +82,11 @@ export const action: ActionFunction = async ({ request }) => {
     } catch (error) {
       console.error("Failed to send reset email:", error);
       return json<ActionData>(
-        { formError: "Failed to send reset email. Please try again." },
+        {
+          formError: "Failed to send reset email. Please try again later.",
+          fields: { email },
+          mode: "reset",
+        },
         { status: 500 }
       );
     }
@@ -81,14 +98,16 @@ export const action: ActionFunction = async ({ request }) => {
     });
   }
 
+  // Password Verification Flow
   if (mode === "verify") {
     if (typeof code !== "string" || typeof password !== "string") {
       return json<ActionData>(
-        { formError: "Code and new password are required" },
+        { formError: "Verification code and new password are required" },
         { status: 400 }
       );
     }
 
+    // Validate reset code
     const resetRecord = await prisma.passwordReset.findFirst({
       where: { email, code },
     });
@@ -104,10 +123,11 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    if (password.length < 6) {
+    // Validate password strength
+    if (password.length < 8) {
       return json<ActionData>(
         {
-          fieldErrors: { password: "Password must be at least 6 characters" },
+          fieldErrors: { password: "Password must be at least 8 characters" },
           fields: { email, code },
           mode: "verify",
         },
@@ -115,12 +135,14 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Update password
+    const hashedPassword = await bcrypt.hash(password, 12);
     await prisma.user.update({
       where: { email },
       data: { password: hashedPassword },
     });
 
+    // Clean up reset record
     await prisma.passwordReset.delete({ where: { email } });
 
     return json<ActionData>({
@@ -129,31 +151,16 @@ export const action: ActionFunction = async ({ request }) => {
     });
   }
 
+  // Login Flow
   if (mode === "login") {
-    if (typeof password !== "string") {
+    if (typeof password !== "string" || password.length < 8) {
       return json<ActionData>(
-        { formError: "Password is required" },
+        { formError: "Password must be at least 8 characters" },
         { status: 400 }
       );
     }
 
-    const errors: ActionData["fieldErrors"] = {};
-
-    if (!email.includes("@")) {
-      errors.email = "Please enter a valid email address";
-    }
-
-    if (password.length < 6) {
-      errors.password = "Password must be at least 6 characters";
-    }
-
-    if (Object.keys(errors).length > 0) {
-      return json<ActionData>(
-        { fieldErrors: errors, fields: { email, password }, mode: "login" },
-        { status: 400 }
-      );
-    }
-
+    // Find user
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return json<ActionData>(
@@ -166,6 +173,7 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
+    // Verify password
     const isCorrectPassword = await bcrypt.compare(password, user.password);
     if (!isCorrectPassword) {
       return json<ActionData>(
@@ -178,6 +186,7 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
+    // Create user session
     return createUserSession(user.id, "/dashboard");
   }
 
@@ -349,6 +358,7 @@ export default function SignInPage() {
                       : "border-gray-300 focus:ring-blue-500"
                   } focus:outline-none focus:ring-2`}
                   required
+                  minLength={8}
                 />
                 {actionData?.fieldErrors?.password && (
                   <p className="mt-2 text-sm text-red-600">
