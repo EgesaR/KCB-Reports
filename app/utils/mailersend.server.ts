@@ -1,102 +1,185 @@
-import nodemailer from 'nodemailer';
-import type { SentMessageInfo } from 'nodemailer';
+import type { ActionFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { prisma } from "./prisma.server";
+import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
 
-interface MailOptions {
-  to: string;
-  subject: string;
-  text: string;
-  html: string;
-  cc?: string[];
-  bcc?: string[];
+export type ForgotPasswordActionData = {
+  formError?: string;
+  fieldErrors?: {
+    email?: string;
+    password?: string;
+    code?: string;
+  };
+  fields?: {
+    email: string;
+    password?: string;
+    code?: string;
+  };
+  resetSent?: boolean;
+  resetSuccess?: boolean;
+  mode?: "reset" | "verify";
+};
+
+// Create reusable transporter object
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER || "your-email@gmail.com",
+    pass: process.env.EMAIL_PASSWORD || "your-app-password",
+  },
+});
+
+async function sendEmail(
+  to: string,
+  subject: string,
+  text: string,
+  html: string
+) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"KCB Reports" <${
+        process.env.EMAIL_FROM || "no-reply@yourdomain.com"
+      }>`,
+      to,
+      subject,
+      text,
+      html,
+    });
+    console.log("Message sent: %s", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
 }
 
-interface SMTPError extends Error {
-  code?: string;
-  response?: string;
-  responseCode?: number;
-  command?: string;
-}
+export const forgotPasswordAction: ActionFunction = async ({ request }) => {
+  const formData = await request.formData();
+  const email = formData.get("email");
+  const password = formData.get("password");
+  const code = formData.get("code");
+  const mode = formData.get("mode") || "reset";
 
-class MailerSendService {
-  private transporter: nodemailer.Transporter;
+  if (typeof email !== "string" || !email.includes("@")) {
+    return json<ForgotPasswordActionData>(
+      { formError: "Please enter a valid email address" },
+      { status: 400 }
+    );
+  }
 
-  constructor() {
-    if (!process.env.MAILERSEND_SMTP_USER || !process.env.MAILERSEND_SMTP_PASSWORD) {
-      throw new Error('MailerSend SMTP credentials not configured');
+  if (mode === "reset") {
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1);
+
+    const userExists = await prisma.user.findUnique({ where: { email } });
+    if (!userExists) {
+      return json<ForgotPasswordActionData>(
+        { formError: "No account found with this email address" },
+        { status: 400 }
+      );
     }
 
-    this.transporter = nodemailer.createTransport({
-      host: process.env.MAILERSEND_SMTP_HOST || 'smtp.mailersend.net',
-      port: parseInt(process.env.MAILERSEND_SMTP_PORT || '587'),
-      secure: false,
-      auth: {
-        user: process.env.MAILERSEND_SMTP_USER,
-        pass: process.env.MAILERSEND_SMTP_PASSWORD
-      },
-      tls: {
-        rejectUnauthorized: process.env.NODE_ENV === 'production' // Only reject in production
-      },
-      logger: process.env.NODE_ENV !== 'production',
-      debug: process.env.NODE_ENV !== 'production'
+    await prisma.passwordReset.upsert({
+      where: { email },
+      update: { code: resetCode, expiresAt },
+      create: { email, code: resetCode, expiresAt },
+    });
+
+    try {
+      await sendEmail(
+        email,
+        "Your Password Reset Code",
+        `Your password reset code is: ${resetCode}\nThis code will expire in 1 hour.`,
+        `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">Password Reset Request</h2>
+          <p>We received a request to reset your password. Here's your verification code:</p>
+          <div style="background: #f3f4f6; padding: 16px; border-radius: 4px; font-size: 24px; font-weight: bold; text-align: center; margin: 16px 0; color: #2563eb;">
+            ${resetCode}
+          </div>
+          <p>This code will expire in 1 hour.</p>
+          <p>If you didn't request this, please ignore this email.</p>
+        </div>
+      `
+      );
+    } catch (error: unknown) {
+      console.error("Failed to send reset email:", error);
+      return json<ForgotPasswordActionData>(
+        {
+          formError:
+            error instanceof Error
+              ? error.message
+              : "Failed to send reset email",
+          fields: { email },
+          mode: "reset",
+        },
+        { status: 500 }
+      );
+    }
+
+    return json<ForgotPasswordActionData>({
+      resetSent: true,
+      fields: { email },
+      mode: "reset",
     });
   }
 
-  private isSMTPError(error: unknown): error is SMTPError {
-    return error instanceof Error && 'code' in error;
-  }
-
-  async sendMail(options: MailOptions): Promise<SentMessageInfo> {
-    try {
-      const mailOptions = {
-        from: `"${process.env.MAILERSEND_FROM_NAME || 'App'}" <${process.env.MAILERSEND_FROM_EMAIL}>`,
-        to: options.to,
-        cc: options.cc,
-        bcc: options.bcc,
-        subject: options.subject,
-        text: options.text,
-        html: options.html,
-        headers: {
-          'X-MailerSend-Track-Opens': 'true',
-          'X-MailerSend-Track-Clicks': 'true'
-        }
-      };
-
-      return await this.transporter.sendMail(mailOptions);
-    } catch (error: unknown) {
-      if (this.isSMTPError(error)) {
-        console.error('MailerSend SMTP Error:', {
-          code: error.code,
-          command: error.command,
-          responseCode: error.responseCode
-        });
-        throw new Error(`Email failed: ${error.response || error.message}`);
-      }
-      console.error('Unexpected mail error:', error);
-      throw new Error('Failed to send email due to unexpected error');
+  if (mode === "verify") {
+    if (typeof code !== "string" || typeof password !== "string") {
+      return json<ForgotPasswordActionData>(
+        { formError: "Verification code and new password are required" },
+        { status: 400 }
+      );
     }
-  }
 
-  async verifyConnection(): Promise<boolean> {
-    try {
-      await this.transporter.verify();
-      return true;
-    } catch (error: unknown) {
-      if (this.isSMTPError(error)) {
-        console.error('Connection verification failed:', {
-          code: error.code,
-          response: error.response
-        });
-      }
-      return false;
+    const resetRecord = await prisma.passwordReset.findFirst({
+      where: { email, code },
+    });
+
+    if (!resetRecord || new Date() > resetRecord.expiresAt) {
+      return json<ForgotPasswordActionData>(
+        {
+          formError: "Invalid or expired verification code",
+          fields: { email, code },
+          mode: "verify",
+        },
+        { status: 400 }
+      );
     }
+
+    if (password.length < 8) {
+      return json<ForgotPasswordActionData>(
+        {
+          fieldErrors: { password: "Password must be at least 8 characters" },
+          fields: { email, code },
+          mode: "verify",
+        },
+        { status: 400 }
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+    await prisma.user.update({
+      where: { email },
+      data: { password: hashedPassword },
+    });
+
+    await prisma.passwordReset.delete({ where: { email } });
+
+    return json<ForgotPasswordActionData>({
+      resetSuccess: true,
+      mode: "verify",
+    });
   }
-}
 
-export const mailerSend = new MailerSendService();
+  return json<ForgotPasswordActionData>(
+    { formError: "Invalid request" },
+    { status: 400 }
+  );
+};
 
-// Verify connection on startup in development
-if (process.env.NODE_ENV === 'development') {
-  mailerSend.verifyConnection()
-    .then(verified => console.log(`MailerSend connection ${verified ? 'verified' : 'failed'}`))
-    .catch(err => console.error('Startup verification error:', err));
-}
+export const forgotPasswordHandler = {
+  action: forgotPasswordAction,
+};
