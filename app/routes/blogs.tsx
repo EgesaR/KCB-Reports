@@ -3,7 +3,7 @@ import { Link, useLoaderData } from "@remix-run/react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { motion } from "framer-motion";
 import SearchBox from "~/components/SearchBox";
-import type { Blog } from "~/types";
+import type { Blog } from "~/types/blog";
 
 export { loader };
 

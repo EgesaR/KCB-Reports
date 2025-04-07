@@ -1,31 +1,27 @@
 import { useStore } from "@nanostores/react";
-import { isSubscriptionTimeMonthly } from "./StepProvider";
+import { isMonthly } from "./StepProvider"; // Changed from isSubscriptionTimeMonthly
 
 function SubscriptionTimeToggle() {
-  const $isSubscriptionTimeMonthly = useStore(isSubscriptionTimeMonthly);
+  const $isMonthly = useStore(isMonthly);
 
   function toggleSubscriptionTime() {
-    isSubscriptionTimeMonthly.set(!$isSubscriptionTimeMonthly);
+    isMonthly.set(!$isMonthly);
   }
 
   return (
     <div className="button-month-year">
-      <strong className={$isSubscriptionTimeMonthly ? "active" : ""}>
-        Monthly
-      </strong>
+      <strong className={$isMonthly ? "active" : ""}>Monthly</strong>
       <input
         id="month-year"
         type="checkbox"
         name="subscription"
-        checked={!$isSubscriptionTimeMonthly}
+        checked={!$isMonthly}
         onChange={toggleSubscriptionTime}
       />
       <label htmlFor="month-year">
         <span className="dot"></span>
       </label>
-      <strong className={!$isSubscriptionTimeMonthly ? "active" : ""}>
-        Yearly
-      </strong>
+      <strong className={!$isMonthly ? "active" : ""}>Yearly</strong>
     </div>
   );
 }

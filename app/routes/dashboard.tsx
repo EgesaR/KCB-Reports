@@ -1,4 +1,5 @@
-import { LoaderFunction, redirect, json } from "@remix-run/node";
+import type { LoaderFunction } from "@remix-run/node";
+import { redirect, json } from "@remix-run/node";
 import { Outlet, useLoaderData, useFetcher } from "@remix-run/react";
 import {
   DashboardProvider,
@@ -11,7 +12,7 @@ import { AppBar } from "~/components/ui/AppBar";
 import NavigationRail from "~/components/NavigationRail";
 import BottomNavigation from "~/components/BottomNavigation";
 import { NotificationDrawer } from "~/components/NotificationDrawer";
-import type { Notification } from "~/routes/notifications";
+import type { AppNotification } from "~/types/notification";
 import CryptoJS from "crypto-js";
 import { useEffect, useState } from "react";
 
@@ -53,7 +54,7 @@ function DashboardContent() {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const notificationFetcher = useFetcher<{
-    notifications: Notification[];
+    notifications: AppNotification[];
     unreadCount: number;
   }>();
 
@@ -68,11 +69,11 @@ function DashboardContent() {
   }, [notificationFetcher.data]);
 
   const handleMarkAsRead = (id: string) => {
-    setUnreadCount((prev: number) => Math.max(0, prev - 1));
+    setUnreadCount((prev) => Math.max(0, prev - 1));
   };
 
   const handleArchive = (ids: string[]) => {
-    setUnreadCount((prev: number) => Math.max(0, prev - ids.length));
+    setUnreadCount((prev) => Math.max(0, prev - ids.length));
   };
 
   return (
@@ -93,16 +94,14 @@ function DashboardContent() {
           />
         </motion.div>
 
-        <div
-          className="h-full w-full overflow-y-auto pt-[20%] sm:pt-[2%] mt-0 sm:overflow-y-hidden"
-          //style={{ scrollbarWidth: "none" }}
-        >
+        <div className="h-full w-full overflow-y-auto pt-[20%] sm:pt-[2%] mt-0 sm:overflow-y-hidden">
           <Outlet />
         </div>
 
         <NotificationDrawer
           isOpen={isNotificationOpen}
           setIsOpen={setIsNotificationOpen}
+          unreadCount={unreadCount}
           onMarkAsRead={handleMarkAsRead}
           onArchive={handleArchive}
         />

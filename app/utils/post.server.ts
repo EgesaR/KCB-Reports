@@ -1,40 +1,60 @@
 import { prisma } from "~/utils/prisma.server";
-import { nanoid } from "nanoid"; // For generating a unique slug
+import { nanoid } from "nanoid";
+import type { Post, PostStatus } from "~/types/blog";
 
-export async function createPost(
-  title: string,
-  content: string,
-  blogId: string,
-  author: string
-) {
-  // Ensure blogId exists before creating a post
-  const blogExists = await prisma.blog.findUnique({ where: { id: blogId } });
-  if (!blogExists) {
-    throw new Error("Selected blog does not exist!");
-  }
-
-  return await prisma.post.create({
-    data: {
-      title,
-      content,
-      blogId,
-      author,
-      slug: nanoid(10), // Generate a unique slug
-      publishedAt: new Date(), // Default to now
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      status: "published", // Default status
-    },
-  });
+interface CreatePostInput {
+  title: string;
+  content: string;
+  blogId: string;
+  author: string;
+  status?: PostStatus;
+  imageUrl?: string | null;
+  categories?: string[];
 }
 
-// Fetch all posts
-export async function getPosts() {
-  return await prisma.post.findMany({
-    select: {
-      id: true,
-      title: true,
-      blogId: true,
+export async function createPost(data: CreatePostInput): Promise<Post> {
+  const { categories = [], ...postData } = data;
+
+  const wordCount = data.content.split(/\s+/).length;
+  const readingTime = Math.ceil(wordCount / 200);
+
+  return prisma.post.create({
+    data: {
+      ...postData,
+      slug: `${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${nanoid(
+        6
+      )}`,
+      readingTime,
+      categories: {
+        connectOrCreate: await Promise.all(
+          categories.map(async (name) => {
+            const categoryName = name.trim();
+            const category = await prisma.category.upsert({
+              where: { name: categoryName },
+              create: { name: categoryName },
+              update: {},
+            });
+            return {
+              where: {
+                postId_categoryId: {
+                  postId: "", // Will be set by Prisma
+                  categoryId: category.id,
+                },
+              },
+              create: {
+                categoryId: category.id,
+              },
+            };
+          })
+        ),
+      },
     },
-  });
+    include: {
+      categories: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  }) as Promise<Post>;
 }

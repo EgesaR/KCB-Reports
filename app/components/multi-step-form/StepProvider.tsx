@@ -15,6 +15,8 @@ export const stepStatuses = atom<Record<number, string>>({
   
 });
 
+export const isMonthly = atom(true);
+
 // Tracks the user's current selections and data (General User Information)
 export const user = map<Record<string, string | null>>({
   // Basic Info

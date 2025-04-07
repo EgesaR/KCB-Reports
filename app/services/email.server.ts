@@ -1,13 +1,13 @@
-import { sendEmail } from "./gmailAuth.server";
-import { createResetToken } from "~/models/user.server";
 
+import { createResetToken } from "~/models/user.server";
+import { sendMail } from "~/utils/mailer.server";
 export async function sendPasswordResetEmail(email: string, request: Request) {
   const user = await createResetToken(email);
   if (!user) throw new Error("User not found");
 
   const resetUrl = `${process.env.APP_URL}/reset-password/${user.resetToken}`;
 
-  await sendEmail(request, {
+  await sendMail(request, {
     to: email,
     subject: "Password Reset Request",
     body: `

@@ -1,4 +1,5 @@
-import { ActionFunctionArgs, json } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { sendPasswordResetEmail } from "~/services/email.server";
 import { Form } from "@remix-run/react";
 
@@ -10,7 +11,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     await sendPasswordResetEmail(email, request);
     return json({ success: true });
   } catch (error) {
-    return json({ error: error.message }, { status: 400 });
+    return json(
+      {
+        error:
+          error instanceof Error ? error.message : "An unknown error occurred",
+      },
+      { status: 400 }
+    );
   }
 };
 

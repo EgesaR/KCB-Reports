@@ -2,7 +2,7 @@ import { useLoaderData } from "@remix-run/react";
 import { loader } from "~/routes/api.blogs";
 import BlogList from "~/components/BlogList";
 import CreateBlog from "~/components/CreateBlog";
-import type { Blog } from "~/types";
+import type { Blog } from "~/types/blog";
 
 export { loader };
 

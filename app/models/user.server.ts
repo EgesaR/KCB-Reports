@@ -1,4 +1,6 @@
 import { prisma } from "~/utils/prisma.server";
+import { hashPassword } from "~/utils/auth.server";
+import crypto from "crypto";
 
 interface User {
   id: string;

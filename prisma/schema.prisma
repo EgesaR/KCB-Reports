@@ -28,6 +28,12 @@ model User {
   themePreference    ThemePreference @default(SYSTEM)
   title              String?         @db.VarChar(100)
   twoFactorEnabled   Boolean         @default(false)
+  resetToken         String?         @db.VarChar(255)
+  resetTokenExpiry   DateTime?
+  passwordHash       String?         @db.VarChar(255)
+  googleAccessToken  String?         @db.VarChar(512)
+  googleRefreshToken String?         @db.VarChar(512)
+  schools            Json?
   roles              UserRole[]
   adminRoles         UserAdminRole[]
   teacherProfile     TeacherProfile?
@@ -163,6 +169,7 @@ model Page {
 model PostCategories {
   postId     String
   categoryId String
+  name       String? @db.VarChar(50)
   post       Post     @relation(fields: [postId], references: [id])
   category   Category @relation(fields: [categoryId], references: [id])
 
