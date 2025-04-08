@@ -1,23 +1,19 @@
-// app/routes/reset-password.$token.tsx
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import { validateResetToken, updatePassword } from "~/services/auth.server";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
-  if (!params.token) throw new Response("Token is required", { status: 400 });
+  if (!params.token) throw new Response("Token required", { status: 400 });
 
   const user = await validateResetToken(params.token);
-  if (!user) throw new Response("Invalid or expired token", { status: 400 });
+  if (!user) throw new Response("Invalid token", { status: 400 });
 
   return json({ email: user.email });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-  if (!params.token) throw new Response("Token is required", { status: 400 });
-
-  const user = await validateResetToken(params.token);
-  if (!user) throw new Response("Invalid or expired token", { status: 400 });
+  if (!params.token) throw new Response("Token required", { status: 400 });
 
   const formData = await request.formData();
   const password = formData.get("password") as string;
@@ -27,7 +23,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     return json({ error: "Passwords don't match" }, { status: 400 });
   }
 
-  await updatePassword(user.id, password);
+  await updatePassword(params.token, password);
   return redirect("/login?reset=success");
 };
 
@@ -37,7 +33,6 @@ export default function ResetPasswordPage() {
   return (
     <div className="max-w-md mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Reset Password for {email}</h1>
-
       <Form method="post" className="space-y-4">
         <div>
           <label htmlFor="password" className="block mb-1">
@@ -52,7 +47,6 @@ export default function ResetPasswordPage() {
             className="w-full p-2 border rounded"
           />
         </div>
-
         <div>
           <label htmlFor="confirmPassword" className="block mb-1">
             Confirm Password
@@ -66,7 +60,6 @@ export default function ResetPasswordPage() {
             className="w-full p-2 border rounded"
           />
         </div>
-
         <button
           type="submit"
           className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"

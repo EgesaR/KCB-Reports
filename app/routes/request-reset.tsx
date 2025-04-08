@@ -5,18 +5,22 @@ import { Form } from "@remix-run/react";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
-  const email = formData.get("email") as string;
+  const email = formData.get("email");
+
+  if (typeof email !== "string") {
+    return json({ error: "Invalid email format" }, { status: 400 });
+  }
 
   try {
-    await sendPasswordResetEmail(email, request);
+    await sendPasswordResetEmail(email);
     return json({ success: true });
   } catch (error) {
     return json(
       {
         error:
-          error instanceof Error ? error.message : "An unknown error occurred",
+          error instanceof Error ? error.message : "Failed to send reset email",
       },
-      { status: 400 }
+      { status: 500 }
     );
   }
 };

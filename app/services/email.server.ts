@@ -1,16 +1,16 @@
-
-import { createResetToken } from "~/models/user.server";
+// app/services/email.server.ts
 import { sendMail } from "~/utils/mailer.server";
-export async function sendPasswordResetEmail(email: string, request: Request) {
-  const user = await createResetToken(email);
-  if (!user) throw new Error("User not found");
+import { createResetToken } from "~/services/auth.server";
 
-  const resetUrl = `${process.env.APP_URL}/reset-password/${user.resetToken}`;
+export async function sendPasswordResetEmail(email: string): Promise<void> {
+  const resetToken = await createResetToken(email);
+  const resetUrl = `${process.env.APP_URL}/reset-password/${resetToken}`;
 
-  await sendMail(request, {
+  await sendMail({
     to: email,
     subject: "Password Reset Request",
-    body: `
+    text: `Please reset your password using this link: ${resetUrl}`,
+    html: `
       <h1>Password Reset</h1>
       <p>Click this link to reset your password:</p>
       <a href="${resetUrl}">${resetUrl}</a>

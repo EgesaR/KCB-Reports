@@ -26,9 +26,10 @@ export const action: ActionFunction = async ({ request }) => {
       to,
       subject,
       text: message,
+      html: `<p>${message}</p>`,
     });
     return json<ActionData>({ success: true });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Failed to send email:", error);
     return json<ActionData>({ error: "Failed to send email" }, { status: 500 });
   }

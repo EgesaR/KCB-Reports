@@ -1,37 +1,28 @@
 import type { Blog } from "~/types/blog";
 
 interface BlogListProps {
-  blogs?: Blog[];
+  blogs: Blog[];
 }
 
-const BlogList: React.FC<BlogListProps> = ({ blogs = [] }) => {
-  if (blogs.length === 0) {
-    return <p className="text-gray-500">No blogs found.</p>;
-  }
-
+export function BlogList({ blogs }: BlogListProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="space-y-4">
       {blogs.map((blog) => (
-        <div key={blog.id} className="bg-white p-4 rounded-lg shadow">
+        <article key={blog.id} className="border p-4 rounded-lg">
           {blog.imageUrl && (
             <img
               src={blog.imageUrl}
-              alt={blog.name}
-              className="w-full h-48 object-cover rounded"
+              alt={blog.title}
+              className="w-full h-auto mb-2"
             />
           )}
-          <h2 className="text-xl font-semibold">{blog.name}</h2>
-          <p>{blog.description}</p>
-          <a
-            href={blog.selfLink || "#"}
-            className="text-blue-500 hover:underline"
-          >
-            Read More
-          </a>
-        </div>
+          <h2 className="text-xl font-bold">{blog.title}</h2>
+          <p className="text-gray-600">
+            By {blog.author} - {new Date(blog.publishedAt).toLocaleDateString()}
+          </p>
+          <p className="mt-2">{blog.description}</p>
+        </article>
       ))}
     </div>
   );
-};
-
-export default BlogList;
+}

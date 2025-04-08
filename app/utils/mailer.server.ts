@@ -1,42 +1,59 @@
-import nodemailer from "nodemailer";
-import type { User } from "~/types/blog";
+// app/utils/mailer.server.ts
+import axios from "axios";
+import type { EmailOptions } from "~/types/blog";
 
-interface MailOptions {
-  to: string;
-  subject: string;
-  html: string;
-}
+export async function sendMail(options: EmailOptions): Promise<boolean> {
+  if (!process.env.MAILERSEND_API_KEY) {
+    throw new Error("MailerSend API key is not configured");
+  }
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: process.env.SMTP_SECURE === "true",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
-
-export async function verifyMailConnection(): Promise<boolean> {
   try {
-    await transporter.verify();
-    return true;
+    const response = await axios.post(
+      "https://api.mailersend.com/v1/email",
+      {
+        from: {
+          email: process.env.MAILERSEND_FROM_EMAIL,
+          name: process.env.MAILERSEND_FROM_NAME,
+        },
+        to: [{ email: options.to }],
+        subject: options.subject,
+        text: options.text,
+        html: options.html,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.MAILERSEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        timeout: 10000, // 10 second timeout
+      }
+    );
+
+    return response.status === 202;
   } catch (error) {
-    console.error("Mail server connection failed:", error);
-    return false;
+    console.error("MailerSend API error:", error);
+    throw new Error("Failed to send email");
   }
 }
 
-export async function sendMail(options: MailOptions): Promise<void> {
+export async function verifyMailConnection(): Promise<boolean> {
+  if (!process.env.MAILERSEND_API_KEY) {
+    return false;
+  }
+
   try {
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || '"Your App" <noreply@example.com>',
-      to: options.to,
-      subject: options.subject,
-      html: options.html,
-    });
+    const response = await axios.get(
+      "https://api.mailersend.com/v1/verify",
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.MAILERSEND_API_KEY}`,
+        },
+        timeout: 5000,
+      }
+    );
+    return response.status === 200;
   } catch (error) {
-    console.error("Failed to send email:", error);
-    throw new Error("Failed to send email");
+    console.error("MailerSend connection verification failed:", error);
+    return false;
   }
 }

@@ -10,3 +10,25 @@ WHERE email = 'egesaraymond644@gmail.com';
 -- Verify
 SELECT email, LEFT(password, 10) AS password_prefix FROM `User` 
 WHERE email = 'egesaraymond644@gmail.com';
+
+Creating a postimport { createPost } from "~/utils/post.server";
+import type { PostStatus } from "~/types/blog";
+
+const newPost = await createPost({
+  title: "My New Post",
+  content: "This is the post content...",
+  blogId: "123",
+  author: "John Doe",
+  status: "PUBLISHED" as PostStatus,
+  categories: ["Tech", "Programming"]
+});
+
+Senfing an emailimport { sendMail } from "~/services/mailersend-api.server";
+
+await sendMail({
+  to: "user@example.com",
+  subject: "Welcome!",
+  text: "Welcome to our service",
+  html: "<h1>Welcome to our service</h1>",
+  type: "WELCOME"
+});

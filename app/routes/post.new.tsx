@@ -28,21 +28,21 @@ export const action: ActionFunction = async ({ request }) => {
   const title = formData.get("title");
   const content = formData.get("content");
   const blogId = formData.get("blogId");
-  const author = formData.get("author"); // ✅ Get author from form
+  const author = formData.get("author");
 
   if (!title || !content || !blogId || !author) {
     return json({ error: "All fields are required!" }, { status: 400 });
   }
 
   try {
-    await createPost(
-      title.toString(),
-      content.toString(),
-      blogId.toString(),
-      author.toString() // ✅ Pass author argument
-    );
+    await createPost({
+      title: title.toString(),
+      content: content.toString(),
+      blogId: blogId.toString(),
+      author: author.toString(),
+    });
     return redirect("/posts");
-  } catch (error) {
+  } catch (error: unknown) {
     return json({ error: "Failed to create post." }, { status: 500 });
   }
 };
