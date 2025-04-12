@@ -1,4 +1,8 @@
+// app/types/reports.d.ts
 import type { Prisma } from "@prisma/client";
+
+export type ExamType = "AOI" | "EOT" | "BOT" | "MTE" | "TT";
+export type ReportStatus = "pending" | "in-progress" | "completed" | "archived";
 
 export interface ReportMetadata {
   averageScore: string;
@@ -6,28 +10,40 @@ export interface ReportMetadata {
   highestSubject: string;
   lowestSubject: string;
   totalExams: number;
-  lastUpdated: string;
   grade: string;
   scoreDistribution: Record<string, number>;
 }
 
-export interface ReportWithMetadata {
+export interface Mark {
   id: string;
+  subject: string;
+  mark: number;
+}
+
+export interface CreatedBy {
+  id: string;
+  name: string;
+  profilePicture: string | null;
+}
+
+export interface ReportItem {
+  id: string;
+  examType: ExamType;
   title: string;
-  description: string | null;
+  students: number;
+  status: ReportStatus;
+  lastUpdated: string;
+  metadata: ReportMetadata;
   createdAt: string;
   updatedAt: string;
+  createdBy: CreatedBy;
+  marks: Mark[];
+}
+
+export interface ReportWithMetadata
+  extends Omit<ReportItem, "examType" | "students" | "lastUpdated"> {
+  description: string | null;
   metadata: Prisma.JsonValue;
-  createdBy: {
-    id: string;
-    name: string;
-    profilePicture: string | null;
-  };
-  marks: Array<{
-    id: string;
-    subject: string;
-    mark: number;
-  }>;
 }
 
 export type ActionData =

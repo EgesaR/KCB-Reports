@@ -1,0 +1,506 @@
+[
+  {
+    "id": "report-1",
+    "examType": "AOI",
+    "title": "Activity Of Integration 1",
+    "students": 18,
+    "status": "in-progress",
+    "lastUpdated": "4/4/2025",
+    "metadata": {
+      "averageScore": "78.5",
+      "performance": "Good",
+      "highestSubject": "Mathematics",
+      "lowestSubject": "History",
+      "totalExams": 5,
+      "grade": "B+",
+      "scoreDistribution": {
+        "A": 3,
+        "B": 7,
+        "C": 5,
+        "D": 2,
+        "F": 1
+      }
+    },
+    "createdAt": "2025-03-15T08:30:00Z",
+    "updatedAt": "2025-04-04T14:20:00Z",
+    "createdBy": {
+      "id": "user-1",
+      "name": "Dr. Smith",
+      "profilePicture": null
+    },
+    "marks": [
+      {
+        "id": "mark-1",
+        "subject": "Mathematics",
+        "mark": 85
+      },
+      {
+        "id": "mark-2",
+        "subject": "History",
+        "mark": 65
+      }
+    ]
+  },
+  {
+    "id": "report-2",
+    "examType": "EOT",
+    "title": "End of Term Examination 2",
+    "students": 25,
+    "status": "completed",
+    "lastUpdated": "3/27/2025",
+    "metadata": {
+      "averageScore": "82.3",
+      "performance": "Excellent",
+      "highestSubject": "Science",
+      "lowestSubject": "Literature",
+      "totalExams": 6,
+      "grade": "A-",
+      "scoreDistribution": {
+        "A": 8,
+        "B": 10,
+        "C": 5,
+        "D": 2,
+        "F": 0
+      }
+    },
+    "createdAt": "2025-03-10T09:15:00Z",
+    "updatedAt": "2025-03-27T11:45:00Z",
+    "createdBy": {
+      "id": "user-2",
+      "name": "Prof. Johnson",
+      "profilePicture": "/profile/user-2.jpg"
+    },
+    "marks": [
+      {
+        "id": "mark-3",
+        "subject": "Science",
+        "mark": 92
+      },
+      {
+        "id": "mark-4",
+        "subject": "Literature",
+        "mark": 73
+      }
+    ]
+  },
+  {
+    "id": "report-3",
+    "examType": "BOT",
+    "title": "Beginning of Term Test 3",
+    "students": 13,
+    "status": "pending",
+    "lastUpdated": "4/1/2025",
+    "metadata": {
+      "averageScore": "65.2",
+      "performance": "Average",
+      "highestSubject": "English",
+      "lowestSubject": "Physics",
+      "totalExams": 4,
+      "grade": "C+",
+      "scoreDistribution": {
+        "A": 2,
+        "B": 4,
+        "C": 5,
+        "D": 1,
+        "F": 1
+      }
+    },
+    "createdAt": "2025-03-20T10:00:00Z",
+    "updatedAt": "2025-04-01T09:30:00Z",
+    "createdBy": {
+      "id": "user-3",
+      "name": "Dr. Williams",
+      "profilePicture": null
+    },
+    "marks": [
+      {
+        "id": "mark-5",
+        "subject": "English",
+        "mark": 78
+      },
+      {
+        "id": "mark-6",
+        "subject": "Physics",
+        "mark": 52
+      }
+    ]
+  },
+  {
+    "id": "report-4",
+    "examType": "MTE",
+    "title": "Mid Term Evaluation 4",
+    "students": 52,
+    "status": "archived",
+    "lastUpdated": "3/24/2025",
+    "metadata": {
+      "averageScore": "71.8",
+      "performance": "Good",
+      "highestSubject": "Chemistry",
+      "lowestSubject": "Geography",
+      "totalExams": 7,
+      "grade": "B",
+      "scoreDistribution": {
+        "A": 5,
+        "B": 15,
+        "C": 20,
+        "D": 10,
+        "F": 2
+      }
+    },
+    "createdAt": "2025-02-28T13:45:00Z",
+    "updatedAt": "2025-03-24T16:20:00Z",
+    "createdBy": {
+      "id": "user-1",
+      "name": "Dr. Smith",
+      "profilePicture": null
+    },
+    "marks": [
+      {
+        "id": "mark-7",
+        "subject": "Chemistry",
+        "mark": 88
+      },
+      {
+        "id": "mark-8",
+        "subject": "Geography",
+        "mark": 62
+      }
+    ]
+  },
+  {
+    "id": "report-5",
+    "examType": "TT",
+    "title": "Topical Test 5",
+    "students": 49,
+    "status": "pending",
+    "lastUpdated": "4/1/2025",
+    "metadata": {
+      "averageScore": "69.5",
+      "performance": "Average",
+      "highestSubject": "Biology",
+      "lowestSubject": "Economics",
+      "totalExams": 3,
+      "grade": "C+",
+      "scoreDistribution": {
+        "A": 3,
+        "B": 12,
+        "C": 20,
+        "D": 10,
+        "F": 4
+      }
+    },
+    "createdAt": "2025-03-18T11:30:00Z",
+    "updatedAt": "2025-04-01T10:15:00Z",
+    "createdBy": {
+      "id": "user-4",
+      "name": "Prof. Brown",
+      "profilePicture": "/profile/user-4.jpg"
+    },
+    "marks": [
+      {
+        "id": "mark-9",
+        "subject": "Biology",
+        "mark": 82
+      },
+      {
+        "id": "mark-10",
+        "subject": "Economics",
+        "mark": 57
+      }
+    ]
+  },
+  {
+    "id": "report-6",
+    "examType": "AOI",
+    "title": "Activity Of Integration 6",
+    "students": 51,
+    "status": "in-progress",
+    "lastUpdated": "4/4/2025",
+    "metadata": {
+      "averageScore": "75.2",
+      "performance": "Good",
+      "highestSubject": "Computer Science",
+      "lowestSubject": "Art",
+      "totalExams": 5,
+      "grade": "B",
+      "scoreDistribution": {
+        "A": 6,
+        "B": 18,
+        "C": 15,
+        "D": 10,
+        "F": 2
+      }
+    },
+    "createdAt": "2025-03-22T14:00:00Z",
+    "updatedAt": "2025-04-04T15:45:00Z",
+    "createdBy": {
+      "id": "user-5",
+      "name": "Dr. Davis",
+      "profilePicture": null
+    },
+    "marks": [
+      {
+        "id": "mark-11",
+        "subject": "Computer Science",
+        "mark": 89
+      },
+      {
+        "id": "mark-12",
+        "subject": "Art",
+        "mark": 61
+      }
+    ]
+  },
+  {
+    "id": "report-7",
+    "examType": "EOT",
+    "title": "End of Term Examination 7",
+    "students": 25,
+    "status": "completed",
+    "lastUpdated": "3/29/2025",
+    "metadata": {
+      "averageScore": "80.7",
+      "performance": "Excellent",
+      "highestSubject": "Physics",
+      "lowestSubject": "Music",
+      "totalExams": 6,
+      "grade": "A-",
+      "scoreDistribution": {
+        "A": 7,
+        "B": 10,
+        "C": 6,
+        "D": 2,
+        "F": 0
+      }
+    },
+    "createdAt": "2025-03-12T10:30:00Z",
+    "updatedAt": "2025-03-29T12:00:00Z",
+    "createdBy": {
+      "id": "user-2",
+      "name": "Prof. Johnson",
+      "profilePicture": "/profile/user-2.jpg"
+    },
+    "marks": [
+      {
+        "id": "mark-13",
+        "subject": "Physics",
+        "mark": 91
+      },
+      {
+        "id": "mark-14",
+        "subject": "Music",
+        "mark": 70
+      }
+    ]
+  },
+  {
+    "id": "report-8",
+    "examType": "BOT",
+    "title": "Beginning of Term Test 8",
+    "students": 59,
+    "status": "archived",
+    "lastUpdated": "4/7/2025",
+    "metadata": {
+      "averageScore": "72.9",
+      "performance": "Good",
+      "highestSubject": "Mathematics",
+      "lowestSubject": "Drama",
+      "totalExams": 7,
+      "grade": "B",
+      "scoreDistribution": {
+        "A": 8,
+        "B": 20,
+        "C": 18,
+        "D": 10,
+        "F": 3
+      }
+    },
+    "createdAt": "2025-03-05T09:00:00Z",
+    "updatedAt": "2025-04-07T13:15:00Z",
+    "createdBy": {
+      "id": "user-3",
+      "name": "Dr. Williams",
+      "profilePicture": null
+    },
+    "marks": [
+      {
+        "id": "mark-15",
+        "subject": "Mathematics",
+        "mark": 87
+      },
+      {
+        "id": "mark-16",
+        "subject": "Drama",
+        "mark": 59
+      }
+    ]
+  },
+  {
+    "id": "report-9",
+    "examType": "MTE",
+    "title": "Mid Term Evaluation 9",
+    "students": 42,
+    "status": "completed",
+    "lastUpdated": "3/30/2025",
+    "metadata": {
+      "averageScore": "77.3",
+      "performance": "Good",
+      "highestSubject": "Chemistry",
+      "lowestSubject": "Physical Education",
+      "totalExams": 6,
+      "grade": "B+",
+      "scoreDistribution": {
+        "A": 6,
+        "B": 18,
+        "C": 12,
+        "D": 5,
+        "F": 1
+      }
+    },
+    "createdAt": "2025-03-08T11:00:00Z",
+    "updatedAt": "2025-03-30T14:30:00Z",
+    "createdBy": {
+      "id": "user-1",
+      "name": "Dr. Smith",
+      "profilePicture": null
+    },
+    "marks": [
+      {
+        "id": "mark-17",
+        "subject": "Chemistry",
+        "mark": 90
+      },
+      {
+        "id": "mark-18",
+        "subject": "Physical Education",
+        "mark": 65
+      }
+    ]
+  },
+  {
+    "id": "report-10",
+    "examType": "TT",
+    "title": "Topical Test 10",
+    "students": 38,
+    "status": "in-progress",
+    "lastUpdated": "4/3/2025",
+    "metadata": {
+      "averageScore": "68.7",
+      "performance": "Average",
+      "highestSubject": "Biology",
+      "lowestSubject": "History",
+      "totalExams": 4,
+      "grade": "C+",
+      "scoreDistribution": {
+        "A": 2,
+        "B": 10,
+        "C": 15,
+        "D": 8,
+        "F": 3
+      }
+    },
+    "createdAt": "2025-03-17T13:15:00Z",
+    "updatedAt": "2025-04-03T10:45:00Z",
+    "createdBy": {
+      "id": "user-4",
+      "name": "Prof. Brown",
+      "profilePicture": "/profile/user-4.jpg"
+    },
+    "marks": [
+      {
+        "id": "mark-19",
+        "subject": "Biology",
+        "mark": 83
+      },
+      {
+        "id": "mark-20",
+        "subject": "History",
+        "mark": 54
+      }
+    ]
+  },
+  {
+    "id": "report-11",
+    "examType": "AOI",
+    "title": "Activity Of Integration 11",
+    "students": 47,
+    "status": "pending",
+    "lastUpdated": "4/2/2025",
+    "metadata": {
+      "averageScore": "73.8",
+      "performance": "Good",
+      "highestSubject": "Computer Science",
+      "lowestSubject": "Literature",
+      "totalExams": 5,
+      "grade": "B-",
+      "scoreDistribution": {
+        "A": 4,
+        "B": 15,
+        "C": 18,
+        "D": 8,
+        "F": 2
+      }
+    },
+    "createdAt": "2025-03-19T14:30:00Z",
+    "updatedAt": "2025-04-02T11:20:00Z",
+    "createdBy": {
+      "id": "user-5",
+      "name": "Dr. Davis",
+      "profilePicture": null
+    },
+    "marks": [
+      {
+        "id": "mark-21",
+        "subject": "Computer Science",
+        "mark": 88
+      },
+      {
+        "id": "mark-22",
+        "subject": "Literature",
+        "mark": 60
+      }
+    ]
+  },
+  {
+    "id": "report-12",
+    "examType": "EOT",
+    "title": "End of Term Examination 12",
+    "students": 33,
+    "status": "completed",
+    "lastUpdated": "3/28/2025",
+    "metadata": {
+      "averageScore": "81.5",
+      "performance": "Excellent",
+      "highestSubject": "Mathematics",
+      "lowestSubject": "Art",
+      "totalExams": 6,
+      "grade": "A-",
+      "scoreDistribution": {
+        "A": 9,
+        "B": 12,
+        "C": 8,
+        "D": 3,
+        "F": 1
+      }
+    },
+    "createdAt": "2025-03-14T09:45:00Z",
+    "updatedAt": "2025-03-28T15:00:00Z",
+    "createdBy": {
+      "id": "user-2",
+      "name": "Prof. Johnson",
+      "profilePicture": "/profile/user-2.jpg"
+    },
+    "marks": [
+      {
+        "id": "mark-23",
+        "subject": "Mathematics",
+        "mark": 94
+      },
+      {
+        "id": "mark-24",
+        "subject": "Art",
+        "mark": 69
+      }
+    ]
+  }
+]

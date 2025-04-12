@@ -21,14 +21,12 @@ const IconButton: FC<IconButtonProps> = ({
   ...props
 }) => {
   const baseClasses = "transition-all duration-200 focus:outline-none";
-
+  
   const variantClasses = {
-    text: "text-[#E8DEF8] hover:bg-[#E8DEF8]/10 dark:text-[#4A4458] dark:hover:bg-[#4A4458]/20",
-    filled:
-      "bg-[#E8DEF8] text-[#1C1B1F] hover:bg-[#E8DEF8]/90 dark:bg-[#4A4458] dark:text-[#E8DEF8] dark:hover:bg-[#4A4458]/80",
-    outlined:
-      "border border-[#E8DEF8] text-[#E8DEF8] hover:bg-[#E8DEF8]/10 dark:border-[#4A4458] dark:text-[#4A4458] dark:hover:bg-[#4A4458]/20",
-  };
+    text: "text-[#E8DEF8] hover:bg-purple-400/20 dark:text-purple-400 dark:hover:bg-purple-400/20",
+    filled: "bg-[#E8DEF8] text-[#1C1B1F] hover:bg-[#E8DEF8]/90 dark:bg-[#4A4458] dark:text-purple-400 dark:hover:bg-[#4A4458]/80",
+    outlined: "border border-[#E8DEF8] text-[#E8DEF8] hover:bg-purple-400/20 dark:border-[#4A4458] dark:text-[#4A4458] dark:hover:bg-[#4A4458]/20",
+  }; 
 
   const sizeClasses = {
     sm: "p-1.5 text-sm",
