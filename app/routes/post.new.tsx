@@ -117,7 +117,15 @@ export default function NewPost() {
           </select>
         </Field>
 
-        <Button className="" type="submit">Create Post</Button>
+        <Button
+          type="submit"
+          variant="primary"
+          size="md"
+          className="w-full mt-4"
+          onClick={() => console.log("Creating post...")}
+        >
+          Create Post
+        </Button>
       </Form>
     </div>
   );

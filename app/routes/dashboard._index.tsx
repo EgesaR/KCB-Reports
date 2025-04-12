@@ -1,9 +1,19 @@
+import { useEffect, useState } from "react";
 import { FaCog, FaQuestionCircle, FaSync } from "react-icons/fa";
 import { FaChartLine, FaRobot, FaUsers } from "react-icons/fa6";
 import { useDashboardContext } from "~/context/DashboardContext";
 
 export default function DashboardIndex() {
   const { user } = useDashboardContext();
+  const [greeting, setGreeting] = useState<string>("");
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good morning");
+    else if (hour < 18) setGreeting("Good afternoon");
+    else setGreeting("Good evening");
+  }, []);
+
   return (
     <div className="flex flex-col sm:flex-row min-h-screen gap-2">
       <div className="flex flex-col min-h-screen h-[90%] sm:h-auto gap-8 sm:pt-[7%] sm:mt-0.5 py-5 pr-5 sm:p-3 sm:pr-6 overflow-y-auto">
@@ -11,7 +21,7 @@ export default function DashboardIndex() {
         <div className="min-h-[40vh] flex flex-col px-10 py-8 rounded-xl shadow-xl bg-gradient-to-r from-[#751d91] via-[#4d1a72] to-[#38185e]">
           <div className="w-full sm:w-[55%] flex flex-col gap-2">
             <h1 className="text-white text-lg sm:text-2xl font-medium">
-              Good morning, {user?.name || "User"}
+              {greeting}, {user?.name || "User"}
             </h1>
             <p className="text-gray-100 dark:text-gray-200 text-[12px] sm:text-[16px]">
               Track, analyze, and optimize student progress effortlessly.

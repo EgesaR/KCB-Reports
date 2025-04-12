@@ -257,24 +257,30 @@ model Student {
 }
 
 model Mark {
-  id              String   @id @default(uuid())
-  subject         String   @db.VarChar(50)
-  examinationName String   @db.VarChar(100)
+  id              String      @id @default(uuid())
+  subject         String      @db.VarChar(50)
+  examinationName String      @db.VarChar(100)
   mark            Float
-  createdAt       DateTime @default(now())
+  createdAt       DateTime    @default(now())
   studentId       String
   teacherId       String?
   adminId         String?
   parentId        String?
-  updatedAt       DateTime @updatedAt
-  student         Student  @relation(fields: [studentId], references: [id])
-  teacher         User?    @relation("TeacherMarks", fields: [teacherId], references: [id])
-  admin           User?    @relation("AdminMarks", fields: [adminId], references: [id])
-  parent          User?    @relation("ParentMarks", fields: [parentId], references: [id])
+  reportTaskId    String?     // Added foreign key
+  updatedAt       DateTime    @updatedAt
+  student         Student     @relation(fields: [studentId], references: [id])
+  teacher         User?       @relation("TeacherMarks", fields: [teacherId], references: [id])
+  admin           User?       @relation("AdminMarks", fields: [adminId], references: [id])
+  parent          User?       @relation("ParentMarks", fields: [parentId], references: [id])
+  reportTask      ReportTask? @relation(fields: [reportTaskId], references: [id]) // Added relation
 
   @@index([studentId])
   @@index([subject])
   @@index([createdAt])
+  @@index([teacherId])
+  @@index([adminId])
+  @@index([parentId])
+  @@index([reportTaskId]) // Added index
 }
 
 model TeacherProfile {
@@ -306,12 +312,14 @@ model ReportTask {
   id          String   @id @default(uuid())
   title       String   @db.VarChar(200)
   description String?  @db.Text
+  metadata    Json?    // This should be defined as Json type
   createdAt   DateTime @default(now())
   createdById String
   teacherId   String?
   updatedAt   DateTime @updatedAt
   createdBy   User     @relation("AdminReportTasks", fields: [createdById], references: [id])
   teacher     User?    @relation("TeacherReportTasks", fields: [teacherId], references: [id])
+  marks       Mark[]
 
   @@index([createdById])
   @@index([teacherId])

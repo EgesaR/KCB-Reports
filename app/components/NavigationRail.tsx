@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { BiHomeSmile, BiSolidHomeSmile } from "react-icons/bi";
 import { MdMenu } from "react-icons/md";
-import { FaChartLine, FaRobot, FaUsers, FaSync } from "react-icons/fa";
+import { FaChartLine, FaUsers, FaSync } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, Variants, usePresence } from "framer-motion";
 import { useSwipeable } from "react-swipeable";
 import { RxCross2 } from "react-icons/rx";
+import { HiDocumentReport, HiOutlineDocumentReport } from "react-icons/hi";
+import { IoBarChart, IoBarChartOutline } from "react-icons/io5";
 
 interface NavigationRailButtonProps {
   text: string;
@@ -61,7 +63,7 @@ const NavigationRailButton: React.FC<NavigationRailButtonProps> = ({
     >
       <div className="flex items-center justify-center relative">
         {React.cloneElement(icon, {
-          className: `size-5 z-10 group-hover:text-[#4A4458] dark:group-hover:text-[#E8DEF8] ${
+          className: `size-4.5 z-10 group-hover:text-[#4A4458] dark:group-hover:text-[#E8DEF8] ${
             active ? "text-[#4A4458] dark:text-[#E8DEF8]" : ""
           }`,
         })}
@@ -102,7 +104,7 @@ const NavigationRailButton: React.FC<NavigationRailButtonProps> = ({
       <AnimatePresence>
         {isPresent && (
           <motion.label
-            className={`text-[12px] font-[500] group-hover:text-[#1D1B20] dark:group-hover:text-[#E6E0E9]/70 ${
+            className={`text-[11px] font-[500] group-hover:text-[#1D1B20] dark:group-hover:text-[#E6E0E9]/70 ${
               active ? "text-[#1D1B20] dark:text-[#E6E0E9]/70 font-[600]" : ""
             }`}
             initial={{ opacity: 0, x: -20 }}
@@ -156,15 +158,18 @@ const mainButtons = [
     route: "/dashboard",
   },
   {
-    text: "Analysis",
-    icon: <FaChartLine className="opacity-75" />,
-    route: "/dashboard/analysis",
+    text: "Reports",
+    icon: <HiOutlineDocumentReport className="opacity-75" />,
+    activeIcon: <HiDocumentReport className="opacity-75" />,
+    route: "/dashboard/reports",
   },
   {
-    text: "AI",
-    icon: <FaRobot className="opacity-75" />,
-    route: "/dashboard/ai",
+    text: "Analysis",
+    icon: <IoBarChartOutline className="opacity-75" />,
+    activeIcon: <IoBarChart className="opacity-75" />,
+    route: "/dashboard/analysis",
   },
+
   {
     text: "Departments",
     icon: <FaUsers className="opacity-75" />,
