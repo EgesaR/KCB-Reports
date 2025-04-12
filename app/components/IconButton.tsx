@@ -1,28 +1,18 @@
-import { FC, ButtonHTMLAttributes } from "react";
+import { FC, ButtonHTMLAttributes, ReactNode } from "react";
 
-type IconButtonVariant = "text" | "filled" | "outlined" | "gradient";
-type IconButtonColor =
-  | "gray"
-  | "red"
-  | "yellow"
-  | "green"
-  | "blue"
-  | "indigo"
-  | "purple"
-  | "pink";
+type IconButtonVariant = "text" | "filled" | "outlined";
 
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: IconButtonVariant;
-  color?: IconButtonColor;
-  icon: string;
+  icon: ReactNode;
   size?: "sm" | "md" | "lg";
   rounded?: boolean;
   fullWidth?: boolean;
+  className?: string;
 }
 
 const IconButton: FC<IconButtonProps> = ({
   variant = "text",
-  color = "gray",
   icon,
   size = "md",
   rounded = true,
@@ -30,31 +20,20 @@ const IconButton: FC<IconButtonProps> = ({
   className = "",
   ...props
 }) => {
-  // Base classes
   const baseClasses = "transition-all duration-200 focus:outline-none";
 
-  // Size classes
+  const variantClasses = {
+    text: "text-[#E8DEF8] hover:bg-[#E8DEF8]/10 dark:text-[#4A4458] dark:hover:bg-[#4A4458]/20",
+    filled:
+      "bg-[#E8DEF8] text-[#1C1B1F] hover:bg-[#E8DEF8]/90 dark:bg-[#4A4458] dark:text-[#E8DEF8] dark:hover:bg-[#4A4458]/80",
+    outlined:
+      "border border-[#E8DEF8] text-[#E8DEF8] hover:bg-[#E8DEF8]/10 dark:border-[#4A4458] dark:text-[#4A4458] dark:hover:bg-[#4A4458]/20",
+  };
+
   const sizeClasses = {
     sm: "p-1.5 text-sm",
     md: "p-2 text-base",
     lg: "p-3 text-lg",
-  };
-
-  // Variant and color classes
-  const variantClasses = {
-    text: {
-      gray: "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700",
-      red: "text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30",
-      blue: "text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30",
-      // Add other colors as needed
-    },
-    filled: {
-      gray: "bg-gray-800 text-white hover:bg-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600",
-      red: "bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600",
-      blue: "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600",
-      // Add other colors as needed
-    },
-    // Add other variants as needed
   };
 
   return (
@@ -62,14 +41,14 @@ const IconButton: FC<IconButtonProps> = ({
       className={`
         ${baseClasses}
         ${sizeClasses[size]}
-        ${variantClasses[variant]?.[color] || variantClasses.text.gray}
+        ${variantClasses[variant]}
         ${rounded ? "rounded-full" : "rounded-md"}
-        ${fullWidth ? "w-full" : ""}
+        ${fullWidth ? "w-full flex justify-center" : ""}
         ${className}
       `}
       {...props}
     >
-      <i className={`fas fa-${icon}`} />
+      {icon}
     </button>
   );
 };
