@@ -14,9 +14,14 @@ const sessionStorage = createCookieSessionStorage({
   },
 });
 
-export async function createUserSession(userId: string, redirectTo: string) {
+export async function createUserSession(
+  userId: string,
+  redirectTo: string,
+  roles: string[] = []
+) {
   const session = await sessionStorage.getSession();
   session.set("userId", userId);
+  session.set("userRoles", roles);
   return redirect(redirectTo, {
     headers: { "Set-Cookie": await sessionStorage.commitSession(session) },
   });
@@ -40,11 +45,25 @@ export async function getUser(request: Request) {
   try {
     return await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, name: true, roles: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        roles: {
+          select: {
+            role: true,
+          },
+        },
+      },
     });
   } catch (error) {
     throw logout(request);
   }
+}
+
+export async function getUserRoles(request: Request) {
+  const session = await getUserSession(request);
+  return session.get("userRoles") || [];
 }
 
 export async function requireUserId(request: Request) {
@@ -55,10 +74,28 @@ export async function requireUserId(request: Request) {
   return userId;
 }
 
+export async function requireRole(
+  request: Request,
+  requiredRole: "ADMIN" | "TEACHER" | "PARENT" | "STUDENT"
+) {
+  const userId = await requireUserId(request);
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { roles: true },
+  });
+
+  if (!user) throw redirect("/auth/signin");
+
+  const hasRole = user.roles.some((r) => r.role === requiredRole);
+  if (!hasRole) {
+    throw redirect("/unauthorized");
+  }
+
+  return userId;
+}
+
 export async function logout(request: Request) {
-  const session = await sessionStorage.getSession(
-    request.headers.get("Cookie")
-  );
+  const session = await getUserSession(request);
   return redirect("/auth/signin", {
     headers: {
       "Set-Cookie": await sessionStorage.destroySession(session),

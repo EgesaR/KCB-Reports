@@ -117,7 +117,6 @@ export const AppBar = ({ unreadCount, onNotificationClick }: AppBarProps) => {
       alert("Failed to log out. Please try again.");
     }
   };
-
   return (
     <>
       <div className="w-full h-full flex items-center justify-between px-2 backdrop-blur-xl">

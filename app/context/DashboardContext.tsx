@@ -6,6 +6,7 @@ interface User {
   email: string;
   name: string;
   profileUrl: string;
+  roles: string[];
 }
 
 interface DashboardContextType {

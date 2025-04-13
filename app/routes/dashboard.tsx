@@ -23,7 +23,15 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, name: true, profileUrl: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      profileUrl: true,
+      roles: {
+        select: { role: true },
+      },
+    },
   });
 
   if (!user) return redirect("/auth/signin");
@@ -32,7 +40,10 @@ export const loader: LoaderFunction = async ({ request }) => {
   if (!ENCRYPTION_SECRET) throw new Error("ENCRYPTION_SECRET not defined");
 
   const encryptedUserData = CryptoJS.AES.encrypt(
-    JSON.stringify(user),
+    JSON.stringify({
+      ...user,
+      roles: user.roles.map((r) => r.role),
+    }),
     ENCRYPTION_SECRET
   ).toString();
 
@@ -59,8 +70,10 @@ function DashboardContent() {
   }>();
 
   useEffect(() => {
-    notificationFetcher.load("/notifications");
-  }, []);
+    if (notificationFetcher.state === "idle" && !notificationFetcher.data) {
+      notificationFetcher.load("/notifications");
+    }
+  }, [notificationFetcher]);
 
   useEffect(() => {
     if (notificationFetcher.data?.unreadCount !== undefined) {
@@ -76,9 +89,11 @@ function DashboardContent() {
     setUnreadCount((prev) => Math.max(0, prev - ids.length));
   };
 
+  if (!user) return null;
+
   return (
     <div className="w-full h-screen flex overflow-hidden isolate relative bg-[#FEF7FF] dark:bg-[#141218]">
-      {!isMobile && <NavigationRail />}
+      {!isMobile && <NavigationRail user={user} />}
 
       <div className="h-full w-full pl-8 pr-4 pt-1 pb-4 bg-transparent relative">
         <motion.div
@@ -107,7 +122,7 @@ function DashboardContent() {
         />
       </div>
 
-      {isMobile && <BottomNavigation />}
+      {isMobile && <BottomNavigation user={user} />}
     </div>
   );
 }
