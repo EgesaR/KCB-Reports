@@ -239,8 +239,10 @@ model SchoolAssociation {
 }
 
 model Class {
-  id   Int    @id @default(autoincrement())
-  name String @unique @db.VarChar(50)
+  id        Int      @id @default(autoincrement())
+  name      String   @unique @db.VarChar(50)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([name])
 }
@@ -248,12 +250,16 @@ model Class {
 model Student {
   id        String        @id @default(uuid())
   name      String        @db.VarChar(100)
+  studentId String        @unique @db.VarChar(50)
+  classId   String
+  streamId  String?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   marks     Mark[]
   users     UserStudent[]
 
   @@index([name])
+  @@index([studentId])
 }
 
 model Mark {
@@ -266,13 +272,13 @@ model Mark {
   teacherId       String?
   adminId         String?
   parentId        String?
-  reportTaskId    String?     // Added foreign key
+  reportTaskId    String?
   updatedAt       DateTime    @updatedAt
   student         Student     @relation(fields: [studentId], references: [id])
   teacher         User?       @relation("TeacherMarks", fields: [teacherId], references: [id])
   admin           User?       @relation("AdminMarks", fields: [adminId], references: [id])
   parent          User?       @relation("ParentMarks", fields: [parentId], references: [id])
-  reportTask      ReportTask? @relation(fields: [reportTaskId], references: [id]) // Added relation
+  reportTask      ReportTask? @relation(fields: [reportTaskId], references: [id])
 
   @@index([studentId])
   @@index([subject])
@@ -280,7 +286,7 @@ model Mark {
   @@index([teacherId])
   @@index([adminId])
   @@index([parentId])
-  @@index([reportTaskId]) // Added index
+  @@index([reportTaskId])
 }
 
 model TeacherProfile {
@@ -312,10 +318,10 @@ model ReportTask {
   id          String   @id @default(uuid())
   title       String   @db.VarChar(200)
   description String?  @db.Text
-  metadata    Json?    // This should be defined as Json type
-  createdAt   DateTime @default(now())
+  metadata    Json?
   createdById String
   teacherId   String?
+  createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   createdBy   User     @relation("AdminReportTasks", fields: [createdById], references: [id])
   teacher     User?    @relation("TeacherReportTasks", fields: [teacherId], references: [id])
