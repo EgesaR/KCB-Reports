@@ -7,6 +7,11 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { requireUserId } from "~/utils/session.server";
 import { prisma } from "~/utils/prisma.server";
+import {
+  FaUser as UserIcon,
+  FaLock as LockIcon,
+  FaPalette as PaletteIcon,
+} from "react-icons/fa";
 
 // Type Definitions
 const settingTypes = [
@@ -19,9 +24,7 @@ const settingTypes = [
   "color-picker",
   "number",
 ] as const;
-
 type SettingType = (typeof settingTypes)[number];
-
 interface SettingBase<T extends SettingType> {
   id: string;
   label: string;
@@ -29,31 +32,24 @@ interface SettingBase<T extends SettingType> {
   description?: string;
   warning?: boolean;
 }
-
 interface TextSetting extends SettingBase<"text" | "password" | "number"> {
   min?: number;
   max?: number;
   placeholder?: string;
 }
-
 interface ToggleSetting extends SettingBase<"toggle"> {}
-
 interface DropdownSetting extends SettingBase<"dropdown"> {
   options: string[];
 }
-
 interface MultiSelectSetting extends SettingBase<"multi-select"> {
   options: string[];
 }
-
 interface ButtonSetting extends SettingBase<"button"> {
   actionType?: "submit" | "button" | "reset";
 }
-
 interface ColorPickerSetting extends SettingBase<"color-picker"> {
   presetColors?: string[];
 }
-
 type Setting =
   | TextSetting
   | ToggleSetting
@@ -61,14 +57,12 @@ type Setting =
   | MultiSelectSetting
   | ButtonSetting
   | ColorPickerSetting;
-
 interface SettingsSection {
   id: string;
   label: string;
   description?: string;
   settings: Setting[];
 }
-
 interface SettingsTab {
   id: string;
   label: string;
@@ -107,11 +101,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
     },
   });
-
   if (!user) {
     throw new Response("User not found", { status: 404 });
   }
-
   return json({
     user: {
       ...user,
@@ -121,6 +113,181 @@ export async function loader({ request }: LoaderFunctionArgs) {
       reduceMotion: false,
     },
   });
+}
+
+// Main Component
+export default function SettingsPage() {
+  const { user } = useLoaderData<typeof loader>();
+  const fetcher = useFetcher();
+  const [formValues, setFormValues] = useState(user);
+
+  // Apply theme dynamically
+  useEffect(() => {
+    const theme = formValues.themePreference || "LIGHT";
+    document.documentElement.setAttribute("data-theme", theme.toLowerCase());
+  }, [formValues.themePreference]);
+
+  const handleInputChange = (
+    key: string,
+    value: string | boolean | string[]
+  ) => {
+    setFormValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = () => {
+    const formData = new FormData();
+    formData.append("intent", "update");
+    formData.append("themePreference", formValues.themePreference || "LIGHT");
+    formData.append("accentColor", formValues.accentColor || "#3b82f6");
+
+    Object.entries(formValues).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach((v) => formData.append(key, v));
+      } else if (value !== null && value !== undefined) {
+        formData.append(key, value.toString());
+      }
+    });
+
+    fetcher.submit(formData, {
+      method: "post",
+      action: "/api/users",
+    });
+  };
+
+  const renderSettingInput = (setting: Setting) => {
+    switch (setting.type) {
+      case "toggle":
+        return (
+          <div className="flex items-center">
+            <ToggleInput
+              id={setting.id}
+              checked={Boolean(
+                formValues[setting.id as keyof typeof formValues]
+              )}
+              onChange={(checked) => {
+                handleInputChange(setting.id, checked);
+                if (setting.id === "darkMode") {
+                  handleInputChange(
+                    "themePreference",
+                    checked ? "DARK" : "LIGHT"
+                  );
+                }
+              }}
+              disabled={fetcher.state === "submitting"}
+            />
+            {fetcher.state === "submitting" && (
+              <span className="ml-2 text-sm text-gray-500">Saving...</span>
+            )}
+          </div>
+        );
+      case "dropdown":
+        return (
+          <DropdownInput
+            id={setting.id}
+            value={String(
+              formValues[setting.id as keyof typeof formValues] || ""
+            )}
+            options={setting.options}
+            onChange={(val) => {
+              handleInputChange(setting.id, val);
+              if (setting.id === "themeStyle") {
+                handleInputChange("themePreference", val);
+              }
+            }}
+            disabled={fetcher.state === "submitting"}
+          />
+        );
+      case "color-picker":
+        return (
+          <ColorPickerInput
+            id={setting.id}
+            value={String(
+              formValues[setting.id as keyof typeof formValues] || ""
+            )}
+            onChange={(val) => handleInputChange(setting.id, val)}
+            presetColors={
+              "presetColors" in setting ? setting.presetColors : undefined
+            }
+            disabled={fetcher.state === "submitting"}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-y-auto">
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Settings
+          </h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Manage your account settings and preferences
+          </p>
+        </motion.div>
+        <Tab.Group>
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="lg:sticky lg:top-8 lg:h-[calc(100vh-4rem)] lg:overflow-y-auto lg:pb-8"
+            >
+              <Tab.List className="space-y-1">
+                {SETTINGS_DATA.map((tab) => (
+                  <Tab key={tab.id} className="focus:outline-none w-full">
+                    {({ selected }) => (
+                      <SettingsTabButton tab={tab} isSelected={selected} />
+                    )}
+                  </Tab>
+                ))}
+              </Tab.List>
+            </motion.div>
+            <Tab.Panels className="focus:outline-none">
+              <AnimatePresence mode="wait">
+                {SETTINGS_DATA.map((tab) => (
+                  <Tab.Panel key={tab.id}>
+                    <motion.div
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 lg:p-8"
+                    >
+                      <div className="mb-8">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center space-x-3">
+                          {tab.icon && (
+                            <span className="text-2xl">{tab.icon}</span>
+                          )}
+                          <span>{tab.label}</span>
+                        </h2>
+                      </div>
+                      <div className="space-y-10 overflow-y-auto max-h-[calc(100vh-250px)]">
+                        {tab.items.map((section) => (
+                          <SettingsSection
+                            key={section.id}
+                            section={section}
+                            renderSettingInput={renderSettingInput}
+                          />
+                        ))}
+                      </div>
+                    </motion.div>
+                  </Tab.Panel>
+                ))}
+              </AnimatePresence>
+            </Tab.Panels>
+          </div>
+        </Tab.Group>
+      </div>
+    </div>
+  );
 }
 
 // UI Components
@@ -158,41 +325,6 @@ const ToggleInput = ({
   </Switch>
 );
 
-const TextInput = ({
-  id,
-  value,
-  onChange,
-  type = "text",
-  placeholder,
-  disabled = false,
-}: {
-  id: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: "text" | "password" | "number";
-  placeholder?: string;
-  disabled?: boolean;
-}) => (
-  <motion.div whileHover={{ scale: disabled ? 1 : 1.01 }}>
-    <input
-      type={type}
-      id={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      disabled={disabled}
-      className={clsx(
-        "w-full rounded-md border-0 py-1.5 px-3 shadow-sm ring-1 ring-inset transition-all",
-        "focus:outline-none focus:ring-2 focus:ring-blue-500",
-        disabled
-          ? "bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
-          : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
-        "ring-gray-300 dark:ring-gray-600"
-      )}
-    />
-  </motion.div>
-);
-
 const DropdownInput = ({
   id,
   value,
@@ -206,27 +338,25 @@ const DropdownInput = ({
   onChange: (value: string) => void;
   disabled?: boolean;
 }) => (
-  <motion.div whileHover={{ scale: disabled ? 1 : 1.01 }}>
-    <select
-      id={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      disabled={disabled}
-      className={clsx(
-        "w-full rounded-md border-0 py-1.5 pl-3 pr-10 shadow-sm ring-1 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none",
-        disabled
-          ? "bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
-          : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
-        "ring-gray-300 dark:ring-gray-600"
-      )}
-    >
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  </motion.div>
+  <select
+    id={id}
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    disabled={disabled}
+    className={clsx(
+      "w-full rounded-md border-0 py-1.5 pl-3 pr-10 shadow-sm ring-1 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none",
+      disabled
+        ? "bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
+        : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
+      "ring-gray-300 dark:ring-gray-600"
+    )}
+  >
+    {options.map((option) => (
+      <option key={option} value={option}>
+        {option}
+      </option>
+    ))}
+  </select>
 );
 
 const ColorPickerInput = ({
@@ -356,7 +486,7 @@ const SETTINGS_DATA: SettingsTab[] = [
   {
     id: "profile",
     label: "Profile",
-    icon: "👤",
+    icon: <UserIcon size={20} />,
     items: [
       {
         id: "personal-info",
@@ -388,66 +518,6 @@ const SETTINGS_DATA: SettingsTab[] = [
             type: "toggle",
             description: "Enable dark theme",
           },
-          {
-            id: "notifications",
-            label: "Email Notifications",
-            type: "toggle",
-            description: "Receive email updates",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "account",
-    label: "Account",
-    icon: "🔒",
-    items: [
-      {
-        id: "security",
-        label: "Security",
-        description: "Manage your account security",
-        settings: [
-          {
-            id: "password",
-            label: "Change Password",
-            type: "password",
-            placeholder: "Enter new password",
-          },
-          {
-            id: "twoFactor",
-            label: "Two-Factor Authentication",
-            type: "toggle",
-            description: "Add an extra layer of security",
-          },
-        ],
-      },
-      {
-        id: "roles",
-        label: "Roles",
-        description: "Manage your account roles",
-        settings: [
-          {
-            id: "roles",
-            label: "Account Roles",
-            type: "multi-select",
-            options: [...validRoles],
-            description: "Select roles for your account",
-          },
-        ],
-      },
-      {
-        id: "danger-zone",
-        label: "Danger Zone",
-        description: "Irreversible actions",
-        settings: [
-          {
-            id: "deleteAccount",
-            label: "Delete Account",
-            type: "button",
-            warning: true,
-            description: "Permanently delete your account and all data",
-          },
         ],
       },
     ],
@@ -455,7 +525,7 @@ const SETTINGS_DATA: SettingsTab[] = [
   {
     id: "appearance",
     label: "Appearance",
-    icon: "🎨",
+    icon: <PaletteIcon size={20} />,
     items: [
       {
         id: "theme",
@@ -476,279 +546,6 @@ const SETTINGS_DATA: SettingsTab[] = [
           },
         ],
       },
-      {
-        id: "display",
-        label: "Display",
-        description: "Adjust display settings",
-        settings: [
-          {
-            id: "reduceMotion",
-            label: "Reduce Motion",
-            type: "toggle",
-            description: "Disable animations and transitions",
-          },
-          {
-            id: "highContrast",
-            label: "High Contrast Mode",
-            type: "toggle",
-            description: "Increase contrast for better visibility",
-          },
-        ],
-      },
     ],
   },
 ];
-
-// Main Component
-export default function SettingsPage() {
-  const { user } = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
-  const [formValues, setFormValues] = useState(user);
-
-  useEffect(() => {
-    setFormValues(user);
-  }, [user]);
-
-  const handleInputChange = (
-    key: string,
-    value: string | boolean | string[]
-  ) => {
-    setFormValues((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleSubmit = () => {
-    const formData = new FormData();
-    formData.append("intent", "update");
-    formData.append("themePreference", formValues.darkMode ? "DARK" : "LIGHT");
-
-    Object.entries(formValues).forEach(([key, value]) => {
-      if (Array.isArray(value)) {
-        value.forEach((v) => formData.append(key, v));
-      } else if (value !== null && value !== undefined) {
-        formData.append(key, value.toString());
-      }
-    });
-
-    fetcher.submit(formData, {
-      method: "post",
-      action: "/api/users",
-    });
-  };
-
-  const RoleToggle = ({ role }: { role: Role }) => (
-    <div className="flex items-center">
-      <input
-        type="checkbox"
-        id={`role-${role}`}
-        checked={(formValues.roles as Role[])?.includes(role) || false}
-        onChange={(e) => {
-          const newRoles = e.target.checked
-            ? [...((formValues.roles as Role[]) || []), role]
-            : ((formValues.roles as Role[]) || []).filter(
-                (r: Role) => r !== role
-              );
-          handleInputChange("roles", newRoles);
-        }}
-        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-      />
-      <label
-        htmlFor={`role-${role}`}
-        className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-      >
-        {role}
-      </label>
-    </div>
-  );
-
-  const renderSettingInput = (setting: Setting) => {
-    switch (setting.type) {
-      case "toggle":
-        return (
-          <div className="flex items-center">
-            <ToggleInput
-              id={setting.id}
-              checked={Boolean(
-                formValues[setting.id as keyof typeof formValues]
-              )}
-              onChange={(checked) => handleInputChange(setting.id, checked)}
-              disabled={fetcher.state === "submitting"}
-            />
-            {fetcher.state === "submitting" && (
-              <span className="ml-2 text-sm text-gray-500">Saving...</span>
-            )}
-          </div>
-        );
-      case "text":
-      case "password":
-      case "number":
-        return (
-          <TextInput
-            id={setting.id}
-            value={String(
-              formValues[setting.id as keyof typeof formValues] || ""
-            )}
-            onChange={(val) => handleInputChange(setting.id, val)}
-            type={setting.type}
-            placeholder={"placeholder" in setting ? setting.placeholder : ""}
-            disabled={fetcher.state === "submitting"}
-          />
-        );
-      case "dropdown":
-        return (
-          <DropdownInput
-            id={setting.id}
-            value={String(
-              formValues[setting.id as keyof typeof formValues] || ""
-            )}
-            options={setting.options}
-            onChange={(val) => handleInputChange(setting.id, val)}
-            disabled={fetcher.state === "submitting"}
-          />
-        );
-      case "multi-select":
-        if (setting.id === "roles") {
-          return (
-            <div className="space-y-2">
-              {validRoles.map((role) => (
-                <RoleToggle key={role} role={role} />
-              ))}
-            </div>
-          );
-        }
-        return null;
-      case "color-picker":
-        return (
-          <ColorPickerInput
-            id={setting.id}
-            value={String(
-              formValues[setting.id as keyof typeof formValues] || ""
-            )}
-            onChange={(val) => handleInputChange(setting.id, val)}
-            presetColors={
-              "presetColors" in setting ? setting.presetColors : undefined
-            }
-            disabled={fetcher.state === "submitting"}
-          />
-        );
-      case "button":
-        if (setting.id === "deleteAccount") {
-          return (
-            <fetcher.Form method="post" action="/api/users">
-              <input type="hidden" name="intent" value="delete" />
-              <input type="hidden" name="id" value={user.id} />
-              <motion.button
-                type="submit"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className={clsx(
-                  "px-4 py-2 rounded-md font-medium transition-colors",
-                  "focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900",
-                  "bg-red-500 text-white hover:bg-red-600",
-                  fetcher.state === "submitting" && "opacity-50"
-                )}
-                disabled={fetcher.state === "submitting"}
-              >
-                {fetcher.state === "submitting" ? "Deleting..." : setting.label}
-              </motion.button>
-            </fetcher.Form>
-          );
-        }
-        return (
-          <motion.button
-            onClick={handleSubmit}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className={clsx(
-              "px-4 py-2 rounded-md font-medium transition-colors",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900",
-              setting.warning
-                ? "bg-red-500 text-white hover:bg-red-600"
-                : "bg-blue-500 text-white hover:bg-blue-600",
-              fetcher.state === "submitting" && "opacity-50"
-            )}
-            disabled={fetcher.state === "submitting"}
-          >
-            {fetcher.state === "submitting" ? "Saving..." : setting.label}
-          </motion.button>
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-y-auto">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="mb-8"
-        >
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Settings
-          </h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Manage your account settings and preferences
-          </p>
-        </motion.div>
-
-        <Tab.Group>
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              className="lg:sticky lg:top-8 lg:h-[calc(100vh-4rem)] lg:overflow-y-auto lg:pb-8"
-            >
-              <Tab.List className="space-y-1">
-                {SETTINGS_DATA.map((tab) => (
-                  <Tab key={tab.id} className="focus:outline-none w-full">
-                    {({ selected }) => (
-                      <SettingsTabButton tab={tab} isSelected={selected} />
-                    )}
-                  </Tab>
-                ))}
-              </Tab.List>
-            </motion.div>
-
-            <Tab.Panels className="focus:outline-none">
-              <AnimatePresence mode="wait">
-                {SETTINGS_DATA.map((tab) => (
-                  <Tab.Panel key={tab.id}>
-                    <motion.div
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      transition={{ duration: 0.2 }}
-                      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 lg:p-8"
-                    >
-                      <div className="mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center space-x-3">
-                          {tab.icon && (
-                            <span className="text-2xl">{tab.icon}</span>
-                          )}
-                          <span>{tab.label}</span>
-                        </h2>
-                      </div>
-
-                      <div className="space-y-10 overflow-y-auto max-h-[calc(100vh-250px)]">
-                        {tab.items.map((section) => (
-                          <SettingsSection
-                            key={section.id}
-                            section={section}
-                            renderSettingInput={renderSettingInput}
-                          />
-                        ))}
-                      </div>
-                    </motion.div>
-                  </Tab.Panel>
-                ))}
-              </AnimatePresence>
-            </Tab.Panels>
-          </div>
-        </Tab.Group>
-      </div>
-    </div>
-  );
-}

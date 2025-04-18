@@ -15,6 +15,7 @@ import { NotificationDrawer } from "~/components/NotificationDrawer";
 import type { AppNotification } from "~/types/notification";
 import CryptoJS from "crypto-js";
 import { useEffect, useState } from "react";
+import { ThemeProvider } from "~/context/ThemeContext";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const session = await getUserSession(request);
@@ -31,6 +32,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       roles: {
         select: { role: true },
       },
+      themePreference: true, // Fetch the user's theme preference
     },
   });
 
@@ -39,7 +41,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const ENCRYPTION_SECRET = process.env.ENCRYPTION_SECRET;
   if (!ENCRYPTION_SECRET) throw new Error("ENCRYPTION_SECRET not defined");
 
-  const encryptedUserData = CryptoJS.AES.encrypt(
+  const encryptedUserId = CryptoJS.AES.encrypt(
     JSON.stringify({
       ...user,
       roles: user.roles.map((r) => r.role),
@@ -47,15 +49,20 @@ export const loader: LoaderFunction = async ({ request }) => {
     ENCRYPTION_SECRET
   ).toString();
 
-  return json({ encryptedUserData });
+  return json({ encryptedUserId, themePreference: user.themePreference });
 };
 
 export default function Dashboard() {
-  const { encryptedUserData } = useLoaderData<{ encryptedUserData: string }>();
+  const { encryptedUserId, themePreference } = useLoaderData<{
+    encryptedUserId: string;
+    themePreference: string;
+  }>();
 
   return (
-    <DashboardProvider encryptedUserData={encryptedUserData}>
-      <DashboardContent />
+    <DashboardProvider encryptedUserId={encryptedUserId}>
+      <ThemeProvider themeRGB={getThemeFromPreference(themePreference)}>
+        <DashboardContent />
+      </ThemeProvider>
     </DashboardProvider>
   );
 }
@@ -125,4 +132,23 @@ function DashboardContent() {
       {isMobile && <BottomNavigation user={user} />}
     </div>
   );
+}
+
+// Helper function to map theme preferences to RGB values
+function getThemeFromPreference(
+  themePreference: string
+): Record<string, string> {
+  switch (themePreference) {
+    case "dark":
+      return {
+        "rgb-accent-1": "255, 65, 54", // Example dark theme accent color
+        "rgb-primary": "139, 92, 246", // Example dark theme primary color
+      };
+    case "light":
+    default:
+      return {
+        "rgb-accent-1": "252, 66, 201", // Example light theme accent color
+        "rgb-primary": "213, 96, 18", // Example light theme primary color
+      };
+  }
 }

@@ -19,18 +19,18 @@ export default function DashboardIndex() {
 
   return (
     <div className="flex min-h-screen">
-      <div className="flex-1 flex flex-col gap-8 p-6 overflow-y-auto">
+      <div className="flex-1 flex flex-col gap-8 p-6 lg:pt-14 lg:pb-4 overflow-y-auto">
         {/* Welcome Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="min-h-[40vh] flex flex-col px-10 py-8 rounded-xl shadow-xl bg-gradient-to-r from-[#751d91] via-[#4d1a72] to-[#38185e]"
         >
-          <div className="w-full sm:w-[55%] flex flex-col gap-2">
-            <h1 className="text-white text-lg sm:text-2xl font-medium">
+          <div className="w-full sm:w-[55%] lg:w-[80%] flex flex-col gap-2">
+            <h1 className="text-white text-lg sm:text-2xl lg:text-xl font-medium">
               {greeting}, {user?.name || "User"}
             </h1>
-            <p className="text-gray-100 text-[12px] sm:text-[16px]">
+            <p className="text-gray-100 text-[12px] sm:text-[16px] lg:text-[14px]">
               Track, analyze, and optimize student progress effortlessly.
               Automate grading, monitor performance trends, and collaborate with
               teachers seamlessly.
