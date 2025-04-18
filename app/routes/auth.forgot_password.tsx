@@ -1,8 +1,20 @@
-import { Form, useActionData, useNavigation } from "@remix-run/react";
-import { motion } from "framer-motion";
+"use client";
+
+import React, { useReducer, useEffect, useRef, useState } from "react";
+import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Field, Input, Label } from "@headlessui/react";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import clsx from "clsx";
 import type { ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import axios from "axios";
+import nodemailer from "nodemailer";
+import { google } from "googleapis";
+import { OAuth2Client } from "google-auth-library";
+
+// In-memory store for verification codes (use Prisma in production)
+const codeStore: Map<string, { code: string; expires: number }> = new Map();
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -13,16 +25,92 @@ export const action: ActionFunction = async ({ request }) => {
 
   // Handle forgot password flow
   if (mode === "reset" || mode === "verify") {
-    // Your existing forgot password logic here
-    // Return appropriate responses based on mode
     if (mode === "reset") {
-      return json({
-        mode: "verify",
-        resetSent: true,
-        fields: { email },
-      });
+      // Generate 6-digit code
+      const verificationCode = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+      const expires = Date.now() + 15 * 60 * 1000; // 15-minute expiration
+
+      // Store code (in-memory; use Prisma in production)
+      codeStore.set(email, { code: verificationCode, expires });
+
+      // Send email with Nodemailer
+      try {
+        const oAuth2Client = new google.auth.OAuth2(
+          process.env.GOOGLE_CLIENT_ID,
+          process.env.GOOGLE_CLIENT_SECRET,
+          process.env.GOOGLE_REDIRECT_URI
+        );
+        oAuth2Client.setCredentials({
+          refresh_token: process.env.REFRESH_TOKEN,
+        });
+
+        const accessToken = await oAuth2Client.getAccessToken();
+
+        const transport = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            type: "OAuth2",
+            user: process.env.EMAIL_USER,
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            refreshToken: process.env.REFRESH_TOKEN,
+            accessToken: accessToken.token || "",
+          },
+        });
+
+        const mailOptions = {
+          from: `KCB Reports <${process.env.EMAIL_USER}>`,
+          to: email,
+          subject: "KCB Reports Security Code",
+          text: `Hello user, your security code is: ${verificationCode}`,
+          html: `Hello <i>user</i>, your security code is: <b>${verificationCode}</b>`,
+        };
+
+        await transport.sendMail(mailOptions);
+
+        return json({
+          mode: "verify",
+          resetSent: true,
+          fields: { email },
+        });
+      } catch (err) {
+        console.error("Error sending email:", err);
+        return json(
+          { error: "Failed to send verification code. Please try again." },
+          { status: 500 }
+        );
+      }
     } else if (mode === "verify") {
-      // Verify code and update password
+      // Validate code
+      const stored = codeStore.get(email);
+      if (!stored) {
+        return json(
+          {
+            fieldErrors: { code: "No verification code found for this email." },
+          },
+          { status: 400 }
+        );
+      }
+      if (stored.expires < Date.now()) {
+        codeStore.delete(email);
+        return json(
+          { fieldErrors: { code: "Verification code has expired." } },
+          { status: 400 }
+        );
+      }
+      if (stored.code !== code) {
+        return json(
+          { fieldErrors: { code: "Invalid verification code." } },
+          { status: 400 }
+        );
+      }
+
+      // Placeholder: Update password (requires user database)
+      // Example: await prisma.user.update({ where: { email }, data: { password: hash(password) } });
+      codeStore.delete(email); // Clear code after use
+
       return json({
         resetSuccess: true,
         mode: "verify",
@@ -59,194 +147,372 @@ export const action: ActionFunction = async ({ request }) => {
     );
 
     const tokens = response.data;
-    console.log({ tokens });
-    console.log("Refresh token:", tokens.refresh_token);
-
+    console.log("Tokens:", tokens);
     return redirect("/dashboard");
   } catch (error: any) {
-    console.error("Token exchange error:", error);
-    let errorMessage = "Failed to exchange authorization code for tokens";
-    if (
-      error.response &&
-      error.response.data &&
-      error.response.data.error_description
-    ) {
-      errorMessage += `: ${error.response.data.error_description}`;
-    } else if (error.message) {
-      errorMessage += `: ${error.message}`;
-    }
-    return json({ error: errorMessage }, { status: 500 });
+    console.error(
+      "Token exchange error:",
+      error.response?.data || error.message
+    );
+    return json(
+      {
+        error: `Token exchange failed: ${
+          error.response?.data?.error_description || error.message
+        }`,
+      },
+      { status: 500 }
+    );
+  }
+};
+
+type ActionData = {
+  error?: string;
+  resetSent?: boolean;
+  resetSuccess?: boolean;
+  mode?: "reset" | "verify";
+  fields?: {
+    email?: string;
+    code?: string;
+    password?: string;
+  };
+  fieldErrors?: {
+    email?: string;
+    code?: string;
+    password?: string;
+  };
+};
+
+type FormState = {
+  mode: "reset" | "verify";
+  email: string;
+  code: string;
+  password: string;
+  error: string | null;
+  resetSent: boolean;
+  resetSuccess: boolean;
+  status: "idle" | "submitting";
+  showPassword: boolean;
+};
+
+type FormAction =
+  | { type: "SET_MODE"; payload: "reset" | "verify" }
+  | { type: "SET_EMAIL"; payload: string }
+  | { type: "SET_CODE"; payload: string }
+  | { type: "SET_PASSWORD"; payload: string }
+  | { type: "SET_ERROR"; payload: string | null }
+  | { type: "SET_RESET_SENT"; payload: boolean }
+  | { type: "SET_RESET_SUCCESS"; payload: boolean }
+  | { type: "SET_STATUS"; payload: "idle" | "submitting" }
+  | { type: "TOGGLE_PASSWORD" };
+
+const initialState: FormState = {
+  mode: "reset",
+  email: "",
+  code: "",
+  password: "",
+  error: null,
+  resetSent: false,
+  resetSuccess: false,
+  status: "idle",
+  showPassword: false,
+};
+
+const formReducer = (state: FormState, action: FormAction): FormState => {
+  switch (action.type) {
+    case "SET_MODE":
+      return { ...state, mode: action.payload };
+    case "SET_EMAIL":
+      return { ...state, email: action.payload };
+    case "SET_CODE":
+      return { ...state, code: action.payload };
+    case "SET_PASSWORD":
+      return { ...state, password: action.payload };
+    case "SET_ERROR":
+      return { ...state, error: action.payload };
+    case "SET_RESET_SENT":
+      return { ...state, resetSent: action.payload };
+    case "SET_RESET_SUCCESS":
+      return { ...state, resetSuccess: action.payload };
+    case "SET_STATUS":
+      return { ...state, status: action.payload };
+    case "TOGGLE_PASSWORD":
+      return { ...state, showPassword: !state.showPassword };
+    default:
+      return state;
   }
 };
 
 export default function ForgotPasswordPage() {
-  const actionData = useActionData<any>();
+  const [formState, dispatch] = useReducer(formReducer, initialState);
+  const actionData = useActionData<ActionData>();
   const navigation = useNavigation();
-  const isLoading = navigation.state === "submitting";
-  const currentMode = actionData?.mode || "reset";
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const [isAutofilled, setIsAutofilled] = useState(false);
+
+  // Sync actionData with formState
+  useEffect(() => {
+    if (actionData?.mode) {
+      dispatch({ type: "SET_MODE", payload: actionData.mode });
+    }
+    if (actionData?.error) {
+      dispatch({ type: "SET_ERROR", payload: actionData.error });
+    }
+    if (actionData?.resetSent) {
+      dispatch({ type: "SET_RESET_SENT", payload: actionData.resetSent });
+    }
+    if (actionData?.resetSuccess) {
+      dispatch({ type: "SET_RESET_SUCCESS", payload: actionData.resetSuccess });
+    }
+    if (actionData?.fields?.email) {
+      dispatch({ type: "SET_EMAIL", payload: actionData.fields.email });
+    }
+  }, [actionData]);
+
+  // Auto-clear alerts after 4 seconds
+  useEffect(() => {
+    if (formState.error || formState.resetSent || formState.resetSuccess) {
+      const timeout = setTimeout(() => {
+        dispatch({ type: "SET_ERROR", payload: null });
+        dispatch({ type: "SET_RESET_SENT", payload: false });
+        dispatch({ type: "SET_RESET_SUCCESS", payload: false });
+      }, 4000);
+      return () => clearTimeout(timeout);
+    }
+  }, [formState.error, formState.resetSent, formState.resetSuccess]);
+
+  // Sync navigation state
+  useEffect(() => {
+    dispatch({
+      type: "SET_STATUS",
+      payload: navigation.state === "submitting" ? "submitting" : "idle",
+    });
+  }, [navigation.state]);
+
+  // Detect autofill
+  useEffect(() => {
+    const checkAutofill = () => {
+      if (passwordInputRef.current) {
+        const autofilled =
+          !!passwordInputRef.current.matches(":-webkit-autofill");
+        setIsAutofilled(autofilled);
+      }
+    };
+
+    checkAutofill();
+    const interval = setInterval(checkAutofill, 100);
+    setTimeout(() => clearInterval(interval), 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="w-full h-screen flex bg-gray-50">
-      {/* Left side with image */}
-      <motion.div
-        className="hidden md:flex w-1/2 bg-gradient-to-br from-blue-600 to-indigo-800 items-center justify-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-      >
-        <motion.img
-          src="https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=900"
-          alt="Aurora"
-          className="min-w-full min-h-full rounded-lg shadow-2xl"
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        />
-      </motion.div>
-
-      {/* Right side with form */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-8">
+    <div className="w-full h-screen flex relative overflow-hidden bg-gray-900">
+      {/* Aurora Background */}
+      <div className="absolute inset-0">
         <motion.div
-          className="w-full max-w-md"
+          className="absolute w-64 h-64 bg-blue-300 rounded-full opacity-50 blur-3xl"
+          animate={{
+            x: ["0%", "20%", "0%"],
+            y: ["0%", "10%", "0%"],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          style={{ top: "10%", left: "20%" }}
+        />
+        <motion.div
+          className="absolute w-80 h-80 bg-purple-300 rounded-full opacity-50 blur-3xl"
+          animate={{
+            x: ["0%", "-15%", "0%"],
+            y: ["0%", "20%", "0%"],
+            scale: [1, 1.3, 1],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          style={{ top: "40%", right: "15%" }}
+        />
+        <motion.div
+          className="absolute w-72 h-72 bg-pink-300 rounded-full opacity-50 blur-3xl"
+          animate={{
+            x: ["0%", "10%", "0%"],
+            y: ["0%", "-15%", "0%"],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          style={{ bottom: "20%", left: "30%" }}
+        />
+      </div>
+
+      {/* Glassmorphic Card */}
+      <div className="w-full flex items-center justify-center p-8 z-10">
+        <motion.div
+          className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-white/20 overflow-hidden"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">
-            {currentMode === "reset" && "Reset Password"}
-            {currentMode === "verify" && "Verify Code"}
+          <h1 className="text-3xl font-bold mb-8 text-center text-white">
+            {formState.mode === "reset" ? "Reset Password" : "Verify Code"}
           </h1>
 
-          {/* Success message after password reset */}
-          {actionData?.resetSuccess && (
-            <motion.div
-              className="mb-6 p-4 text-sm text-green-700 bg-green-100 rounded-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              Password updated successfully! You can now sign in with your new
-              password.
-            </motion.div>
-          )}
+          {/* Success Message */}
+          <AnimatePresence>
+            {formState.resetSuccess && (
+              <motion.div
+                className="mb-6 p-4 text-sm text-green-700 bg-green-100 rounded-lg"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                Password updated successfully! You can now sign in with your new
+                password.
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Form Error Message */}
-          {actionData?.error && (
-            <motion.div
-              className="mb-6 p-4 text-sm text-red-700 bg-red-100 rounded-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              {actionData.error}
-            </motion.div>
-          )}
+          {/* Error Message */}
+          <AnimatePresence>
+            {formState.error && (
+              <motion.div
+                className="mb-6 p-4 text-sm text-red-700 bg-red-100 rounded-lg"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                {formState.error}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Reset code sent confirmation */}
-          {actionData?.resetSent && (
-            <motion.div
-              className="mb-6 p-4 text-sm text-blue-700 bg-blue-100 rounded-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              We've sent a verification code to your email. Please check your
-              inbox and spam folder.
-            </motion.div>
-          )}
+          {/* Reset Sent Confirmation */}
+          <AnimatePresence>
+            {formState.resetSent && (
+              <motion.div
+                className="mb-6 p-4 text-sm text-blue-700 bg-blue-100 rounded-lg"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                We've sent a verification code to your email. Please check your
+                inbox and spam folder.
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <Form method="post" className="space-y-6">
-            <input type="hidden" name="mode" value={currentMode} />
+            <input type="hidden" name="mode" value={formState.mode} />
 
-            {/* Email Field - always shown */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium mb-2 text-gray-700"
-              >
-                Email
-              </label>
-              <input
+            {/* Email Field */}
+            <Field>
+              <Label className="text-sm font-medium text-white">Email</Label>
+              <Input
                 type="email"
-                id="email"
                 name="email"
-                defaultValue={actionData?.fields?.email}
-                className={`w-full p-3 border rounded-lg ${
-                  actionData?.fieldErrors?.email
-                    ? "border-red-500 focus:ring-red-500"
-                    : "border-gray-300 focus:ring-blue-500"
-                } focus:outline-none focus:ring-2`}
+                value={formState.email}
+                onChange={(e) =>
+                  dispatch({ type: "SET_EMAIL", payload: e.target.value })
+                }
+                className={clsx(
+                  "mt-3 block w-full rounded-lg border-none bg-white/5 py-2 px-3 text-sm text-white",
+                  "focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25",
+                  actionData?.fieldErrors?.email && "border-red-500"
+                )}
                 required
-                disabled={currentMode === "verify"}
+                disabled={formState.mode === "verify"}
               />
               {actionData?.fieldErrors?.email && (
                 <p className="mt-2 text-sm text-red-600">
                   {actionData.fieldErrors.email}
                 </p>
               )}
-            </div>
+            </Field>
 
-            {/* Verification Code Field - shown in verify mode */}
-            {currentMode === "verify" && (
+            {/* Verification Code Field */}
+            {formState.mode === "verify" && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <label
-                  htmlFor="code"
-                  className="block text-sm font-medium mb-2 text-gray-700"
-                >
-                  Verification Code
-                </label>
-                <input
-                  type="text"
-                  id="code"
-                  name="code"
-                  defaultValue={actionData?.fields?.code}
-                  className={`w-full p-3 border rounded-lg ${
-                    actionData?.fieldErrors?.code
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300 focus:ring-blue-500"
-                  } focus:outline-none focus:ring-2`}
-                  required
-                />
-                {actionData?.fieldErrors?.code && (
-                  <p className="mt-2 text-sm text-red-600">
-                    {actionData.fieldErrors.code}
-                  </p>
-                )}
+                <Field>
+                  <Label className="text-sm font-medium text-white">
+                    Verification Code
+                  </Label>
+                  <Input
+                    type="text"
+                    name="code"
+                    value={formState.code}
+                    onChange={(e) =>
+                      dispatch({ type: "SET_CODE", payload: e.target.value })
+                    }
+                    className={clsx(
+                      "mt-3 block w-full rounded-lg border-none bg-white/5 py-2 px-3 text-sm text-white",
+                      "focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25",
+                      actionData?.fieldErrors?.code && "border-red-500"
+                    )}
+                    required
+                  />
+                  {actionData?.fieldErrors?.code && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {actionData.fieldErrors.code}
+                    </p>
+                  )}
+                </Field>
               </motion.div>
             )}
 
-            {/* Password Field - shown in verify mode */}
-            {currentMode === "verify" && (
+            {/* Password Field */}
+            {formState.mode === "verify" && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
               >
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium mb-2 text-gray-700"
-                >
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  defaultValue={actionData?.fields?.password}
-                  className={`w-full p-3 border rounded-lg ${
-                    actionData?.fieldErrors?.password
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300 focus:ring-blue-500"
-                  } focus:outline-none focus:ring-2`}
-                  required
-                  minLength={8}
-                />
-                {actionData?.fieldErrors?.password && (
-                  <p className="mt-2 text-sm text-red-600">
-                    {actionData.fieldErrors.password}
-                  </p>
-                )}
+                <Field className="relative">
+                  <Label className="text-sm font-medium text-white">
+                    New Password
+                  </Label>
+                  <Input
+                    type={formState.showPassword ? "text" : "password"}
+                    name="password"
+                    value={formState.password}
+                    onChange={(e) =>
+                      dispatch({
+                        type: "SET_PASSWORD",
+                        payload: e.target.value,
+                      })
+                    }
+                    className={clsx(
+                      "mt-3 block w-full rounded-lg border-none bg-white/5 py-2 pl-3 pr-10 text-sm text-white",
+                      "focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25",
+                      actionData?.fieldErrors?.password && "border-red-500"
+                    )}
+                    required
+                    minLength={8}
+                    ref={passwordInputRef}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => dispatch({ type: "TOGGLE_PASSWORD" })}
+                    className={clsx(
+                      "absolute right-3 top-9 focus:outline-none",
+                      isAutofilled
+                        ? "text-black"
+                        : "text-white/50 hover:text-white"
+                    )}
+                    aria-label={
+                      formState.showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {formState.showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                  {actionData?.fieldErrors?.password && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {actionData.fieldErrors.password}
+                    </p>
+                  )}
+                </Field>
               </motion.div>
             )}
 
@@ -256,9 +522,9 @@ export default function ForgotPasswordPage() {
               className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              disabled={isLoading}
+              disabled={formState.status !== "idle"}
             >
-              {isLoading ? (
+              {formState.status === "submitting" ? (
                 <span className="flex items-center justify-center">
                   <svg
                     className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -273,31 +539,30 @@ export default function ForgotPasswordPage() {
                       r="10"
                       stroke="currentColor"
                       strokeWidth="4"
-                    ></circle>
+                    />
                     <path
                       className="opacity-75"
                       fill="currentColor"
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
+                    />
                   </svg>
                   Processing...
                 </span>
+              ) : formState.mode === "reset" ? (
+                "Send Reset Code"
               ) : (
-                <>
-                  {currentMode === "reset" && "Send Reset Code"}
-                  {currentMode === "verify" && "Update Password"}
-                </>
+                "Update Password"
               )}
             </motion.button>
 
-            {/* Back to login link */}
+            {/* Back to Sign In */}
             <div className="text-center mt-4">
-              <a
-                href="/signin"
-                className="text-sm text-blue-600 hover:text-blue-800"
+              <Link
+                to="/auth/signin"
+                className="text-sm text-blue-400 hover:text-blue-300"
               >
                 Back to Sign In
-              </a>
+              </Link>
             </div>
           </Form>
         </motion.div>
