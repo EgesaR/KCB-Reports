@@ -7,6 +7,7 @@ interface User {
   name: string;
   profileUrl: string;
   roles: string[];
+  themePreference: string;
 }
 
 interface DashboardContextType {
@@ -25,14 +26,13 @@ const DashboardContext = createContext<DashboardContextType>(defaultValue);
 
 export function DashboardProvider({
   children,
-  encryptedUserData,
+  encryptedUserId,
 }: {
   children: React.ReactNode;
-  encryptedUserData: string;
+  encryptedUserId: string;
 }) {
   const [isMobile, setIsMobile] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -44,7 +44,7 @@ export function DashboardProvider({
   }, []);
 
   useEffect(() => {
-    if (!encryptedUserData) return;
+    if (!encryptedUserId) return;
 
     const ENCRYPTION_SECRET = process.env.ENCRYPTION_SECRET;
     if (!ENCRYPTION_SECRET) {
@@ -53,13 +53,14 @@ export function DashboardProvider({
     }
 
     try {
-      const bytes = CryptoJS.AES.decrypt(encryptedUserData, ENCRYPTION_SECRET);
+      const bytes = CryptoJS.AES.decrypt(encryptedUserId, ENCRYPTION_SECRET);
       const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
       setUser(decryptedData);
+      console.log(decryptedData);
     } catch (error) {
       console.error("Failed to decrypt user data:", error);
     }
-  }, [encryptedUserData]);
+  }, [encryptedUserId]);
 
   return (
     <DashboardContext.Provider value={{ isMobile, setIsMobile, user }}>

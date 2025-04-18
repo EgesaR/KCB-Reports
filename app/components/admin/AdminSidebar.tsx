@@ -26,7 +26,7 @@ export default function AdminSidebar() {
       initial={{ x: 100, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="h-screen w-[280px] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 hidden sm:block shadow-lg"
+      className="h-screen w-[280px] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 hidden sm:block shadow-lg lg:mt-9"
     >
       <div className="p-6">
         <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-6">
