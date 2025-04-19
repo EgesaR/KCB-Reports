@@ -1,100 +1,139 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useStore } from "@nanostores/react";
+import { motion } from "framer-motion";
 import { teacherProfile } from "./StepProvider";
-import MultiSelect from "./MultiSelect";
-import schoolData from "~/data/school_info_uganda.json";
 
-type TeacherInfo = {
-  [key: string]: string | string[] | null; // Updated type for flexibility
+const inputVariants = {
+  initial: { opacity: 0, x: 20 },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.4 } },
+  hover: { scale: 1.02, transition: { duration: 0.2 } },
+  focus: {
+    boxShadow: "0 0 0 4px rgba(59, 130, 246, 0.3)",
+    transition: { duration: 0.2 },
+  },
 };
 
-const TeacherProfileForm = () => {
-  const [streams, setStreams] = useState(""); // Input for streams
-  const [departmentGroup, setDepartmentGroup] = useState(""); // Input for department group
-  const teacherInfo = useStore(teacherProfile) as TeacherInfo; // Cast teacherProfile to TeacherInfo type
+interface TeacherProfileFormProps {
+  loaderData: { subjects: string[]; classes: string[]; schools: string[] };
+}
 
-  const { subjects = [], classes = [], schools = [] } = schoolData || {};
+const TeacherProfileForm = forwardRef<
+  { validateStep: () => boolean },
+  TeacherProfileFormProps
+>(({ loaderData }, ref) => {
+  const profile = useStore(teacherProfile);
+  const [formData, setFormData] = useState({
+    subjects: profile.subjects || [],
+    classes: profile.classes || [],
+    schools: profile.schools || [],
+    streams: profile.streams || "",
+    departmentGroup: profile.departmentGroup || "",
+  });
+  const [errors, setErrors] = useState({
+    subjects: "",
+    classes: "",
+    schools: "",
+  });
 
-  useEffect(() => {
-    teacherProfile.set({
-      ...teacherInfo,
-      streams,
-      departmentGroup,
-    });
-  }, [streams, departmentGroup]);
+  useImperativeHandle(ref, () => ({
+    validateStep: () => {
+      const newErrors = {
+        subjects: formData.subjects.length ? "" : "Select at least one subject",
+        classes: formData.classes.length ? "" : "Select at least one class",
+        schools: formData.schools.length ? "" : "Select at least one school",
+      };
+      setErrors(newErrors);
+      return !Object.values(newErrors).some((e) => e);
+    },
+  }));
 
-  const handleMultiSelectChange = (key: string, values: string[]) => {
-    teacherProfile.set({
-      ...teacherInfo,
-      [key]: Array.isArray(values) ? values.join(", ") : values, // Convert arrays to comma-separated strings
-      streams,
-      departmentGroup,
+  const handleMultiSelect = (field: keyof typeof formData, value: string) => {
+    setFormData((prev) => {
+      const current = prev[field] as string[];
+      return {
+        ...prev,
+        [field]: current.includes(value)
+          ? current.filter((item) => item !== value)
+          : [...current, value],
+      };
     });
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  useEffect(() => {
+    teacherProfile.set(formData);
+  }, [formData]);
+
   return (
-    <div className="h-[45vh] w-full overflow-hidden mt-2">
-      <div className="flex flex-col space-y-2 h-full max-h-full w-full overflow-y-scroll px-2 pb-10 ">
-        <div>
-          <label className="text-neutral-300">Subjects</label>
-          <MultiSelect
-            options={subjects.map((subject, index) => ({
-              value: `subject_${index}`,
-              title: subject,
-            }))}
-            placeholder="Select Subjects"
-            onChange={(values: string[]) =>
-              handleMultiSelectChange("subjects", values)
-            }
+    <form className="min-h-[50vh] w-full flex flex-col gap-6">
+      {["subjects", "classes", "schools"].map((field, index) => (
+        <motion.div
+          key={field}
+          className="flex flex-col gap-2"
+          variants={inputVariants}
+          initial="initial"
+          animate="animate"
+          transition={{ delay: index * 0.2 }}
+        >
+          <label className="text-sm font-medium text-gray-900 dark:text-neutral-200">
+            {field.charAt(0).toUpperCase() + field.slice(1)}
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {loaderData[field as keyof typeof loaderData].map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() =>
+                  handleMultiSelect(field as keyof typeof formData, item)
+                }
+                className={`px-3 py-1 rounded-full border ${
+                  (
+                    formData[field as keyof typeof formData] as string[]
+                  ).includes(item)
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-gray-800/10 border-neutral-500 text-neutral-200"
+                }`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+          {errors[field as keyof typeof errors] && (
+            <span className="text-sm text-red-500">
+              {errors[field as keyof typeof errors]}
+            </span>
+          )}
+        </motion.div>
+      ))}
+      {["streams", "departmentGroup"].map((field, index) => (
+        <motion.div
+          key={field}
+          className="flex flex-col gap-2"
+          variants={inputVariants}
+          initial="initial"
+          animate="animate"
+          transition={{ delay: (index + 3) * 0.2 }}
+        >
+          <label className="text-sm font-medium text-gray-900 dark:text-neutral-200">
+            {field.charAt(0).toUpperCase() + field.slice(1)}
+          </label>
+          <motion.input
+            name={field}
+            value={formData[field as keyof typeof formData] || ""}
+            onChange={handleInputChange}
+            className="border rounded p-2 focus:outline-0 dark:border-neutral-500 bg-gray-800/10 backdrop-blur-sm"
+            variants={inputVariants}
+            whileHover="hover"
+            whileFocus="focus"
           />
-        </div>
-        <div>
-          <label className="text-neutral-300">Classes</label>
-          <MultiSelect
-            options={classes.map((classItem, index) => ({
-              value: `class_${index}`,
-              title: classItem,
-            }))}
-            placeholder="Select Classes"
-            onChange={(values: string[]) =>
-              handleMultiSelectChange("classes", values)
-            }
-          />
-        </div>
-        <div>
-          <label className="text-neutral-300">Schools</label>
-          <MultiSelect
-            options={schools.map((school, index) => ({
-              value: `school_${index}`,
-              title: school.name,
-            }))}
-            placeholder="Select Schools"
-            onChange={(values: string[]) =>
-              handleMultiSelectChange("schools", values)
-            }
-          />
-        </div>
-        <div>
-          <label className="text-neutral-300">Streams</label>
-          <input
-            type="text"
-            value={streams}
-            onChange={(e) => setStreams(e.target.value)}
-            className="border rounded p-2 w-full"
-          />
-        </div>
-        <div>
-          <label className="text-neutral-300">Department Group</label>
-          <input
-            type="text"
-            value={departmentGroup}
-            onChange={(e) => setDepartmentGroup(e.target.value)}
-            className="border rounded p-2 w-full"
-          />
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      ))}
+    </form>
   );
-};
+});
 
 export default TeacherProfileForm;

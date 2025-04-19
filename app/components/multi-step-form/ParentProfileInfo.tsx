@@ -1,68 +1,80 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useStore } from "@nanostores/react";
-import { parentProfile } from "./StepProvider"; // Updated to reflect parent-specific profile storage
+import { parentProfile } from "./StepProvider";
 import MultiSelect from "./MultiSelect";
-import schoolData from "~/data/school_info_uganda.json";
 
-type ParentInfo = {
-  [key: string]: string | string[] | null;
-};
+interface ParentProfileInfoProps {
+  loaderData: { schools: string[] };
+}
 
-const ParentProfileInfo = () => {
-  const parentInfo = useStore(parentProfile) as ParentInfo;
+const ParentProfileInfo = forwardRef<
+  { validateStep: () => boolean },
+  ParentProfileInfoProps
+>(({ loaderData }, ref) => {
+  const { schools } = loaderData;
+  const parentInfo = useStore(parentProfile);
+  const [studentIds, setStudentIds] = useState<string[]>(
+    parentInfo.childrenIds || []
+  );
+  const [errors, setErrors] = useState({ childrenIds: "" });
 
-  // Extract schools from schoolData
-  const { schools = [] } = schoolData || {};
-
-  // State for Student ID
-  const [studentId, setStudentId] = useState("");
+  useImperativeHandle(ref, () => ({
+    validateStep: () => {
+      const newErrors = {
+        childrenIds: studentIds.length
+          ? ""
+          : "At least one student ID is required",
+      };
+      setErrors(newErrors);
+      return !Object.values(newErrors).some((e) => e);
+    },
+  }));
 
   useEffect(() => {
-    parentProfile.set({
-      ...parentInfo,
-      studentId, // Add Student ID to the profile data
-    });
-  }, [studentId]);
-
-  const handleMultiSelectChange = (key: string, values: string[]) => {
-    parentProfile.set({
-      ...parentInfo,
-      [key]: Array.isArray(values) ? values.join(", ") : values,
-    });
-  };
+    parentProfile.set({ ...parentInfo, childrenIds: studentIds });
+  }, [studentIds]);
 
   return (
-    <div className="h-[45vh] w-full overflow-hidden mt-4">
-      <div className="flex flex-col space-y-4 h-full max-h-full w-full overflow-y-auto px-2 pb-10">
-        {/* Schools Multi-Select */}
-        <div>
-          <label className="text-neutral-300">Schools</label>
-          <MultiSelect
-            options={schools.map((school, index) => ({
-              value: `school_${index}`,
-              title: school.name,
-            }))}
-            placeholder="Select Schools"
-            onChange={(values: string[]) =>
-              handleMultiSelectChange("schools", values)
-            }
-          />
-        </div>
-
-        {/* Student ID Input */}
-        <div>
-          <label className="text-neutral-300">Student ID</label>
-          <input
-            type="text"
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
-            className="border rounded p-2 w-full"
-            placeholder="Enter Student ID"
-          />
-        </div>
+    <div className="min-h-[50vh] w-full overflow-y-auto mt-2 px-2 pb-10 flex flex-col space-y-2">
+      <div>
+        <label className="text-neutral-200">Schools</label>
+        <MultiSelect
+          options={schools.map((school, index) => ({
+            value: `school_${index}`,
+            title: school,
+          }))}
+          placeholder="Select Schools"
+          onChange={(values) =>
+            parentProfile.set({ ...parentInfo, schools: values })
+          }
+        />
+      </div>
+      <div>
+        <label className="text-neutral-200">
+          Student IDs (comma-separated)
+        </label>
+        <input
+          type="text"
+          value={studentIds.join(", ")}
+          onChange={(e) =>
+            setStudentIds(
+              e.target.value
+                .split(",")
+                .map((id) => id.trim())
+                .filter(Boolean)
+            )
+          }
+          className="border rounded p-2 w-full dark:border-neutral-500"
+          aria-describedby="studentIds-error"
+        />
+        {errors.childrenIds && (
+          <span id="studentIds-error" className="text-sm text-red-500">
+            {errors.childrenIds}
+          </span>
+        )}
       </div>
     </div>
   );
-};
+});
 
 export default ParentProfileInfo;

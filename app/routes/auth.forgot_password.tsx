@@ -12,14 +12,15 @@ import axios from "axios";
 import nodemailer from "nodemailer";
 import { google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
-
-// In-memory store for verification codes (use Prisma in production)
-const codeStore: Map<string, { code: string; expires: number }> = new Map();
+import { prisma } from "~/utils/prisma.server";
+import bcrypt from "bcryptjs";
+import validator from "validator";
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
+  console.log("FormData received:", Object.fromEntries(formData)); // Debug log
   const code = formData.get("code") as string;
-  const email = formData.get("email") as string;
+  const rawEmail = formData.get("email");
   const mode = formData.get("mode") as string;
   const password = formData.get("password") as string;
 
@@ -32,7 +33,9 @@ export const action: ActionFunction = async ({ request }) => {
     "MAIL_USER",
     "OAUTH_TOKEN_URL",
   ];
-  const missingEnvVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+  const missingEnvVars = requiredEnvVars.filter(
+    (varName) => !process.env[varName]
+  );
   if (missingEnvVars.length > 0) {
     console.error("Missing environment variables:", missingEnvVars.join(", "));
     return json(
@@ -43,15 +46,63 @@ export const action: ActionFunction = async ({ request }) => {
 
   // Handle forgot password flow
   if (mode === "reset" || mode === "verify") {
+    // Validate email
+    if (!rawEmail || typeof rawEmail !== "string") {
+      console.error("Email field missing or invalid:", {
+        rawEmail,
+        mode,
+        code,
+        password,
+      });
+      return json(
+        { fieldErrors: { email: "Email is required." } },
+        { status: 400 }
+      );
+    }
+    if (!validator.isEmail(rawEmail)) {
+      console.error("Invalid email format:", rawEmail);
+      return json(
+        { fieldErrors: { email: "Please enter a valid email address." } },
+        { status: 400 }
+      );
+    }
+    const email = rawEmail.toLowerCase();
+
     if (mode === "reset") {
+      // Verify user exists
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user) {
+        console.log("No user found for email:", email);
+        return json(
+          { fieldErrors: { email: "No account found with this email." } },
+          { status: 400 }
+        );
+      }
+
       // Generate 6-digit code
       const verificationCode = Math.floor(
         100000 + Math.random() * 900000
       ).toString();
-      const expires = Date.now() + 15 * 60 * 1000; // 15-minute expiration
+      const expires = new Date(Date.now() + 15 * 60 * 1000); // 15-minute expiration
 
-      // Store code (in-memory; use Prisma in production)
-      codeStore.set(email, { code: verificationCode, expires });
+      // Store code in database
+      try {
+        await prisma.passwordReset.deleteMany({ where: { email } }); // Clear old codes
+        await prisma.passwordReset.create({
+          data: {
+            email,
+            code: verificationCode,
+            expiresAt: expires,
+          },
+        });
+        console.log("Stored code for email:", email, "Code:", verificationCode);
+      } catch (err) {
+        console.error("Database error:", err);
+        return json(
+          { error: "Failed to store verification code." },
+          { status: 500 }
+        );
+      }
 
       // Send email with Nodemailer
       try {
@@ -85,9 +136,9 @@ export const action: ActionFunction = async ({ request }) => {
           text: `Hello user, your security code is: ${verificationCode}`,
           html: `Hello <i>user</i>, your security code is: <b>${verificationCode}</b>`,
         };
-        console.log({ verificationCode })
 
         await transport.sendMail(mailOptions);
+        console.log("Email sent to:", email, "Code:", verificationCode);
 
         return json({
           mode: "verify",
@@ -102,8 +153,31 @@ export const action: ActionFunction = async ({ request }) => {
         );
       }
     } else if (mode === "verify") {
-      // Validate code
-      const stored = codeStore.get(email);
+      // Validate code and password
+      if (!code) {
+        return json(
+          { fieldErrors: { code: "Verification code is required." } },
+          { status: 400 }
+        );
+      }
+      if (!password || password.length < 8) {
+        return json(
+          {
+            fieldErrors: {
+              password: "Password must be at least 8 characters.",
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      // Retrieve and validate code
+      const stored = await prisma.passwordReset.findFirst({
+        where: { email },
+      });
+
+      console.log("Verifying email:", email, "Stored:", stored);
+
       if (!stored) {
         return json(
           {
@@ -112,8 +186,8 @@ export const action: ActionFunction = async ({ request }) => {
           { status: 400 }
         );
       }
-      if (stored.expires < Date.now()) {
-        codeStore.delete(email);
+      if (new Date(stored.expiresAt) < new Date()) {
+        await prisma.passwordReset.deleteMany({ where: { email } });
         return json(
           { fieldErrors: { code: "Verification code has expired." } },
           { status: 400 }
@@ -126,9 +200,18 @@ export const action: ActionFunction = async ({ request }) => {
         );
       }
 
-      // TODO: Update password in database (requires Prisma or similar)
-      // Example: await prisma.user.update({ where: { email }, data: { password: hash(password) } });
-      codeStore.delete(email); // Clear code after use
+      // Update user password
+      try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await prisma.user.update({
+          where: { email },
+          data: { passwordHash: hashedPassword, password: hashedPassword }, // Update both for compatibility
+        });
+        await prisma.passwordReset.deleteMany({ where: { email } }); // Clear code after use
+      } catch (err) {
+        console.error("Error updating password:", err);
+        return json({ error: "Failed to update password." }, { status: 500 });
+      }
 
       return json({
         resetSuccess: true,
@@ -138,6 +221,11 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   // Handle OAuth token exchange
+  if (!code) {
+    console.error("Code missing in OAuth flow:", { mode, email: rawEmail });
+    return json({ error: "Authorization code is required." }, { status: 400 });
+  }
+
   try {
     const response = await axios.post(
       process.env.OAUTH_TOKEN_URL!,
@@ -255,14 +343,10 @@ export default function ForgotPasswordPage() {
   const navigation = useNavigation();
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const [isAutofilled, setIsAutofilled] = useState(false);
-  console.log("Hello")
-  console.log(
-    process.env.CLIENT_ID,
-    process.env.CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI
-  );
+
   // Sync actionData with formState
   useEffect(() => {
+    console.log("ActionData received:", actionData); // Debug log
     if (actionData?.mode) {
       dispatch({ type: "SET_MODE", payload: actionData.mode });
     }
@@ -304,7 +388,8 @@ export default function ForgotPasswordPage() {
   useEffect(() => {
     const checkAutofill = () => {
       if (passwordInputRef.current) {
-        const autofilled = !!passwordInputRef.current.matches(":-webkit-autofill");
+        const autofilled =
+          !!passwordInputRef.current.matches(":-webkit-autofill");
         setIsAutofilled(autofilled);
       }
     };
@@ -372,7 +457,8 @@ export default function ForgotPasswordPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
               >
-                Password updated successfully! You can now sign in with your new password.
+                Password updated successfully! You can now sign in with your new
+                password.
               </motion.div>
             )}
           </AnimatePresence>
@@ -400,13 +486,17 @@ export default function ForgotPasswordPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
               >
-                We've sent a verification code to your email. Please check your inbox and spam folder.
+                We've sent a verification code to your email. Please check your
+                inbox and spam folder.
               </motion.div>
             )}
           </AnimatePresence>
 
           <Form method="post" className="space-y-6">
             <input type="hidden" name="mode" value={formState.mode} />
+            {formState.mode === "verify" && (
+              <input type="hidden" name="email" value={formState.email} />
+            )}
 
             {/* Email Field */}
             <Field>
@@ -501,7 +591,7 @@ export default function ForgotPasswordPage() {
                     type="button"
                     onClick={() => dispatch({ type: "TOGGLE_PASSWORD" })}
                     className={clsx(
-                      "absolute right-3 top-9 focus:outline-none",
+                      "absolute right-3 top-1/2 translate-y-[40%] flex items-center justify-center focus:outline-none",
                       isAutofilled
                         ? "text-black"
                         : "text-white/50 hover:text-white"

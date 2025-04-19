@@ -1,84 +1,76 @@
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useStore } from "@nanostores/react";
 import { adminProfile } from "./StepProvider";
 import MultiSelect from "./MultiSelect";
-import schoolData from "~/data/school_info_uganda.json";
-import adminRolesData from "~/data/admin_roles.json"; // Import the admin_roles.json file
 
-type AdminInfo = {
-  [key: string]: string | string[] | null;
-};
+interface AdminProfileFormProps {
+  loaderData: { schools: string[] };
+}
 
-const AdminProfileForm = () => {
-  const adminInfo = useStore(adminProfile) as AdminInfo;
+const AdminProfileForm = forwardRef<
+  { validateStep: () => boolean },
+  AdminProfileFormProps
+>(({ loaderData }, ref) => {
+  const { schools } = loaderData;
+  const adminInfo = useStore(adminProfile);
+  const [adminRoles, setAdminRoles] = useState<string[]>(
+    adminInfo.adminRoles || []
+  );
+  const [errors, setErrors] = useState({ schools: "", adminRoles: "" });
 
-  // Extract schools from schoolData and adminRoles from admin_roles.json
-  const { schools = [] } = schoolData || {};
-  const adminRoles = adminRolesData || []; // No destructuring since it's a flat array
+  useImperativeHandle(ref, () => ({
+    validateStep: () => {
+      const newErrors = {
+        schools: adminInfo.schools?.length
+          ? ""
+          : "At least one school is required",
+        adminRoles: adminRoles.length ? "" : "At least one role is required",
+      };
+      setErrors(newErrors);
+      return !Object.values(newErrors).some((e) => e);
+    },
+  }));
 
-  // Debugging Logs
-  console.log("Admin Info from adminProfile:", adminInfo); // Logs the current state of adminProfile
-  console.log("Schools data:", schools); // Logs the school data being used for MultiSelect
-  console.log("Admin Roles data:", adminRoles); // Logs the roles data being used for MultiSelect
+  useEffect(() => {
+    adminProfile.set({ ...adminInfo, adminRoles });
+  }, [adminRoles]);
 
   const handleMultiSelectChange = (key: string, values: string[]) => {
-    const updatedValues = values.map((value) => {
-      if (key === "schools") {
-        // Map the selected school values to their corresponding names
-        const school = schools.find((s, index) => `school_${index}` === value);
-        return school?.name || value; // Use the name if found, or fallback to the value
-      } else if (key === "adminRoles") {
-        // Map the selected role values to their corresponding titles
-        const role = adminRoles.find((r) => `role_${r.id}` === value);
-        return role?.adminRole || value; // Use the adminRole if found, or fallback to the value
-      }
-      return value;
-    });
-
-    adminProfile.set({
-      ...adminInfo,
-      [key]: updatedValues, // Store the actual names/titles
-    });
-
-    console.log(`Updated ${key} in adminProfile:`, adminProfile.get());
+    adminProfile.set({ ...adminInfo, [key]: values });
   };
 
-
-
   return (
-    <div className="h-[45vh] overflow-hidden w-full mt-4">
-      <div className="flex flex-col space-y-4 h-full max-h-full w-full px-2 pb-10">
-        {/* Schools Multi-Select */}
-        <div>
-          <label className="text-neutral-300">Schools</label>
-          <MultiSelect
-            options={schools.map((school, index) => ({
-              value: `school_${index}`,
-              title: school.name,
-            }))}
-            placeholder="Select Schools"
-            onChange={(values: string[]) =>
-              handleMultiSelectChange("schools", values)
-            }
-          />
-        </div>
-
-        {/* Administrative Roles Multi-Select */}
-        <div>
-          <label className="text-neutral-300">Administrative Roles</label>
-          <MultiSelect
-            options={adminRoles.map((role) => ({
-              value: `role_${role.id}`, // Using `id` for unique values
-              title: role.adminRole, // Matches the property name in the JSON
-            }))}
-            placeholder="Select Administrative Roles"
-            onChange={(values: string[]) =>
-              handleMultiSelectChange("adminRoles", values)
-            }
-          />
-        </div>
+    <div className="min-h-[50vh] w-full overflow-y-auto mt-2 px-2 pb-10 flex flex-col space-y-2">
+      <div>
+        <label className="text-neutral-200">Schools</label>
+        <MultiSelect
+          options={schools.map((school, index) => ({
+            value: `school_${index}`,
+            title: school,
+          }))}
+          placeholder="Select Schools"
+          onChange={(values) => handleMultiSelectChange("schools", values)}
+        />
+        {errors.schools && (
+          <span className="text-sm text-red-500">{errors.schools}</span>
+        )}
+      </div>
+      <div>
+        <label className="text-neutral-200">Admin Roles</label>
+        <MultiSelect
+          options={["Principal", "Registrar", "Dean"].map((role, index) => ({
+            value: `role_${index}`,
+            title: role,
+          }))}
+          placeholder="Select Admin Roles"
+          onChange={(values) => setAdminRoles(values)}
+        />
+        {errors.adminRoles && (
+          <span className="text-sm text-red-500">{errors.adminRoles}</span>
+        )}
       </div>
     </div>
   );
-};
+});
 
 export default AdminProfileForm;

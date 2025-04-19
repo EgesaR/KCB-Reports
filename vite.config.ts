@@ -28,13 +28,11 @@ export default defineConfig({
     ),
     "process.env.CLIENT_ID": JSON.stringify(process.env.CLIENT_ID),
     "process.env.CLIENT_SECRET": JSON.stringify(process.env.CLIENT_SECRET),
-    "process.env.VITE_MAIL_USER": JSON.stringify(
-      process.env.VITE_MAIL_USER
-    ),
+    "process.env.VITE_MAIL_USER": JSON.stringify(process.env.VITE_MAIL_USER),
   },
   server: {
     allowedHosts: [
-      "n5g7j2-5173.csb.app",
+      "drydl8-5173.csb.app",
       "localhost",
       "kcb-reports.vercel.app",
     ],

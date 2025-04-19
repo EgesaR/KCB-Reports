@@ -1,48 +1,27 @@
-import { useStore } from "@nanostores/react";
-import { currentRole } from "./StepProvider";
-import { FaUserTie, FaUserGraduate, FaUserShield } from "react-icons/fa";
+import { motion } from "framer-motion";
 
-interface RoleItemProps {
-  role: {
-    title: string;
-  };
+interface RoleProps {
+  role: { title: string };
   onSelect: (role: { title: string }) => void;
 }
 
-const iconMap: { [key: string]: React.ComponentType<{ className: string }> } = {
-  Teacher: FaUserTie,
-  Parent: FaUserGraduate,
-  Admin: FaUserShield,
+const roleVariants = {
+  initial: { scale: 0.8, opacity: 0 },
+  animate: { scale: 1, opacity: 1, transition: { duration: 0.4 } },
+  hover: { scale: 1.05, transition: { duration: 0.2 } },
 };
 
-function RoleItem({ role, onSelect }: RoleItemProps) {
-  const selectedRole = useStore(currentRole); // Get the currently selected role
-  const isSelected = selectedRole.title === role.title; // Check if the role is selected
-  const Icon = iconMap[role.title]; // Map the role to its corresponding icon
-
+export default function RoleItem({ role, onSelect }: RoleProps) {
   return (
-    <div className="h-12 w-full flex items-center justify-between rounded-md shadow border border-neutral-400 py-2 px-4">
-      <div className="flex gap-4">
-        <Icon className="text-2xl" />
-        <h2 className="text-lg font-medium">{role.title}</h2>
-      </div>
-      <label
-        className="relative flex cursor-pointer items-center rounded-full p-3"
-        htmlFor={role.title}
-        data-ripple-dark="true"
-      >
-        <input
-          name="ripple"
-          type="radio"
-          className="before:content[''] peer h-5 w-5 cursor-pointer appearance-none rounded-full border border-slate-300 checked:border-blue-400 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-slate-400 before:opacity-0 before:transition-opacity hover:before:opacity-10"
-          id={role.title}
-          checked={isSelected} // Link to the selected state
-          onChange={() => onSelect(role)} // Trigger the selection handler
-        />
-        <span className="absolute bg-blue-600 w-3 h-3 rounded-full opacity-0 peer-checked:opacity-100 transition-opacity duration-200 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></span>
-      </label>
-    </div>
+    <motion.div
+      className="flex items-center justify-between p-4 bg-gray-800/20 backdrop-blur-sm rounded-lg shadow-md cursor-pointer"
+      onClick={() => onSelect(role)}
+      variants={roleVariants}
+      initial="initial"
+      animate="animate"
+      whileHover="hover"
+    >
+      <span className="text-white">{role.title}</span>
+    </motion.div>
   );
 }
-
-export default RoleItem;

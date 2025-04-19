@@ -1,260 +1,250 @@
 import { useStore } from "@nanostores/react";
 import {
-  currentStep,
   user,
+  currentStep,
   currentRole,
-  addons,
   teacherProfile,
   adminProfile,
   parentProfile,
 } from "./StepProvider";
 
-const SummaryList = () => {
-  const $currentStep = useStore(currentStep);
+export default function SummaryList() {
   const $user = useStore(user);
   const $currentRole = useStore(currentRole);
-  const $addons = useStore(addons);
   const $teacherProfile = useStore(teacherProfile);
   const $adminProfile = useStore(adminProfile);
   const $parentProfile = useStore(parentProfile);
 
-  const handleChangeClick = (step: number) => {
-    currentStep.set(step); // Navigate to the step to update the corresponding data
+  const handleChange = (step: number) => {
+    currentStep.set(step);
   };
 
   return (
-    <div className="h-[48vh] w-full overflow-hidden mt-1 pt-2">
-      <div className="rounded-lg p-6 px-1 shadow-lg h-full max-h-full w-full overflow-y-scroll">
-        <div>
-          <h3 className="font-medium text-xl text-gray-900 dark:text-gray-200">
-            Information
-          </h3>
-          <dl className="border-t border-gray-200">
-          {/* Name */}          
-            <div className="justify-between flex border-b border-gray-200 last:border-0 py-2.5">
-              <dt className="text-gray-500 dark:text-gray-200">Name</dt>
-              <dd className="text-gray-900 dark:text-gray-200 flex gap-2.5">
-                {$user.name || "N/A"}{" "}
-                <button
-                  className="text-blue-500 underline"
-                  onClick={() => handleChangeClick(1)}
-                >
-                  Change
-                </button>
-              </dd>
-            </div>
-
-          {/* DOB */}
-            <div className="justify-between flex border-b border-gray-200 last:border-0 py-2.5">
-              <dt className="text-gray-500 dark:text-gray-200">Date of birth</dt>
-              <dd className="text-gray-900 dark:text-gray-200 flex gap-2.5">
-                {$user.dob || "N/A"}{" "}
-                <button
-                  className="text-blue-500 underline"
-                  onClick={() => handleChangeClick(1)}
-                >
-                  Change
-                </button>
-              </dd>
-            </div>
-
-          {/* Email */}
-            <div className="justify-between flex border-b border-gray-200 last:border-0 py-2.5">
-              <dt className="text-gray-500 dark:text-gray-200">Email</dt>
-              <dd className="text-gray-900 dark:text-gray-200 flex gap-2.5">
-                {$user.email || "N/A"}{" "}
-                <button
-                  className="text-blue-500 underline"
-                  onClick={() => handleChangeClick(2)}
-                >
-                  Change
-                </button>
-              </dd>
-            </div>
-          {/* Phone Number */}
-            <div className="justify-between flex border-b border-gray-200 last:border-0 py-2.5">
-              <dt className="text-gray-500 dark:text-gray-200">Phone Number</dt>
-              <dd className="text-gray-900 dark:text-gray-200 flex gap-2.5">
-                {$user.phone || "N/A"}{" "}
-                <button
-                  className="text-blue-500 underline"
-                  onClick={() => handleChangeClick(2)}
-                >
-                  Change
-                </button>
-              </dd>
-            </div>
-
-          {/* Password */}
-          <div className="justify-between flex border-b border-gray-200 last:border-0 py-2.5">
-            <dt className="text-gray-500 dark:text-gray-200">Password</dt>
-            <dd className="text-gray-900 dark:text-gray-200 flex gap-2.5">
-              {$user.password || "N/A"}{" "}
-              <button
-                className="text-blue-500 underline"
-                onClick={() => handleChangeClick(3)}
-              >
-                Change
-              </button>
-            </dd>
-          </div>
-         </dl>
+    <div className="min-h-[50vh] w-full overflow-y-auto">
+      <dl className="divide-y divide-neutral-500">
+        <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+          <dt className="text-sm font-medium leading-6 text-neutral-200">
+            Name
+          </dt>
+          <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+            {$user.name || "N/A"}
+            <button
+              onClick={() => handleChange(1)}
+              className="ml-4 text-blue-400 hover:text-blue-600"
+            >
+              Change
+            </button>
+          </dd>
         </div>
-
-        <div>
-          <h3 className="font-medium text-xl text-gray-900 dark:text-gray-200 mt-4.5">
-            Roles
-          </h3>
-          <dl className="border-y border-gray-200">
-            {/* User Type */}
-            <div className="justify-between flex border-b border-gray-200 last:border-0 py-2.5">
-              <dt className="text-gray-500 dark:text-gray-200">User Type</dt>
-              <dd className="text-gray-900 dark:text-gray-200 flex gap-2.5">
-                {$currentRole.title || "N/A"}{" "}
+        <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+          <dt className="text-sm font-medium leading-6 text-neutral-200">
+            DOB
+          </dt>
+          <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+            {$user.dob || "N/A"}
+            <button
+              onClick={() => handleChange(1)}
+              className="ml-4 text-blue-400 hover:text-blue-600"
+            >
+              Change
+            </button>
+          </dd>
+        </div>
+        <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+          <dt className="text-sm font-medium leading-6 text-neutral-200">
+            Email
+          </dt>
+          <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+            {$user.email || "N/A"}
+            <button
+              onClick={() => handleChange(2)}
+              className="ml-4 text-blue-400 hover:text-blue-600"
+            >
+              Change
+            </button>
+          </dd>
+        </div>
+        <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+          <dt className="text-sm font-medium leading-6 text-neutral-200">
+            Phone
+          </dt>
+          <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+            {$user.phone || "N/A"}
+            <button
+              onClick={() => handleChange(2)}
+              className="ml-4 text-blue-400 hover:text-blue-600"
+            >
+              Change
+            </button>
+          </dd>
+        </div>
+        <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+          <dt className="text-sm font-medium leading-6 text-neutral-200">
+            Password
+          </dt>
+          <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+            {$user.password ? "********" : "N/A"}
+            <button
+              onClick={() => handleChange(3)}
+              className="ml-4 text-blue-400 hover:text-blue-600"
+            >
+              Change
+            </button>
+          </dd>
+        </div>
+        <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+          <dt className="text-sm font-medium leading-6 text-neutral-200">
+            Role
+          </dt>
+          <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+            {$currentRole.title || "N/A"}
+            <button
+              onClick={() => handleChange(4)}
+              className="ml-4 text-blue-400 hover:text-blue-600"
+            >
+              Change
+            </button>
+          </dd>
+        </div>
+        {$currentRole.title === "Teacher" && (
+          <>
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6 text-neutral-200">
+                Subjects
+              </dt>
+              <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+                {$teacherProfile.subjects?.join(", ") || "N/A"}
                 <button
-                  className="text-blue-500 underline"
-                  onClick={() => handleChangeClick(4)}
+                  onClick={() => handleChange(5)}
+                  className="ml-4 text-blue-400 hover:text-blue-600"
                 >
                   Change
                 </button>
               </dd>
             </div>
-
-            {/* Conditional Role-Specific Information */}
-            {(() => {
-              switch ($currentRole.title) {
-                case "Teacher":
-                  return (
-                    <div className="mt-2">
-                      {/* Subjects */}
-                      <div className="justify-between flex border-b border-gray-200 last:border-0 py-2.5">
-                        <dt className="text-gray-500 dark:text-gray-200">
-                          Subjects
-                        </dt>
-                        <dd className="text-gray-900 dark:text-gray-200 flex gap-2.5">
-                          {Array.isArray($teacherProfile.subjects) &&
-                          $teacherProfile.subjects.length > 0
-                            ? $teacherProfile.subjects.join(", ")
-                            : "No subjects assigned"}
-                          <button
-                            className="text-blue-500 underline"
-                            onClick={() => handleChangeClick(5)}
-                          >
-                            Change
-                          </button>
-                        </dd>
-                      </div>
-                      {/* Classes */}
-                      <div className="justify-between flex border-b border-gray-200 last:border-0 py-2.5">
-                        <dt className="text-gray-500 dark:text-gray-200">
-                          Classes
-                        </dt>
-                        <dd className="text-gray-900 dark:text-gray-200 flex gap-2.5">
-                          {Array.isArray($teacherProfile.classes) &&
-                          $teacherProfile.classes.length > 0
-                            ? $teacherProfile.classes.join(", ")
-                            : "No classes assigned"}
-                          <button
-                            className="text-blue-500 underline"
-                            onClick={() => handleChangeClick(5)}
-                          >
-                            Change
-                          </button>
-                        </dd>
-                      </div>
-                    </div>
-                  );
-                case "Admin":
-                  return (
-                    <div className="mt-2">
-                      {/* Schools */}
-                      <div className="justify-between flex border-b border-gray-200 last:border-0 py-2.5">
-                        <dt className="text-gray-500 dark:text-gray-200">
-                          Schools
-                        </dt>
-                        <dd className="text-gray-900 dark:text-gray-200 flex gap-2.5">
-                          {Array.isArray($adminProfile.schools) &&
-                          $adminProfile.schools.length > 0
-                            ? $adminProfile.schools.join(", ")
-                            : "No schools assigned"}
-                          <button
-                            className="text-blue-500 underline"
-                            onClick={() => handleChangeClick(5)}
-                          >
-                            Change
-                          </button>
-                        </dd>
-                      </div>
-                      {/* Roles */}
-                      <div className="justify-between flex border-b border-gray-200 last:border-0 py-2.5">
-                        <dt className="text-gray-500 dark:text-gray-200">
-                          Roles
-                        </dt>
-                        <dd className="text-gray-900 dark:text-gray-200 flex gap-2.5">
-                          {Array.isArray($adminProfile.adminRoles) &&
-                          $adminProfile.adminRoles.length > 0
-                            ? $adminProfile.adminRoles.join(", ")
-                            : "No roles assigned"}
-                          <button
-                            className="text-blue-500 underline"
-                            onClick={() => handleChangeClick(5)}
-                          >
-                            Change
-                          </button>
-                        </dd>
-                      </div>
-                    </div>
-                  );
-                case "Parent":
-                  return (
-                    <div className="mt-2">
-                      {/* Children IDs */}
-                      <div className="justify-between flex border-b border-gray-200 last:border-0 py-2.5">
-                        <dt className="text-gray-500 dark:text-gray-200">
-                          Children IDs
-                        </dt>
-                        <dd className="text-gray-900 dark:text-gray-200 flex gap-2.5">
-                          {Array.isArray($parentProfile.childrenIds) &&
-                          $parentProfile.childrenIds.length > 0
-                            ? $parentProfile.childrenIds.join(", ")
-                            : "No children IDs"}
-                          <button
-                            className="text-blue-500 underline"
-                            onClick={() => handleChangeClick(5)}
-                          >
-                            Change
-                          </button>
-                        </dd>
-                      </div>
-                      {/* Schools */}
-                      <div className="justify-between flex border-b border-gray-200 last:border-0 py-2.5">
-                        <dt className="text-gray-500 dark:text-gray-200">
-                          Schools
-                        </dt>
-                        <dd className="text-gray-900 dark:text-gray-200 flex gap-2.5">
-                          {Array.isArray($parentProfile.schools) &&
-                          $parentProfile.schools.length > 0
-                            ? $parentProfile.schools.join(", ")
-                            : "No schools assigned"}
-                          <button
-                            className="text-blue-500 underline"
-                            onClick={() => handleChangeClick(5)}
-                          >
-                            Change
-                          </button>
-                        </dd>
-                      </div>
-                    </div>
-                  );
-                default:
-                  return <p>No additional details available for this role.</p>;
-              }
-            })()}
-          </dl>
-        </div>
-      </div>
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6 text-neutral-200">
+                Classes
+              </dt>
+              <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+                {$teacherProfile.classes?.join(", ") || "N/A"}
+                <button
+                  onClick={() => handleChange(5)}
+                  className="ml-4 text-blue-400 hover:text-blue-600"
+                >
+                  Change
+                </button>
+              </dd>
+            </div>
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6 text-neutral-200">
+                Schools
+              </dt>
+              <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+                {$teacherProfile.schools?.join(", ") || "N/A"}
+                <button
+                  onClick={() => handleChange(5)}
+                  className="ml-4 text-blue-400 hover:text-blue-600"
+                >
+                  Change
+                </button>
+              </dd>
+            </div>
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6 text-neutral-200">
+                Streams
+              </dt>
+              <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+                {$teacherProfile.streams || "N/A"}
+                <button
+                  onClick={() => handleChange(5)}
+                  className="ml-4 text-blue-400 hover:text-blue-600"
+                >
+                  Change
+                </button>
+              </dd>
+            </div>
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6 text-neutral-200">
+                Department Group
+              </dt>
+              <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+                {$teacherProfile.departmentGroup || "N/A"}
+                <button
+                  onClick={() => handleChange(5)}
+                  className="ml-4 text-blue-400 hover:text-blue-600"
+                >
+                  Change
+                </button>
+              </dd>
+            </div>
+          </>
+        )}
+        {$currentRole.title === "Admin" && (
+          <>
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6 text-neutral-200">
+                Schools
+              </dt>
+              <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+                {$adminProfile.schools?.join(", ") || "N/A"}
+                <button
+                  onClick={() => handleChange(5)}
+                  className="ml-4 text-blue-400 hover:text-blue-600"
+                >
+                  Change
+                </button>
+              </dd>
+            </div>
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6 text-neutral-200">
+                Admin Roles
+              </dt>
+              <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+                {$adminProfile.adminRoles?.join(", ") || "N/A"}
+                <button
+                  onClick={() => handleChange(5)}
+                  className="ml-4 text-blue-400 hover:text-blue-600"
+                >
+                  Change
+                </button>
+              </dd>
+            </div>
+          </>
+        )}
+        {$currentRole.title === "Parent" && (
+          <>
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6 text-neutral-200">
+                Schools
+              </dt>
+              <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+                {$parentProfile.schools?.join(", ") || "N/A"}
+                <button
+                  onClick={() => handleChange(5)}
+                  className="ml-4 text-blue-400 hover:text-blue-600"
+                >
+                  Change
+                </button>
+              </dd>
+            </div>
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6 text-neutral-200">
+                Student IDs
+              </dt>
+              <dd className="mt-1 text-sm leading-6 text-neutral-200 sm:col-span-2 sm:mt-0">
+                {$parentProfile.childrenIds?.join(", ") || "N/A"}
+                <button
+                  onClick={() => handleChange(5)}
+                  className="ml-4 text-blue-400 hover:text-blue-600"
+                >
+                  Change
+                </button>
+              </dd>
+            </div>
+          </>
+        )}
+      </dl>
     </div>
   );
-};
-
-export default SummaryList;
+}

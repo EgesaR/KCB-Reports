@@ -1,169 +1,146 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useStore } from "@nanostores/react";
-import { currentStep, stepStatuses, user, currentRole } from "./StepProvider";
-import axios from "axios"; // Import axios for API calls
-
-const MAX_STEPS = 7; // Total number of steps in the navigation
+import { Form, useActionData } from "@remix-run/react";
+import {
+  currentStep,
+  user,
+  currentRole,
+  teacherProfile,
+  adminProfile,
+  parentProfile,
+} from "./StepProvider";
 
 interface StepNavigationProps {
-  refs: Record<number, React.RefObject<{ validateStep: () => boolean }>>; // Ref for each step
-  onSubmissionResult: (success: boolean, message?: string) => void; // Callback for submission result
+  refs: Record<number, React.RefObject<{ validateStep: () => boolean }>>;
+  onSubmissionResult: (success: boolean, message?: string) => void;
 }
 
-// Define the type for user data
-interface UserData {
-  name?: string;
-  email?: string;
-  password?: string | null; // Allow null
-  roles: string[];
-  schools: string[];
-}
-
-function StepNavigation({ refs, onSubmissionResult }: StepNavigationProps) {
+export default function StepNavigation({
+  refs,
+  onSubmissionResult,
+}: StepNavigationProps) {
   const $currentStep = useStore(currentStep);
-  const $stepStatuses = useStore(stepStatuses);
   const $user = useStore(user);
   const $role = useStore(currentRole);
-
+  const $teacherProfile = useStore(teacherProfile);
+  const $adminProfile = useStore(adminProfile);
+  const $parentProfile = useStore(parentProfile);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const errors = useActionData<any>();
 
   const handleBack = () => {
-    if ($currentStep > 1) {
-      const updatedStatuses = { ...$stepStatuses, [$currentStep]: "pending" };
-      stepStatuses.set(updatedStatuses);
-      currentStep.set($currentStep - 1);
+    if ($currentStep.value > 1) {
+      currentStep.set({ value: $currentStep.value - 1 });
     }
   };
 
-  // Validate user data
-  const validateUserData = (userData: UserData): boolean => {
-    return (
-      !!userData.name &&
-      !!userData.email &&
-      !!userData.password &&
-      userData.roles.length > 0
-    );
-  };
-
-  // Handle API response
-  const handleApiResponse = (response: any) => {
-    if (response.status === 200) {
-      onSubmissionResult(true);
-      alert("Signup successful!");
-    } else {
-      onSubmissionResult(
-        false,
-        response.data.error || "Unknown error occurred."
-      );
-      alert(
-        `Signup failed: ${response.data.error || "Unknown error occurred."}`
-      );
-    }
-  };
-
-  // Handle form submission at the last step
-  const handleConfirm = async () => {
-    setIsSubmitting(true);
-
-    const userData: UserData = {
-      name: $user.name?.trim(),
-      email: $user.email?.trim(),
-      password: $user.password || undefined, // Convert null to undefined
-      roles: [$role.title], // Ensure roles are in an array
-      schools: Array.isArray($user.schools) ? $user.schools : [], // Ensure schools is always an array
-    };
-
-    // Validate required fields
-    if (!validateUserData(userData)) {
-      onSubmissionResult(
-        false,
-        "Please complete all required fields before continuing."
-      );
-      setIsSubmitting(false);
-      return;
-    }
-
-    try {
-      // Make API call using axios
-      const response = await axios.post("/api/signup", userData, {
-        headers: { "Content-Type": "application/json" },
-      });
-
-      handleApiResponse(response);
-    } catch (error) {
-      console.error("Error during signup:", error);
-      onSubmissionResult(
-        false,
-        "An unexpected error occurred. Please try again later."
-      );
-      alert("An unexpected error occurred. Please try again later.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Navigate to the next step
   const handleNext = () => {
-    const currentRef = refs[$currentStep];
-
+    const currentRef = refs[$currentStep.value];
     if (currentRef?.current) {
       const isValid = currentRef.current.validateStep();
       if (isValid) {
-        if ($currentStep === MAX_STEPS - 1) {
-          handleConfirm(); // Submit on the last step
+        if ($currentStep.value === 6) {
+          setIsSubmitting(true); // Submission handled by Form
         } else {
-          currentStep.set($currentStep + 1); // Move to the next step
+          currentStep.set({ value: $currentStep.value + 1 });
         }
       } else {
-        onSubmissionResult(
-          false,
-          "Please correct the errors in this step before proceeding."
-        );
-        alert("Please correct the errors in this step before proceeding.");
+        onSubmissionResult(false, "Please correct the errors in this step.");
       }
     } else {
-      // If no currentRef exists
-      if ($currentStep === MAX_STEPS - 1) {
-        handleConfirm(); // Submit on the last step
-        currentStep.set($currentStep + 1);
-      } else {
-        currentStep.set($currentStep + 1); // Move to the next step
-      }
+      currentStep.set({ value: $currentStep.value + 1 });
     }
   };
 
-  // Render navigation buttons
   return (
     <div className="navigation-buttons p-[20px] py-[10px] flex justify-between items-center">
-      {/* Conditionally render the Back button */}
-      {$currentStep > 1 && (
+      {$currentStep.value > 1 && (
         <button
-          className="back bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+          className="bg-gray-300 dark:bg-neutral-600 hover:bg-gray-400 dark:hover:bg-neutral-500 text-gray-800 dark:text-neutral-200 font-bold py-2 px-4 rounded"
           onClick={handleBack}
         >
           Go Back
         </button>
       )}
-      {$currentStep === 1 && <div></div>}
-
-      {/* Next/Confirm button */}
-      <button
-        className={`next transition-all ${
-          isSubmitting
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-blue-500 hover:bg-blue-700"
-        } text-white font-bold py-2 px-4 rounded`}
-        onClick={handleNext}
-        disabled={isSubmitting || $stepStatuses[$currentStep] === "submitting"} // Disable on submitting
-      >
-        {isSubmitting
-          ? "Submitting..."
-          : $currentStep === MAX_STEPS - 1
-          ? "Confirm"
-          : "Next Step"}
-      </button>
+      {$currentStep.value === 1 && <div></div>}
+      {$currentStep.value < 6 ? (
+        <button
+          className={`transition-all ${
+            isSubmitting
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-700"
+          } text-white font-bold py-2 px-4 rounded`}
+          onClick={handleNext}
+          disabled={isSubmitting}
+        >
+          Next Step
+        </button>
+      ) : (
+        <Form
+          method="post"
+          action="/api/signup"
+          onSubmit={() => setIsSubmitting(true)}
+        >
+          <input type="hidden" name="name" value={$user.name || ""} />
+          <input type="hidden" name="email" value={$user.email || ""} />
+          <input type="hidden" name="password" value={$user.password || ""} />
+          <input
+            type="hidden"
+            name="roles"
+            value={JSON.stringify([$role.title])}
+          />
+          <input
+            type="hidden"
+            name="schools"
+            value={JSON.stringify(
+              $role.title === "Teacher"
+                ? $teacherProfile.schools
+                : $role.title === "Admin"
+                ? $adminProfile.schools
+                : $parentProfile.schools || []
+            )}
+          />
+          {$role.title === "Teacher" && (
+            <input
+              type="hidden"
+              name="teacherProfile"
+              value={JSON.stringify($teacherProfile)}
+            />
+          )}
+          {$role.title === "Admin" && (
+            <input
+              type="hidden"
+              name="adminProfile"
+              value={JSON.stringify($adminProfile)}
+            />
+          )}
+          {$role.title === "Parent" && (
+            <input
+              type="hidden"
+              name="parentProfile"
+              value={JSON.stringify($parentProfile)}
+            />
+          )}
+          <button
+            type="submit"
+            className={`transition-all ${
+              isSubmitting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-700"
+            } text-white font-bold py-2 px-4 rounded`}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Confirm"}
+          </button>
+          {errors && (
+            <div className="text-red-500 mt-2">
+              {errors.errors?.email ||
+                errors.errors?.message ||
+                "Submission failed."}
+            </div>
+          )}
+        </Form>
+      )}
     </div>
   );
 }
-
-export default StepNavigation;

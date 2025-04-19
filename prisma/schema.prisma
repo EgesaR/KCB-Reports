@@ -28,8 +28,8 @@ model User {
   themePreference    ThemePreference @default(SYSTEM)
   title              String?         @db.VarChar(100)
   twoFactorEnabled   Boolean         @default(false)
-  resetToken         String?         @db.VarChar(255)
-  resetTokenExpiry   DateTime?
+  resetToken         String?         @db.VarChar(255) // Deprecated, consider removing
+  resetTokenExpiry   DateTime?       // Deprecated, consider removing
   passwordHash       String?         @db.VarChar(255)
   googleAccessToken  String?         @db.VarChar(512)
   googleRefreshToken String?         @db.VarChar(512)
@@ -46,9 +46,22 @@ model User {
   notifications      Notification[]  @relation("UserNotifications")
   sessions           Session[]
   userSubjects       UserSubject[]
+  passwordResets     PasswordReset[] // Added relation to PasswordReset
 
   @@index([email])
   @@index([createdAt])
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  email     String   @db.VarChar(255)
+  code      String   @db.VarChar(6) // Explicitly sized for 6-digit codes
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [email], references: [email]) // Optional relation
+
+  @@index([email])
 }
 
 model Session {
@@ -105,15 +118,6 @@ model Blog {
 
   @@index([publishedAt])
   @@index([updatedAt])
-}
-
-model PasswordReset {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  code      String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Post {
