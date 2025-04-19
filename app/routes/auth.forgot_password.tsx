@@ -23,6 +23,24 @@ export const action: ActionFunction = async ({ request }) => {
   const mode = formData.get("mode") as string;
   const password = formData.get("password") as string;
 
+  // Validate environment variables
+  const requiredEnvVars = [
+    "CLIENT_ID",
+    "CLIENT_SECRET",
+    "GOOGLE_REDIRECT_URI",
+    "REFRESH_TOKEN",
+    "MAIL_USER",
+    "OAUTH_TOKEN_URL",
+  ];
+  const missingEnvVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+  if (missingEnvVars.length > 0) {
+    console.error("Missing environment variables:", missingEnvVars.join(", "));
+    return json(
+      { error: "Server configuration error: Missing environment variables" },
+      { status: 500 }
+    );
+  }
+
   // Handle forgot password flow
   if (mode === "reset" || mode === "verify") {
     if (mode === "reset") {
@@ -38,8 +56,8 @@ export const action: ActionFunction = async ({ request }) => {
       // Send email with Nodemailer
       try {
         const oAuth2Client = new google.auth.OAuth2(
-          process.env.GOOGLE_CLIENT_ID,
-          process.env.GOOGLE_CLIENT_SECRET,
+          process.env.CLIENT_ID,
+          process.env.CLIENT_SECRET,
           process.env.GOOGLE_REDIRECT_URI
         );
         oAuth2Client.setCredentials({
@@ -49,24 +67,25 @@ export const action: ActionFunction = async ({ request }) => {
         const accessToken = await oAuth2Client.getAccessToken();
 
         const transport = nodemailer.createTransport({
-          service: "gmail",
+          service: process.env.MAIL_SERVICE,
           auth: {
             type: "OAuth2",
-            user: process.env.EMAIL_USER,
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            user: process.env.MAIL_USER,
+            clientId: process.env.CLIENT_ID,
+            clientSecret: process.env.CLIENT_SECRET,
             refreshToken: process.env.REFRESH_TOKEN,
             accessToken: accessToken.token || "",
           },
         });
 
         const mailOptions = {
-          from: `KCB Reports <${process.env.EMAIL_USER}>`,
+          from: `KCB Reports <${process.env.MAIL_USER}>`,
           to: email,
           subject: "KCB Reports Security Code",
           text: `Hello user, your security code is: ${verificationCode}`,
           html: `Hello <i>user</i>, your security code is: <b>${verificationCode}</b>`,
         };
+        console.log({ verificationCode })
 
         await transport.sendMail(mailOptions);
 
@@ -107,7 +126,7 @@ export const action: ActionFunction = async ({ request }) => {
         );
       }
 
-      // Placeholder: Update password (requires user database)
+      // TODO: Update password in database (requires Prisma or similar)
       // Example: await prisma.user.update({ where: { email }, data: { password: hash(password) } });
       codeStore.delete(email); // Clear code after use
 
@@ -120,26 +139,14 @@ export const action: ActionFunction = async ({ request }) => {
 
   // Handle OAuth token exchange
   try {
-    const tokenEndpoint = process.env.OAUTH_TOKEN_URL;
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI;
-
-    if (!tokenEndpoint || !clientId || !clientSecret || !redirectUri) {
-      console.error(
-        "Missing required environment variables for token exchange."
-      );
-      return json({ error: "Server configuration error" }, { status: 500 });
-    }
-
     const response = await axios.post(
-      tokenEndpoint,
+      process.env.OAUTH_TOKEN_URL!,
       new URLSearchParams({
         grant_type: "authorization_code",
-        client_id: clientId,
-        client_secret: clientSecret,
+        client_id: process.env.CLIENT_ID!,
+        client_secret: process.env.CLIENT_SECRET!,
         code: code,
-        redirect_uri: redirectUri,
+        redirect_uri: process.env.GOOGLE_REDIRECT_URI!,
       }),
       {
         headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -248,7 +255,12 @@ export default function ForgotPasswordPage() {
   const navigation = useNavigation();
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const [isAutofilled, setIsAutofilled] = useState(false);
-
+  console.log("Hello")
+  console.log(
+    process.env.CLIENT_ID,
+    process.env.CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI
+  );
   // Sync actionData with formState
   useEffect(() => {
     if (actionData?.mode) {
@@ -292,8 +304,7 @@ export default function ForgotPasswordPage() {
   useEffect(() => {
     const checkAutofill = () => {
       if (passwordInputRef.current) {
-        const autofilled =
-          !!passwordInputRef.current.matches(":-webkit-autofill");
+        const autofilled = !!passwordInputRef.current.matches(":-webkit-autofill");
         setIsAutofilled(autofilled);
       }
     };
@@ -361,8 +372,7 @@ export default function ForgotPasswordPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
               >
-                Password updated successfully! You can now sign in with your new
-                password.
+                Password updated successfully! You can now sign in with your new password.
               </motion.div>
             )}
           </AnimatePresence>
@@ -390,8 +400,7 @@ export default function ForgotPasswordPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
               >
-                We've sent a verification code to your email. Please check your
-                inbox and spam folder.
+                We've sent a verification code to your email. Please check your inbox and spam folder.
               </motion.div>
             )}
           </AnimatePresence>

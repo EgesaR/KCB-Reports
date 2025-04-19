@@ -17,7 +17,7 @@ type ActionData = {
   fields?: {
     email: string;
     password: string;
-  };
+  }; 
   success?: boolean;
 };
 
