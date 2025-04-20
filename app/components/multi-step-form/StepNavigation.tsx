@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useStore } from "@nanostores/react";
-import { Form, useActionData } from "@remix-run/react";
+import { motion } from "framer-motion";
 import {
   currentStep,
   user,
@@ -15,6 +15,11 @@ interface StepNavigationProps {
   onSubmissionResult: (success: boolean, message?: string) => void;
 }
 
+const buttonVariants = {
+  hover: { scale: 1.05, transition: { duration: 0.2 } },
+  tap: { scale: 0.95, transition: { duration: 0.1 } },
+};
+
 export default function StepNavigation({
   refs,
   onSubmissionResult,
@@ -26,7 +31,7 @@ export default function StepNavigation({
   const $adminProfile = useStore(adminProfile);
   const $parentProfile = useStore(parentProfile);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const errors = useActionData<any>();
+  const [error, setError] = useState("");
 
   const handleBack = () => {
     if ($currentStep.value > 1) {
@@ -40,7 +45,7 @@ export default function StepNavigation({
       const isValid = currentRef.current.validateStep();
       if (isValid) {
         if ($currentStep.value === 6) {
-          setIsSubmitting(true); // Submission handled by Form
+          handleSubmit();
         } else {
           currentStep.set({ value: $currentStep.value + 1 });
         }
@@ -52,19 +57,63 @@ export default function StepNavigation({
     }
   };
 
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setError("");
+    try {
+      const response = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: $user.name,
+          email: $user.email,
+          password: $user.password,
+          dob: $user.dob,
+          phone: $user.phone,
+          role: $role.title,
+          schools:
+            $role.title === "Teacher"
+              ? $teacherProfile.schools
+              : $role.title === "Admin"
+              ? $adminProfile.schools
+              : $parentProfile.schools,
+          teacherProfile:
+            $role.title === "Teacher" ? $teacherProfile : undefined,
+          adminProfile: $role.title === "Admin" ? $adminProfile : undefined,
+          parentProfile: $role.title === "Parent" ? $parentProfile : undefined,
+        }),
+      });
+      const result = await response.json();
+      setIsSubmitting(false);
+      onSubmissionResult(result.success, result.message);
+      if (result.success) {
+        currentStep.set({ value: 7 });
+      } else {
+        setError(result.message || "Submission failed.");
+      }
+    } catch {
+      setIsSubmitting(false);
+      setError("Submission failed.");
+      onSubmissionResult(false, "Submission failed.");
+    }
+  };
+
   return (
-    <div className="navigation-buttons p-[20px] py-[10px] flex justify-between items-center">
+    <div className="navigation-buttons p-5 flex justify-between items-center">
       {$currentStep.value > 1 && (
-        <button
+        <motion.button
           className="bg-gray-300 dark:bg-neutral-600 hover:bg-gray-400 dark:hover:bg-neutral-500 text-gray-800 dark:text-neutral-200 font-bold py-2 px-4 rounded"
           onClick={handleBack}
+          variants={buttonVariants}
+          whileHover="hover"
+          whileTap="tap"
         >
           Go Back
-        </button>
+        </motion.button>
       )}
       {$currentStep.value === 1 && <div></div>}
       {$currentStep.value < 6 ? (
-        <button
+        <motion.button
           className={`transition-all ${
             isSubmitting
               ? "bg-gray-400 cursor-not-allowed"
@@ -72,74 +121,30 @@ export default function StepNavigation({
           } text-white font-bold py-2 px-4 rounded`}
           onClick={handleNext}
           disabled={isSubmitting}
+          variants={buttonVariants}
+          whileHover="hover"
+          whileTap="tap"
         >
           Next Step
-        </button>
+        </motion.button>
       ) : (
-        <Form
-          method="post"
-          action="/api/signup"
-          onSubmit={() => setIsSubmitting(true)}
-        >
-          <input type="hidden" name="name" value={$user.name || ""} />
-          <input type="hidden" name="email" value={$user.email || ""} />
-          <input type="hidden" name="password" value={$user.password || ""} />
-          <input
-            type="hidden"
-            name="roles"
-            value={JSON.stringify([$role.title])}
-          />
-          <input
-            type="hidden"
-            name="schools"
-            value={JSON.stringify(
-              $role.title === "Teacher"
-                ? $teacherProfile.schools
-                : $role.title === "Admin"
-                ? $adminProfile.schools
-                : $parentProfile.schools || []
-            )}
-          />
-          {$role.title === "Teacher" && (
-            <input
-              type="hidden"
-              name="teacherProfile"
-              value={JSON.stringify($teacherProfile)}
-            />
-          )}
-          {$role.title === "Admin" && (
-            <input
-              type="hidden"
-              name="adminProfile"
-              value={JSON.stringify($adminProfile)}
-            />
-          )}
-          {$role.title === "Parent" && (
-            <input
-              type="hidden"
-              name="parentProfile"
-              value={JSON.stringify($parentProfile)}
-            />
-          )}
-          <button
-            type="submit"
+        <div className="flex flex-col gap-2">
+          <motion.button
             className={`transition-all ${
               isSubmitting
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-blue-500 hover:bg-blue-700"
             } text-white font-bold py-2 px-4 rounded`}
+            onClick={handleSubmit}
             disabled={isSubmitting}
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
           >
             {isSubmitting ? "Submitting..." : "Confirm"}
-          </button>
-          {errors && (
-            <div className="text-red-500 mt-2">
-              {errors.errors?.email ||
-                errors.errors?.message ||
-                "Submission failed."}
-            </div>
-          )}
-        </Form>
+          </motion.button>
+          {error && <div className="text-red-500 text-sm">{error}</div>}
+        </div>
       )}
     </div>
   );

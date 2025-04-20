@@ -3,22 +3,14 @@ import { useStore } from "@nanostores/react";
 import { motion } from "framer-motion";
 import { user } from "./StepProvider";
 
-const inputVariants = {
-  initial: {
-    scale: 1,
-    boxShadow: "0 0 0 0 rgba(59, 130, 246, 0)",
-    opacity: 0,
-    x: 20,
-  },
+const fieldVariants = {
+  initial: { opacity: 0, x: 20 },
   animate: {
-    scale: 1,
     opacity: 1,
     x: 0,
     transition: { duration: 0.4, ease: "easeOut" },
   },
-  hover: { scale: 1.02, transition: { duration: 0.2 } },
   focus: {
-    boxShadow: "0 0 0 4px rgba(59, 130, 246, 0.3)",
     transition: { duration: 0.2 },
   },
 };
@@ -64,7 +56,7 @@ const BasicInfo = forwardRef((props, ref) => {
         <motion.div
           key={field}
           className="flex flex-col gap-2"
-          variants={inputVariants}
+          variants={fieldVariants}
           initial="initial"
           animate="animate"
           transition={{ delay: index * 0.2 }}
@@ -88,7 +80,7 @@ const BasicInfo = forwardRef((props, ref) => {
             }`}
             aria-describedby={`${field}-error`}
             required
-            variants={inputVariants}
+            variants={fieldVariants}
             whileHover="hover"
             whileFocus="focus"
           />
