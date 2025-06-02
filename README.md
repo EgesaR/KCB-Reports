@@ -211,4 +211,3 @@ This template comes with [Tailwind CSS](https://tailwindcss.com/) already config
     "tags": ["#code", "#review"]
   }
 ]
-# KCB-Reports
