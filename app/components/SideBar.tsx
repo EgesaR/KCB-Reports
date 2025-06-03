@@ -26,7 +26,7 @@ const SideBar = () => {
   ];
 
   return (
-    <aside className="bg-zinc-200 dark:bg-zinc-900 rounded-lg py-4 flex flex-col items-center justify-between px-2">
+    <aside className="bg-zinc-200 dark:bg-zinc-900 rounded-lg py-4 flex flex-col items-center justify-between px-1.5">
       <span className="font-bold text-md opacity-0">KR</span>
       <div className="flex flex-col items-center gap-4">
         {mainButtons.map((btn, index) => (
@@ -66,8 +66,11 @@ const SideBarBtn = ({
       whileHover={{ scale: 1.05 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
+      <motion.div className="h-5 w-1 bg-purple-300 rounded-full absolute top-1/2 -translate-y-1/2">
+
+      </motion.div>
       <motion.button
-        className={`h-8 w-8 grid place-content-center text-[20px] rounded-lg hover:bg-zinc-700/50 ${
+        className={`h-8 w-10 grid place-content-center text-[20px] rounded-lg hover:bg-zinc-700/50 ${
           className || ""
         }`}
         aria-label={label}
