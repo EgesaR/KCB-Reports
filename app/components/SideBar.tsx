@@ -2,7 +2,13 @@ import { useState } from "react";
 import { FaRegHeart, FaHeart, FaRegClock } from "react-icons/fa";
 import { FiMoreHorizontal } from "react-icons/fi";
 import { CgHomeAlt } from "react-icons/cg";
-import { motion } from "framer-motion";
+import { AnimationOptions, motion } from "framer-motion";
+import useMotionTimeline from "~/hooks/useMotionTimeline";
+
+const INDICATOR_TRANSITION: AnimationOptions = {
+  ease: "easeInOut",
+  duration: 1.5,
+};
 
 const SideBar = () => {
   const [isLiked, setIsLiked] = useState(false);
@@ -60,15 +66,29 @@ const SideBarBtn = ({
   className?: string;
   icon?: React.ReactNode;
 }) => {
+  const bar = useMotionTimeline(
+    [
+      [".bar-4", { height: 2.5, width: 4 }, INDICATOR_TRANSITION],
+      [".bar-4", { top: "60%" }, INDICATOR_TRANSITION],
+      //[".bar-4", { height: 2.5, width: 4 }, INDICATOR_TRANSITION],
+      //[".bar-4", { top: "calc(1/2*100%)" }, INDICATOR_TRANSITION],
+      //[".bar-4", { height: 24, top: "calc(1/2*100%)" }, INDICATOR_TRANSITION],
+    ],
+    Infinity
+  );
   return (
     <motion.div
-      className="relative"
+      className="relative overflow-hidde border"
       whileHover={{ scale: 1.05 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      ref={bar}
     >
-      <motion.div className="h-5 w-1 bg-purple-300 rounded-full absolute top-1/2 -translate-y-1/2">
+      {/*<motion.div className="h-5 w-1 bg-purple-300 rounded-full absolute top-1/2 -translate-y-1/2"></motion.div>*/}
 
-      </motion.div>
+      <motion.div
+        className="bg-purple-300 rounded-full absolute top-[100%] h-2 z-50 bar-4"
+        style={{ width: 4 }}
+      ></motion.div>
       <motion.button
         className={`h-8 w-10 grid place-content-center text-[20px] rounded-lg hover:bg-zinc-700/50 ${
           className || ""
