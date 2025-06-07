@@ -29,6 +29,7 @@ const useMotionTimeline = (keyframes: Animation[], count: number = 1) => {
   }, []);
 
   const processAnimation = async (animation: Animation) => {
+    //console.log(`Processing animation: `, animation);
     if (Array.isArray(animation[0])) {
       await Promise.all(
         animation.map(async (a) => {

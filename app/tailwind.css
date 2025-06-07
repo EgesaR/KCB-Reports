@@ -1,11 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 @import "tailwindcss";
+@tailwind utilities;
 
 html,
 body {
-  @apply bg-white dark:bg-zinc-950;
+  @apply bg-zinc-100 dark:bg-zinc-950;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -26,6 +24,13 @@ body {
 }
 
 @layer utilities {
+  .custom-scrollbar {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent; /* Firefox */
+  }
+  .dark .custom-scrollbar {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent; /* Firefox */
+  }
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
   }
@@ -46,10 +51,18 @@ body {
     background: rgba(255, 255, 255, 0.3);
   }
 }
+
 :root {
-  --background: #62ABFF;
+  --background: #62abff;
   --icon-color: #414856;
-  --shape-color-01: #B8CBEE;
-  --shape-color-02: #7691E8;
-  --shape-color-03: #FDD053;
+  --shape-color-01: #b8cbee;
+  --shape-color-02: #7691e8;
+  --shape-color-03: #fdd053;
+}
+
+.font-comfortaa {
+  font-family: "Comfortaa", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300 700; /* Support variable font weights */
+  font-style: normal;
 }

@@ -5,7 +5,7 @@ const AppBar = () => {
   return (
     <nav className="w-full py-1.5 px-3 bg-zinc-200 dark:bg-zinc-900/80 rounded-lg flex justify-between items-center">
       <div>
-        <span className="font-semibold text-base">KCB Reports</span>
+        <span className="font-semibold text-[17px]">KCB Reports</span>
       </div>
 
       <div className="flex gap-1.5">

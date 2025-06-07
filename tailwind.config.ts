@@ -16,6 +16,7 @@ export default {
           "Segoe UI Symbol",
           "Noto Color Emoji",
         ],
+        comfortaa: ["Comfortaa", "sans-serif"],
       },
       colors: {
         ...defaultTheme.colors, // Include all default Tailwind colors
