@@ -11,6 +11,7 @@ import styles from "./tailwind.css?url";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import SideBar from "./components/SideBar";
 import AppBar from "./components/AppBar";
+import SidebarModal from "./components/sidebarModal";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,7 +52,6 @@ export const links: LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  
   return (
     <html lang="en">
       <head>
@@ -66,8 +66,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <SideBar />
             <section className="flex-1 grow flex flex-col gap-2">
               <AppBar />
-              <main className="h-full w-full bg-[#E8EBF3] p-2 rounded-lg overflow-auto dark:bg-zinc-950">
+              <main className="h-full relative w-full bg-[#E8EBF3] p-2 rounded-lg overflow-auto dark:bg-zinc-950">
                 <Outlet />
+                <SidebarModal />
               </main>
             </section>
           </div>

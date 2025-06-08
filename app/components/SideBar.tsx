@@ -203,7 +203,7 @@ const SideBarBtn = (
         onClick={onClick}
       >
         <motion.div
-          className={`bg-purple-300 absolute left-1 z-50 indicator-${id}`}
+          className={`bg-purple-300 absolute left-1 z-10 indicator-${id}`}
           ref={indicatorRef}
           initial={{
             opacity: 0,
