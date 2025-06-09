@@ -4,21 +4,21 @@ import { IoChevronDownCircleOutline, IoSearch } from "react-icons/io5";
 
 const AppBar = () => {
   return (
-    <nav className="w-full py-1.5 px-3 bg-zinc-200 dark:bg-zinc-900/80 rounded-lg flex justify-between items-center">
+    <nav className="w-full py-1.5 px-3 bg-zinc-100 dark:bg-zinc-900/80 rounded-lg flex justify-between items-center">
       <div>
         <span className="font-semibold text-[17px]">KCB Reports</span>
       </div>
 
       <div className="flex gap-1.5">
-        <button className="h-7.5 w-7.5 rounded-lg hover:bg-zinc-800/80 grid place-content-center">
+        <button className="h-7.5 w-7.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800/80 grid place-content-center">
           <IoSearch />
         </button>
-        <button className="h-7.5 w-7.5 rounded-lg hover:bg-zinc-800/80 grid place-content-center">
+        <button className="h-7.5 w-7.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800/80 grid place-content-center">
           <HiAdjustmentsHorizontal />
         </button>
         <Menu as="div" className="relative inline-block text-left">
           <div>
-            <MenuButton className="h-7.5 w-7.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-800/50 grid place-content-center focus-visible:outline-0">
+            <MenuButton className="h-7.5 w-7.5 rounded-lg bg-zinc-200/90 dark:bg-zinc-800/90 hover:bg-zinc-100/50 hover:bg-zinc-800/50 hover:text-white dark:hover:text-black grid place-content-center focus-visible:outline-0">
               <HiOutlineUser aria-hidden="true" />
             </MenuButton>
           </div>

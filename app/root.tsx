@@ -60,13 +60,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="w-full h-screen overflow-hidden font-comfortaa bg-zinc-100 dark:bg-zinc-950">
+      <body className="w-full h-screen overflow-hidden font-comfortaa bg-zinc-200 dark:bg-zinc-950 p-0.5">
         <QueryClientProvider client={queryClient}>
           <div className="w-full h-full flex py-2 px-2.5 gap-2.5">
             <SideBar />
             <section className="flex-1 grow flex flex-col gap-2">
               <AppBar />
-              <main className="h-full relative w-full bg-[#E8EBF3] p-2 rounded-lg overflow-auto dark:bg-zinc-950">
+              <main className="h-full relative w-full bg-white p-2 rounded-xl overflow-auto dark:bg-zinc-950">
                 <Outlet />
                 <SidebarModal />
               </main>

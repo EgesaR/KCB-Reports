@@ -12,7 +12,7 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
   return (
-    <div className="flex min-h-screen overflow-hidden bg-zinc-950">
+    <div className="flex min-h-screen overflow-hidden dark:bg-zinc-950 rounded-lg">
       <EventCard
         eventType="welcome"
         eventDate={`${new Date()}`}
@@ -41,7 +41,7 @@ interface EventCardProps {
 
 const EventCard = ({eventType, eventDate, eventTitle, actions}:EventCardProps) => {
   return (
-    <div className="px-6 py-2 w-full h-48 rounded-lg bg-gradient-to-br from-[#E56DE5] via-[#d45bd6] to-[#bb48bd] flex flex-col justify-center gap-3">
+    <div className="px-6 py-2 w-full h-48 rounded-lg bg-gradient-to-br from-[#e6b3e6] via-[#e0b0e0] to-[#d6a3d6] flex flex-col justify-center gap-3">
       <span className="uppercase font-inter text-sm">{eventType}</span>
       <h1 className="text-4xl font-inter">{eventTitle}</h1>
       <div className="flex gap-2">
@@ -49,7 +49,7 @@ const EventCard = ({eventType, eventDate, eventTitle, actions}:EventCardProps) =
           <button
             onClick={() => action.action()}
             key={index}
-            className="flex gap-2 px-4 text-sm hover:cursor-pointer py-1.5 rounded-full bg-black justify-center items-center"
+            className="flex gap-2 px-4 text-sm hover:cursor-pointer py-1.5 rounded-full bg-white dark:bg-black justify-center items-center"
           >
             {action.text}
             {action.icon}
