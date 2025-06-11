@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
+// app/components/SideBar.tsx
+import React, { useRef, useEffect, useState } from "react";
 import { FaRegHeart, FaHeart, FaRegClock } from "react-icons/fa";
 import { FiMoreHorizontal } from "react-icons/fi";
 import { CgHomeAlt } from "react-icons/cg";
@@ -19,12 +20,11 @@ import {
   DOMKeyframesDefinition,
   useAnimate,
 } from "framer-motion";
-import useMotionTimeline from "~/hooks/useMotionTimeline";
 import { Link, useLocation } from "@remix-run/react";
 
 const INDICATOR_TRANSITION: AnimationOptions = {
   ease: "easeInOut",
-  duration: 0.5,
+  duration: 0.3,
 };
 
 type AnimateParams = [string, DOMKeyframesDefinition, AnimationOptions?];
@@ -32,26 +32,34 @@ type AnimateParams = [string, DOMKeyframesDefinition, AnimationOptions?];
 const SideBar = () => {
   const [isLiked, setIsLiked] = useState(false);
   const location = useLocation();
-  const [activeRoute, setActiveRoute] = useState(location.pathname);
 
   const mainButtons = [
-    { label: "Home", route:"/",activeIcon: <GoHomeFill />, icon: <CgHomeAlt /> },
+    {
+      label: "Home",
+      route: "/",
+      activeIcon: <GoHomeFill />,
+      icon: <CgHomeAlt />,
+    },
     {
       label: "Reports",
-      route:"/reports",activeIcon: <SiGoogleanalytics />,
+      route: "/reports",
+      activeIcon: <SiGoogleanalytics />,
       icon: <TbBrandGoogleAnalytics />,
     },
     {
       label: "Analytics",
-      route:"/analytics",activeIcon: <TbChartPieFilled />,
+      route: "/analytics",
+      activeIcon: <TbChartPieFilled />,
       icon: <TbChartPie />,
     },
     {
       label: "Admin",
-      route:"/admin",activeIcon: <MdAdminPanelSettings />,
+      route: "/admin",
+      activeIcon: <MdAdminPanelSettings />,
       icon: <MdOutlineAdminPanelSettings />,
     },
   ];
+
   const actionButtons = [
     {
       icon: isLiked ? <FaHeart className="text-red-500" /> : <FaRegHeart />,
@@ -70,13 +78,9 @@ const SideBar = () => {
     },
   ];
 
-  const handleIndicatorAnimation = (path: string) => {
-    setActiveRoute(path);
-  };
-
   return (
     <aside
-      className="bg-zinc-100 dark:bg-zinc-900 rounded-lg py-4 flex flex-col items-center justify-between px-1.5 relative"
+      className="rounded-lg py-4 flex flex-col items-center justify-between px-1.5 relative hidden md:flex"
       style={{ position: "relative" }}
     >
       <span className="font-bold text-md opacity-0">KR</span>
@@ -89,8 +93,10 @@ const SideBar = () => {
             icon={btn.icon}
             activeIcon={btn.activeIcon}
             route={btn.route}
-            onClick={() => handleIndicatorAnimation(btn.route)}
-            isActive={activeRoute === btn.route}
+            isActive={
+              location.pathname === btn.route ||
+              (btn.route !== "/" && location.pathname.startsWith(btn.route))
+            }
           />
         ))}
       </div>
@@ -115,22 +121,12 @@ interface SideBarBtnProps {
   icon?: React.ReactNode;
   activeIcon?: React.ReactNode;
   route: string;
-  onClick: () => void;
   isActive: boolean;
   ref?: React.Ref<HTMLDivElement>;
 }
 
 const SideBarBtn = (
-  {
-    id,
-    label,
-    className,
-    icon,
-    activeIcon,
-    route,
-    onClick,
-    isActive,
-  }: SideBarBtnProps,
+  { id, label, className, icon, activeIcon, route, isActive }: SideBarBtnProps,
   ref: React.Ref<HTMLDivElement>
 ) => {
   const indicatorRef = useRef<HTMLDivElement>(null);
@@ -140,41 +136,30 @@ const SideBarBtn = (
     [
       `.indicator-${id}`,
       {
+        opacity: 1,
+        height: 24,
+        width: 4,
+        borderRadius: "2px",
+        top: "50%",
+        bottom: "auto",
+        transform: "translateY(-50%)",
+      },
+      { ...INDICATOR_TRANSITION },
+    ],
+  ];
+  const hideKeyframes: AnimateParams[] = [
+    [
+      `.indicator-${id}`,
+      {
         opacity: 0,
         height: 4,
         width: 4,
         borderRadius: "50%",
         top: "auto",
         bottom: 0,
+        transform: "none",
       },
-      { ...INDICATOR_TRANSITION, duration: 0.3 },
-    ],
-    [
-      `.indicator-${id}`,
-      { opacity: 1, top: "50%", bottom: "auto", transform: "translateY(-50%)" },
-      { ...INDICATOR_TRANSITION, duration: 0.3 },
-    ],
-    [
-      `.indicator-${id}`,
-      { height: 24, borderRadius: "2px" },
-      { ...INDICATOR_TRANSITION, duration: 0.3 },
-    ],
-  ];
-  const hideKeyframes: AnimateParams[] = [
-    [
-      `.indicator-${id}`,
-      { height: 4, borderRadius: "50%" },
-      { ...INDICATOR_TRANSITION, duration: 0.3 },
-    ],
-    [
-      `.indicator-${id}`,
-      { opacity: 0, top: "auto", bottom: 0, transform: "none" },
-      { ...INDICATOR_TRANSITION, duration: 0.3 },
-    ],
-    [
-      `.indicator-${id}`,
-      { height: 0, width: 0, opacity: 0 },
-      { ...INDICATOR_TRANSITION, duration: 0.3 },
+      { ...INDICATOR_TRANSITION },
     ],
   ];
 
@@ -182,11 +167,11 @@ const SideBarBtn = (
     const runAnimations = async () => {
       if (indicatorRef.current) {
         const targetKeyframes = isActive ? keyframes : hideKeyframes;
-        for (const [selector, props, options] of targetKeyframes) {
-          await animate(selector, props, options);
-        }
-      } else {
-        console.error(`Indicator ref not found for ${id}`);
+        await animate(
+          targetKeyframes[0][0],
+          targetKeyframes[0][1],
+          targetKeyframes[0][2]
+        );
       }
     };
 
@@ -194,13 +179,12 @@ const SideBarBtn = (
   }, [isActive, id, animate]);
 
   return (
-    <Link to={route}>
+    <Link to={route} prefetch="intent">
       <motion.div
         className="relative overflow-hidden"
         whileHover={{ scale: 1.02 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
         ref={scope}
-        onClick={onClick}
       >
         <motion.div
           className={`bg-purple-300 absolute left-1 z-10 indicator-${id}`}
@@ -213,12 +197,14 @@ const SideBarBtn = (
             width: 4,
             borderRadius: "50%",
           }}
-          //style={{ minWidth: 4, minHeight: 4 }}
+          style={{
+            willChange: "opacity, height, width, top, transform, border-radius",
+          }}
         />
         <motion.button
-          className={`h-9 w-10 grid place-content-center pl-0.5 text-[19px] rounded-lg hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 ${
+          className={`h-9 w-10 grid place-content-center pl-0.5 text-[19px] rounded-lg hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 dark:text-zinc-200 ${
             className || ""
-          } ${isActive ? "bg-zinc-300/50 dark:bg-zinc-700/50" : ""}`}
+          } ${isActive ? "bg-zinc-300/50 dark:bg-zinc-700/50 dark:text-white" : ""}`}
           aria-label={label}
           id={id}
           whileTap={{ scale: 0.87 }}
@@ -227,7 +213,7 @@ const SideBarBtn = (
           {isActive ? activeIcon : icon}
         </motion.button>
         <motion.div
-          className="bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 rounded-lg whitespace-nowrap"
+          className="bg-dark text-xs font-semibold absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 rounded-lg whitespace-nowrap"
           initial={{ opacity: 0, x: 10 }}
           animate={{ opacity: 0, x: 10 }}
           whileHover={{ opacity: 1, x: 0 }}
@@ -243,7 +229,6 @@ const SideBarBtn = (
   );
 };
 
-// Forward ref to SideBarBtn
 const ForwardedSideBarBtn = React.forwardRef(SideBarBtn);
 
 const ActionSideBarBtn = ({
@@ -274,7 +259,7 @@ const ActionSideBarBtn = ({
 
   return (
     <motion.button
-      className="h-8 w-8 grid place-content-center rounded-full hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 relative overflow-hidden"
+      className="h-8 w-8 grid place-content-center rounded-full hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 dark:text-white relative overflow-hidden"
       aria-label={ariaLabel}
       onClick={handleClick}
       whileTap={{ scale: 0.87 }}

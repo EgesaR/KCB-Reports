@@ -1,10 +1,17 @@
 // app/routes/$.tsx
-import { json } from "@remix-run/node";
+import { MetaFunction, json } from "@remix-run/node";
 import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
 
 export function loader() {
   throw json({ message: "Not Found" }, { status: 404 });
 }
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Page Not Found - KCB Reports" },
+  ];
+};
+
 
 export default function NotFound() {
   return (
