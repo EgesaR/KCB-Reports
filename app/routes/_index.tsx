@@ -42,10 +42,12 @@ const EventCard = memo(
   ({ eventType, eventDate, eventTitle, actions }: EventCardProps) => {
     return (
       <div
-        className="w-full h-48 rounded-lg flex flex-col justify-center gap-3 px-6 py-2"
-        style={{
-          background: `linear-gradient(to bottom right, var(--shape-color-01), var(--shape-color-02))`,
-        }}
+        className="w-full h-48 rounded-lg flex flex-col justify-center gap-3 px-6 py-2 bg-gradient-to-tl from-indigo-400 from- via-violet-300 via- to-purple-200 to-"
+        style={
+          {
+            //background: `linear-gradient(to bottom right, var(--shape-color-01), var(--shape-color-02))`,
+          }
+        }
       >
         <span className="uppercase font-inter text-sm text-gray-800 dark:text-neutral-200">
           {eventType}

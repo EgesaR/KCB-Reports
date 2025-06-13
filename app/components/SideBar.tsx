@@ -187,7 +187,7 @@ const SideBarBtn = (
         ref={scope}
       >
         <motion.div
-          className={`bg-purple-300 absolute left-1 z-10 indicator-${id}`}
+          className={`bg-gradient-to-br from-indigo-400 from- via-violet-300 via- to-purple-200 to- absolute left-1 z-10 indicator-${id}`}
           ref={indicatorRef}
           initial={{
             opacity: 0,
@@ -204,7 +204,9 @@ const SideBarBtn = (
         <motion.button
           className={`h-9 w-10 grid place-content-center pl-0.5 text-[19px] rounded-lg hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 dark:text-zinc-200 ${
             className || ""
-          } ${isActive ? "bg-zinc-300/50 dark:bg-zinc-700/50 dark:text-white" : ""}`}
+          } ${
+            isActive ? "bg-zinc-300/50 dark:bg-zinc-700/50 dark:text-white" : ""
+          }`}
           aria-label={label}
           id={id}
           whileTap={{ scale: 0.87 }}
