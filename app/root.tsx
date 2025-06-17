@@ -12,7 +12,7 @@ import styles from "./tailwind.css?url";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import SideBar from "./components/SideBar";
 import AppBar from "./components/AppBar";
-import SidebarModal from "./components/SidebarModal";
+import SidebarModal from "./components/sidebarModal";
 import { ThemeProvider } from "./components/ThemeProvider";
 
 const queryClient = new QueryClient({
@@ -77,11 +77,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body className="w-full h-screen overflow-hidden font-comfortaa">
         <ThemeProvider>
           <QueryClientProvider client={queryClient}>
-            <div className="w-full h-full flex py-2 px-2.5 gap-2.5">
+            <div className="w-full h-full flex py-2 px-0 sm:px-2.5 gap-2.5">
               <SideBar />
               <section className="flex-1 grow flex flex-col gap-2">
                 <AppBar />
-                <main className="h-full relative w-full bg-dark p-2 rounded-xl overflow-auto custom-scrollbar">
+                <main className="h-full relative w-full bg-dark p-2 px-1 sm:p-2 rounded-xl overflow-auto custom-scrollbar">
                   <Outlet />
                   <SidebarModal />
                 </main>

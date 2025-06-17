@@ -1,9 +1,10 @@
-// app/routes/index.tsx
 import type { MetaFunction } from "@remix-run/node";
-import React, { memo } from "react";
+import React, { memo, useRef } from "react";
 import { FaRegHeart } from "react-icons/fa";
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
 import { Link } from "@remix-run/react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
+import { reports, Report } from "~/data/reports";
 
 export const meta: MetaFunction = () => {
   return [
@@ -25,29 +26,14 @@ interface EventCardProps {
   actions: ActionProps[];
 }
 
-interface Report {
-  id: string;
-  name: string;
-  shared: Array<{
-    src?: string;
-    alt?: string;
-    name?: string;
-    href?: string;
-  }>;
-  status: string;
-  lastUpdated: string;
-}
-
 const EventCard = memo(
   ({ eventType, eventDate, eventTitle, actions }: EventCardProps) => {
     return (
-      <div
-        className="w-full h-48 rounded-lg flex flex-col justify-center gap-3 px-6 py-2 bg-gradient-to-tl from-indigo-400 from- via-violet-300 via- to-purple-200 to-"
-        style={
-          {
-            //background: `linear-gradient(to bottom right, var(--shape-color-01), var(--shape-color-02))`,
-          }
-        }
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full h-48 rounded-lg flex flex-col justify-center gap-3 px-6 py-2 bg-gradient-to-l from-purple-500 via-indigo-500 to-blue-500"
       >
         <span className="uppercase font-inter text-sm text-gray-800 dark:text-neutral-200">
           {eventType}
@@ -60,126 +46,60 @@ const EventCard = memo(
             <button
               key={index}
               onClick={action.action}
-              className="flex items-center gap-2 px-4 py-1.5 text-sm rounded-full bg-dark text-gray-800 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-1.5 text-sm rounded-full bg-white text-gray-800 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
             >
               {action.text}
               {action.icon}
             </button>
           ))}
         </div>
-      </div>
+      </motion.div>
     );
   }
 );
 
-const sharedItems = [
-  {
-    src: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=facearea&facepad=2&w=300&h=300&q=80",
-    alt: "Avatar",
+// Variants for the parent <ul> and child <li> elements
+const listVariants = {
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+    },
   },
-  {
-    src: "https://images.unsplash.com/photo-1531927557220-a9e23c1e4794?auto=format&fit=facearea&facepad=2&w=300&h=300&q=80",
-    alt: "Avatar",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?auto=format&fit=facearea&facepad=3&w=300&h=300&q=80",
-    alt: "Avatar",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=facearea&facepad=2&w=300&h=300&q=80",
-    alt: "Avatar",
-  },
-  { name: "Chris Lynch", href: "#" },
-  { name: "Maria Guan", href: "#" },
-  { name: "Amil Evara", href: "#" },
-  { name: "Ebele Egbuna", href: "#" },
-  { name: "James Patel", href: "#" },
-  { name: "Sophie Nguyen", href: "#" },
-  { name: "Liam Carter", href: "#" },
-  { name: "Aisha Khan", href: "#" },
-];
+  hidden: {},
+};
 
-const reports: Report[] = [
-  {
-    id: "1",
-    name: "End of Term",
-    shared: sharedItems.slice(0, 8),
-    status: "Completed",
-    lastUpdated: new Date("2025-06-10").toLocaleDateString(),
+const itemVariants = {
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+    },
   },
-  {
-    id: "2",
-    name: "Beginning of Term",
-    shared: sharedItems.slice(0, 6),
-    status: "In Progress",
-    lastUpdated: new Date("2025-06-09").toLocaleDateString(),
+  hidden: {
+    opacity: 0,
+    y: 20,
   },
-  {
-    id: "3",
-    name: "Activity Of Integration",
-    shared: sharedItems.slice(0, 7),
-    status: "Active",
-    lastUpdated: new Date().toLocaleDateString(),
+};
+
+// Variants for MenuItems animation
+const menuVariants = {
+  open: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.2 },
   },
-  {
-    id: "4",
-    name: "Mid Term",
-    shared: sharedItems.slice(0, 5),
-    status: "Pending",
-    lastUpdated: new Date("2025-06-08").toLocaleDateString(),
+  closed: {
+    opacity: 0,
+    scale: 0.95,
+    transition: { duration: 0.2 },
   },
-  {
-    id: "5",
-    name: "Test 09",
-    shared: sharedItems.slice(0, 4),
-    status: "Draft",
-    lastUpdated: new Date("2025-06-07").toLocaleDateString(),
-  },
-  {
-    id: "6",
-    name: "Resource Paper",
-    shared: sharedItems.slice(0, 3),
-    status: "Review",
-    lastUpdated: new Date("2025-06-06").toLocaleDateString(),
-  },
-  {
-    id: "7",
-    name: "Quarterly Review",
-    shared: sharedItems.slice(0, 7),
-    status: "Completed",
-    lastUpdated: new Date("2025-06-05").toLocaleDateString(),
-  },
-  {
-    id: "8",
-    name: "Project Proposal",
-    shared: sharedItems.slice(0, 5),
-    status: "In Progress",
-    lastUpdated: new Date("2025-06-04").toLocaleDateString(),
-  },
-  {
-    id: "9",
-    name: "Annual Summary",
-    shared: sharedItems.slice(0, 6),
-    status: "Draft",
-    lastUpdated: new Date("2025-06-03").toLocaleDateString(),
-  },
-  {
-    id: "10",
-    name: "Evaluation Report",
-    shared: sharedItems.slice(0, 4),
-    status: "Pending",
-    lastUpdated: new Date("2025-06-02").toLocaleDateString(),
-  },
-  {
-    id: "11",
-    name: "Research Notes",
-    shared: sharedItems.slice(0, 8),
-    status: "Review",
-    lastUpdated: new Date("2025-06-01").toLocaleDateString(),
-  },
-];
+};
 
 export default function Index() {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { amount: 0.2, once: false });
+
   return (
     <div className="flex flex-col gap-4 min-h-screen">
       <EventCard
@@ -187,16 +107,25 @@ export default function Index() {
         eventDate={new Date().toLocaleDateString()}
         eventTitle="Welcome to KCB Reports"
         actions={[
-          { text: "Join Now", action: () => {}, icon: <FaRegHeart /> },
-          { text: "Edit", action: () => {} },
+          {
+            text: "Join Now",
+            action: () => alert("Joining now!"),
+            icon: <FaRegHeart />,
+          },
+          { text: "Edit", action: () => alert("Editing dashboard") },
         ]}
       />
       <section className="p-4">
-        <div className="mb-4">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-4"
+        >
           <h3 className="text-lg font-semibold text-gray-800 dark:text-neutral-200">
             Recent Reports
           </h3>
-        </div>
+        </motion.div>
         <div className="flex flex-col">
           <div className="flex w-full border-b border-gray-200 dark:border-neutral-700 py-2">
             <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
@@ -212,11 +141,18 @@ export default function Index() {
               Last Updated
             </div>
           </div>
-          <ul className="py-2 mt-2" role="list">
+          <motion.ul
+            ref={ref}
+            variants={listVariants}
+            animate={isInView ? "visible" : "hidden"}
+            className="py-2 mt-2"
+            role="list"
+          >
             {reports.map((report) => (
-              <li
+              <motion.li
                 key={report.id}
-                className="flex w-full text-sm py-3 px-3 last:border-0 border-b border-zinc-200 dark:border-zinc-700 items-center hover:bg-gray-50 dark:hover:bg-neutral-700"
+                variants={itemVariants}
+                className="flex w-full text-sm py-3 px-3 last:border-0 border-b border-zinc-200 dark:border-neutral-700 items-center hover:bg-gray-50 dark:hover:bg-neutral-700"
               >
                 <Link
                   to={`/reports/${report.id}`}
@@ -247,29 +183,39 @@ export default function Index() {
                           <MenuButton
                             className="inline-flex items-center justify-center size-8 rounded-full bg-gray-100 border-2 border-white font-medium text-gray-700 shadow-2xs hover:bg-gray-200 focus:outline-none focus:bg-gray-300 text-sm dark:bg-neutral-700 dark:text-white dark:hover:bg-neutral-600 dark:focus:bg-neutral-600 dark:border-neutral-800"
                             onClick={(e) => e.stopPropagation()}
+                            aria-label={`Show ${
+                              report.shared.filter((item) => item.name).length
+                            } more shared users`}
                           >
                             <span className="font-medium">
                               {report.shared.filter((item) => item.name).length}
                               +
                             </span>
                           </MenuButton>
-                          <MenuItems
-                            className="w-48 z-10 transition-[margin,opacity] opacity-0 data-[open]:opacity-100 mb-2 bg-dark shadow-md rounded-lg p-2 dark:divide-neutral-700"
-                            anchor="top start"
-                          >
-                            {report.shared
-                              .filter((item) => item.name)
-                              .map((item, index) => (
-                                <MenuItem key={index}>
-                                  <a
-                                    className="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 data-[focus]:bg-gray-100 dark:data-[focus]:bg-neutral-700"
-                                    href={item.href}
-                                  >
-                                    {item.name}
-                                  </a>
-                                </MenuItem>
-                              ))}
-                          </MenuItems>
+                          <AnimatePresence>
+                            <MenuItems
+                              as={motion.div}
+                              variants={menuVariants}
+                              initial="closed"
+                              animate="open"
+                              exit="closed"
+                              className="w-48 z-10 mb-2 bg-white shadow-md rounded-lg p-2 dark:bg-neutral-800 dark:divide-neutral-700"
+                              anchor="top start"
+                            >
+                              {report.shared
+                                .filter((item) => item.name)
+                                .map((item, index) => (
+                                  <MenuItem key={index}>
+                                    <a
+                                      className="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 data-[focus]:bg-gray-100 dark:data-[focus]:bg-neutral-700"
+                                      href={item.href}
+                                    >
+                                      {item.name}
+                                    </a>
+                                  </MenuItem>
+                                ))}
+                            </MenuItems>
+                          </AnimatePresence>
                         </Menu>
                       )}
                     </div>
@@ -281,9 +227,9 @@ export default function Index() {
                     {report.lastUpdated}
                   </div>
                 </Link>
-              </li>
+              </motion.li>
             ))}
-          </ul>
+          </motion.ul>
         </div>
       </section>
     </div>
