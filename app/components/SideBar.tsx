@@ -1,4 +1,3 @@
-// app/components/SideBar.tsx
 import React, { useRef, useEffect, useState } from "react";
 import { FaRegHeart, FaHeart, FaRegClock } from "react-icons/fa";
 import { FiMoreHorizontal } from "react-icons/fi";
@@ -24,7 +23,7 @@ import { Link, useLocation } from "@remix-run/react";
 
 const INDICATOR_TRANSITION: AnimationOptions = {
   ease: "easeInOut",
-  duration: 0.3,
+  duration: 0.4,
 };
 
 type AnimateParams = [string, DOMKeyframesDefinition, AnimationOptions?];
@@ -198,8 +197,17 @@ const SideBarBtn = (
             borderRadius: "50%",
           }}
           style={{
-            willChange: "opacity, height, width, top, transform, border-radius",
+            willChange:
+              "opacity, height, width, top, transform, border-radius, scale",
           }}
+          whileTap={
+            isActive
+              ? {
+                  scale: [1, 1.3, 1],
+                  transition: { duration: 0.3, ease: "easeInOut" },
+                }
+              : {}
+          }
         />
         <motion.button
           className={`h-9 w-10 grid place-content-center pl-0.5 text-[19px] rounded-lg hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 dark:text-zinc-200 ${

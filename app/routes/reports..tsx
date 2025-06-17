@@ -3,6 +3,8 @@ import { Link } from "@remix-run/react";
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { reports, Report } from "~/data/reports";
+import { useRef } from "react";
+import useLongPress from "~/hooks/use-long-press";
 
 export const meta: MetaFunction = () => {
   return [
@@ -12,6 +14,12 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Reports() {
+   const handleClick = () => {
+    console.log("Hello Wolrd")
+   }
+  
+  const { action, handlers } = useLongPress({ onClick: handleClick})
+  
   return (
     <div className="flex flex-col gap-4 min-h-screen p-4">
       <motion.div
@@ -38,18 +46,31 @@ export default function Reports() {
             Last Updated
           </div>
         </div>
-        <ul className="py-2 mt-2" role="list">
+        <motion.ul
+          className="py-2 mt-2"
+          role="list"
+          transition={{
+            staggerChildren: 0.07,
+            delayChildren: 0.05,
+            staggerDirection: -1,
+          }}
+        >
           {reports.map((report, index) => (
             <motion.li
               key={report.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              transition={{
+                y: { stiffness: 1000, velocity: -100 },
+                duration: 0.5,
+                delay: index * 0.1,
+              }}
               className="flex w-full text-sm py-3 px-3 last:border-0 border-b border-zinc-200 dark:border-zinc-700 items-center hover:bg-gray-50 dark:hover:bg-neutral-700"
+              {...handlers}
             >
               <Link
-                to={`/reports/${report.id}`}
-                className="flex w-full items-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-950"
+                to="#"//{`/reports/${report.id}`}
+                className="flex w-full items-center focus:outline-none"
                 prefetch="intent"
                 aria-label={`View details for ${report.name}`}
               >
@@ -120,7 +141,7 @@ export default function Reports() {
               </Link>
             </motion.li>
           ))}
-        </ul>
+        </motion.ul>
       </div>
     </div>
   );

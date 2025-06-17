@@ -156,7 +156,7 @@ export default function Index() {
               >
                 <Link
                   to={`/reports/${report.id}`}
-                  className="flex w-full items-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-950"
+                  className="flex w-full items-center focus:outline-none"
                   prefetch="intent"
                   aria-label={`View details for ${report.name}`}
                 >
