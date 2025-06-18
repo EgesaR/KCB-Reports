@@ -120,7 +120,6 @@ export default function Index() {
     </div>
   );
 }
-
 const RecentList = () => {
   const [recents, setRecents] = useState<Report[]>([]);
   const [selectedRecents, setSelectedRecents] = useState<Report[]>([]);
@@ -222,7 +221,11 @@ const RecentList = () => {
           <AnimatePresence>
             {recents.length === 0 && (
               <motion.li
+                key="empty"
                 variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
                 className="text-center font-semibold py-4"
               >
                 There is nothing today.
@@ -231,7 +234,11 @@ const RecentList = () => {
             {[...recents].reverse().map((report) => (
               <motion.li
                 key={report.id}
-                variants={itemVariants}
+                variants={{
+                  ...itemVariants,
+                  exit: { opacity: 0, y: 20, transition: { duration: 0.3 } },
+                }}
+                layout
                 className={`flex w-full text-sm py-3 px-3 last:border-0 border-b border-zinc-200 dark:border-neutral-700 items-center hover:bg-gray-50 dark:hover:bg-neutral-800 ${
                   selectedRecents.includes(report)
                     ? "bg-blue-100 dark:bg-neutral-700"
