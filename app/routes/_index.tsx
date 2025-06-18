@@ -1,10 +1,11 @@
+import { v7 as uuid } from "uuid";
 import type { MetaFunction } from "@remix-run/node";
-import React, { memo, useRef } from "react";
+import React, { memo, useRef, useEffect, useState } from "react";
 import { FaRegHeart } from "react-icons/fa";
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
 import { Link } from "@remix-run/react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import { reports, Report } from "~/data/reports";
+import { reports, Report, sharedItems } from "~/data/reports";
 
 export const meta: MetaFunction = () => {
   return [
@@ -46,7 +47,7 @@ const EventCard = memo(
             <button
               key={index}
               onClick={action.action}
-              className="flex items-center gap-2 px-4 py-1.5 text-sm rounded-full bg-white text-gray-800 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-1.5 text-sm rounded-full bg-black text-white dark:bg-white dark:text-neutral-900 hover:bg-gray-700 dark:hover:bg-neutral-200 transition-colors"
             >
               {action.text}
               {action.icon}
@@ -61,11 +62,14 @@ const EventCard = memo(
 // Variants for the parent <ul> and child <li> elements
 const listVariants = {
   visible: {
+    opacity: 1,
     transition: {
       staggerChildren: 0.1,
     },
   },
-  hidden: {},
+  hidden: {
+    opacity: 0,
+  },
 };
 
 const itemVariants = {
@@ -97,9 +101,6 @@ const menuVariants = {
 };
 
 export default function Index() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { amount: 0.2, once: false });
-
   return (
     <div className="flex flex-col gap-4 min-h-screen">
       <EventCard
@@ -110,57 +111,147 @@ export default function Index() {
           {
             text: "Join Now",
             action: () => alert("Joining now!"),
-            icon: <FaRegHeart />,
+            icon: <FaRegHeart className="fill-current" />,
           },
           { text: "Edit", action: () => alert("Editing dashboard") },
         ]}
       />
-      <section className="p-4">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-4"
+      <RecentList />
+    </div>
+  );
+}
+
+const RecentList = () => {
+  const [recents, setRecents] = useState<Report[]>([]);
+  const [selectedRecents, setSelectedRecents] = useState<Report[]>([]);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { amount: 0.2, once: false });
+
+  const addRecent = () => {
+    const newId = uuid();
+    const newRecent = {
+      id: newId,
+      name: "End of Term",
+      shared: sharedItems.slice(0, 8),
+      status: "Completed",
+      lastUpdated: new Date("2025-06-10").toLocaleDateString(),
+      body: { content: "Content for the end of term report." },
+      type: "term-report",
+      url: "/reports/end-of-term",
+      toJSON: () => ({
+        id: newId,
+        name: "End of Term",
+        status: "Completed",
+      }),
+    };
+
+    setRecents((prev) => [...prev, newRecent]);
+  };
+
+  const selectRecent = (id: string) => {
+    const report = recents.find((r) => r.id === id);
+    if (report) {
+      setSelectedRecents((prev) => {
+        if (prev.includes(report)) {
+          return prev.filter((i) => i.id !== id);
+        } else {
+          return [...prev, report];
+        }
+      });
+    }
+  };
+
+  const removeRecent = () => {
+    setRecents((prev) =>
+      prev.filter((report) => !selectedRecents.includes(report))
+    );
+    setSelectedRecents([]);
+  };
+
+  useEffect(() => {
+    setRecents(reports);
+  }, []);
+
+  return (
+    <section className="p-4">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-4"
+      >
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-neutral-200">
+          Recent Reports
+        </h3>
+        <button className="px-2 py-1" onClick={addRecent}>
+          Add
+        </button>
+        <button
+          className="px-2 py-1 disabled:opacity-50"
+          onClick={removeRecent}
+          disabled={!selectedRecents.length}
         >
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-neutral-200">
-            Recent Reports
-          </h3>
-        </motion.div>
-        <div className="flex flex-col">
-          <div className="flex w-full border-b border-gray-200 dark:border-neutral-700 py-2">
-            <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
-              Name
-            </div>
-            <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
-              Shared
-            </div>
-            <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
-              Status
-            </div>
-            <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
-              Last Updated
-            </div>
+          Remove
+        </button>
+      </motion.div>
+
+      <div className="flex flex-col">
+        <div className="flex w-full border-b border-gray-400 dark:border-neutral-600 py-2">
+          <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
+            Name
           </div>
-          <motion.ul
-            ref={ref}
-            variants={listVariants}
-            animate={isInView ? "visible" : "hidden"}
-            className="py-2 mt-2"
-            role="list"
-          >
-            {reports.map((report) => (
+          <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
+            Shared
+          </div>
+          <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
+            Status
+          </div>
+          <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
+            Last Updated
+          </div>
+        </div>
+        <motion.ul
+          ref={ref}
+          variants={listVariants}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          className="py-2 mt-2"
+          role="list"
+          layout
+        >
+          <AnimatePresence>
+            {recents.length === 0 && (
+              <motion.li
+                variants={itemVariants}
+                className="text-center font-semibold py-4"
+              >
+                There is nothing today.
+              </motion.li>
+            )}
+            {[...recents].reverse().map((report) => (
               <motion.li
                 key={report.id}
                 variants={itemVariants}
-                className="flex w-full text-sm py-3 px-3 last:border-0 border-b border-zinc-200 dark:border-neutral-700 items-center hover:bg-gray-50 dark:hover:bg-neutral-700"
+                className={`flex w-full text-sm py-3 px-3 last:border-0 border-b border-zinc-200 dark:border-neutral-700 items-center hover:bg-gray-50 dark:hover:bg-neutral-800 ${
+                  selectedRecents.includes(report)
+                    ? "bg-blue-100 dark:bg-neutral-700"
+                    : ""
+                }`}
+                onClick={() => selectRecent(report.id)}
               >
                 <Link
-                  to={`/reports/${report.id}`}
+                  to="#"
                   className="flex w-full items-center focus:outline-none"
                   prefetch="intent"
                   aria-label={`View details for ${report.name}`}
                 >
-                  <div className="flex-1 px-3 text-gray-800 dark:text-neutral-200">
+                  <div
+                    className={`flex-1 px-3 ${
+                      selectedRecents.includes(report)
+                        ? "text-gray-800 dark:text-white"
+                        : "text-gray-800 dark:text-neutral-200"
+                    }`}
+                  >
                     {report.name}
                   </div>
                   <div className="flex-1 px-3">
@@ -220,18 +311,30 @@ export default function Index() {
                       )}
                     </div>
                   </div>
-                  <div className="flex-1 px-3 text-gray-600 dark:text-neutral-400">
+                  <div
+                    className={`flex-1 px-3 ${
+                      selectedRecents.includes(report)
+                        ? "text-gray-800 dark:text-white"
+                        : "text-gray-800 dark:text-neutral-200"
+                    }`}
+                  >
                     {report.status}
                   </div>
-                  <div className="flex-1 px-3 text-gray-600 dark:text-neutral-400">
+                  <div
+                    className={`flex-1 px-3 ${
+                      selectedRecents.includes(report)
+                        ? "text-gray-800 dark:text-white"
+                        : "text-gray-800 dark:text-neutral-200"
+                    }`}
+                  >
                     {report.lastUpdated}
                   </div>
                 </Link>
               </motion.li>
             ))}
-          </motion.ul>
-        </div>
-      </section>
-    </div>
+          </AnimatePresence>
+        </motion.ul>
+      </div>
+    </section>
   );
-}
+};

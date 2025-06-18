@@ -13,12 +13,7 @@ import {
 } from "react-icons/md";
 import { GoHomeFill } from "react-icons/go";
 import { SiGoogleanalytics } from "react-icons/si";
-import {
-  motion,
-  AnimationOptions,
-  DOMKeyframesDefinition,
-  useAnimate,
-} from "framer-motion";
+import { motion, useAnimate, AnimationOptions } from "framer-motion";
 import { Link, useLocation } from "@remix-run/react";
 
 const INDICATOR_TRANSITION: AnimationOptions = {
@@ -26,7 +21,12 @@ const INDICATOR_TRANSITION: AnimationOptions = {
   duration: 0.4,
 };
 
-type AnimateParams = [string, DOMKeyframesDefinition, AnimationOptions?];
+// Define a type for the animation tuple
+type AnimateParams = [
+  string, // selector
+  Record<string, any>, // keyframes
+  AnimationOptions // options
+];
 
 const SideBar = () => {
   const [isLiked, setIsLiked] = useState(false);
@@ -143,7 +143,7 @@ const SideBarBtn = (
         bottom: "auto",
         transform: "translateY(-50%)",
       },
-      { ...INDICATOR_TRANSITION },
+      INDICATOR_TRANSITION,
     ],
   ];
   const hideKeyframes: AnimateParams[] = [
@@ -158,7 +158,7 @@ const SideBarBtn = (
         bottom: 0,
         transform: "none",
       },
-      { ...INDICATOR_TRANSITION },
+      INDICATOR_TRANSITION,
     ],
   ];
 
@@ -166,11 +166,7 @@ const SideBarBtn = (
     const runAnimations = async () => {
       if (indicatorRef.current) {
         const targetKeyframes = isActive ? keyframes : hideKeyframes;
-        await animate(
-          targetKeyframes[0][0],
-          targetKeyframes[0][1],
-          targetKeyframes[0][2]
-        );
+        await animate(...targetKeyframes[0]);
       }
     };
 
@@ -186,7 +182,7 @@ const SideBarBtn = (
         ref={scope}
       >
         <motion.div
-          className={`bg-gradient-to-br from-indigo-400 from- via-violet-300 via- to-purple-200 to- absolute left-1 z-10 indicator-${id}`}
+          className={`bg-gradient-to-br from-indigo-400 to-purple-200 dark:from-indigo-600 dark:to-purple-400 absolute left-1 z-10 indicator-${id}`}
           ref={indicatorRef}
           initial={{
             opacity: 0,
@@ -210,10 +206,12 @@ const SideBarBtn = (
           }
         />
         <motion.button
-          className={`h-9 w-10 grid place-content-center pl-0.5 text-[19px] rounded-lg hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 dark:text-zinc-200 ${
+          className={`h-9 w-10 grid place-content-center pl-0.5 text-[19px] rounded-lg hover:bg-gray-200/50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200 ${
             className || ""
           } ${
-            isActive ? "bg-zinc-300/50 dark:bg-zinc-700/50 dark:text-white" : ""
+            isActive
+              ? "bg-gray-300/50 dark:bg-gray-700/50 text-gray-900 dark:text-white"
+              : ""
           }`}
           aria-label={label}
           id={id}
@@ -223,7 +221,7 @@ const SideBarBtn = (
           {isActive ? activeIcon : icon}
         </motion.button>
         <motion.div
-          className="bg-dark text-xs font-semibold absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 rounded-lg whitespace-nowrap"
+          className="bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-xs font-semibold absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 rounded-lg whitespace-nowrap"
           initial={{ opacity: 0, x: 10 }}
           animate={{ opacity: 0, x: 10 }}
           whileHover={{ opacity: 1, x: 0 }}
@@ -269,7 +267,7 @@ const ActionSideBarBtn = ({
 
   return (
     <motion.button
-      className="h-8 w-8 grid place-content-center rounded-full hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 dark:text-white relative overflow-hidden"
+      className="h-8 w-8 grid place-content-center rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200 relative overflow-hidden"
       aria-label={ariaLabel}
       onClick={handleClick}
       whileTap={{ scale: 0.87 }}
