@@ -51,6 +51,8 @@ const menuVariants = {
 const RecentList = () => {
   const [recents, setRecents] = useState<Report[]>([]);
   const [selectedRecents, setSelectedRecents] = useState<Report[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
   const ref = useRef(null);
   const isInView = useInView(ref, { amount: 0.2, once: false });
 
@@ -62,12 +64,16 @@ const RecentList = () => {
   // Use the long-press hook with the specific context type
   const { action, handlers } = useLongPress<HTMLLIElement, LongPressContext>({
     onClick: (event, { id }) => {
-      event.preventDefault(); // Prevent Link navigation on click for selection
-      selectRecent(id);
-      console.log(`Clicked report with ID: ${id}`);
+      if (selectionMode) {
+        event.preventDefault(); // Prevent navigation when in selection mode
+        selectRecent(id);
+        console.log(`Clicked report with ID: ${id}`);
+      }
+      // Otherwise, allow Link navigation
     },
     onLongPress: (event, { id }) => {
-      event.preventDefault(); // Prevent Link navigation on long press
+      // No event.preventDefault() to avoid error
+      setSelectionMode(true); // Enable selection mode on long press
       selectRecent(id);
       console.log(`Long-pressed report with ID: ${id}`);
     },
@@ -112,11 +118,50 @@ const RecentList = () => {
       prev.filter((report) => !selectedRecents.includes(report))
     );
     setSelectedRecents([]);
+    setSelectAll(false);
+    setSelectionMode(false); // Exit selection mode
+  };
+
+  const removeSingleRecent = (id: string) => {
+    setRecents((prev) => prev.filter((report) => report.id !== id));
+    setSelectedRecents((prev) => prev.filter((report) => report.id !== id));
+    setSelectAll(false);
+    setSelectionMode(false); // Exit selection mode
+  };
+
+  const clearAllRecents = () => {
+    setRecents([]);
+    setSelectedRecents([]);
+    setSelectAll(false);
+    setSelectionMode(false); // Exit selection mode
+  };
+
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedRecents([]);
+      setSelectAll(false);
+      setSelectionMode(false); // Exit selection mode
+    } else {
+      setSelectedRecents(recents);
+      setSelectAll(true);
+      setSelectionMode(true); // Ensure selection mode is active
+    }
   };
 
   useEffect(() => {
     setRecents(reports);
   }, []);
+
+  useEffect(() => {
+    // Update selectAll state based on selectedRecents
+    setSelectAll(
+      recents.length > 0 && selectedRecents.length === recents.length
+    );
+    // Exit selection mode if no items are selected
+    if (selectedRecents.length === 0) {
+      setSelectionMode(false);
+    }
+  }, [selectedRecents, recents]);
 
   return (
     <section className="p-4">
@@ -124,25 +169,58 @@ const RecentList = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="mb-4"
+        className="mb-4 flex justify-between items-center"
       >
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-neutral-200">
-          Recent Reports
-        </h3>
-        <button className="px-2 py-1" onClick={addRecent}>
-          Add
-        </button>
-        <button
-          className="px-2 py-1 disabled:opacity-50"
-          onClick={removeRecent}
-          disabled={!selectedRecents.length}
-        >
-          Remove
-        </button>
+        <div className="flex items-center gap-4">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-neutral-200">
+            Recent Reports
+          </h3>
+          {selectionMode && recents.length > 0 && (
+            <span className="text-sm text-gray-600 dark:text-neutral-400">
+              ({selectedRecents.length} selected)
+            </span>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <button
+            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={addRecent}
+          >
+            Add
+          </button>
+          {recents.length > 0 && (
+            <button
+              className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+              onClick={clearAllRecents}
+            >
+              Clear All
+            </button>
+          )}
+          {selectionMode && selectedRecents.length > 1 && (
+            <button
+              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+              onClick={removeRecent}
+              disabled={!selectedRecents.length}
+            >
+              Remove Selected
+            </button>
+          )}
+        </div>
       </motion.div>
 
       <div className="flex flex-col">
         <div className="flex w-full border-b border-gray-400 dark:border-neutral-600 py-2">
+          {selectionMode && recents.length > 0 && (
+            <div className="w-10 px-3">
+              <input
+                type="checkbox"
+                checked={selectAll}
+                onChange={toggleSelectAll}
+                className="size-4 rounded border-gray-300"
+                aria-label="Select all reports"
+              />
+            </div>
+          )}
           <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
             Name
           </div>
@@ -186,21 +264,32 @@ const RecentList = () => {
                   exit: { opacity: 0, y: 20, transition: { duration: 0.3 } },
                 }}
                 layout
-                className={`flex w-full text-sm py-3 px-3 last:border-0 border-b border-zinc-200 dark:border-neutral-700 items-center hover:bg-gray-50 dark:hover:bg-neutral-800 ${
+                className={`flex w-full text-sm py-3 px-3 last:border-0 border-b items-center hover:bg-gray-50 dark:hover:bg-neutral-800 ${
                   selectedRecents.includes(report)
-                    ? "bg-blue-100 dark:bg-neutral-700 hover:bg-blue-200 hover:dark:bg-neutral-800"
-                    : ""
+                    ? "bg-blue-100 dark:bg-neutral-700 hover:bg-blue-200 hover:dark:bg-neutral-800 border-zinc-200 dark:border-neutral-600"
+                    : "border-zinc-200 dark:border-neutral-700"
                 }`}
-                {...handlers({ id: report.id })} // Pass context with report ID
+                {...handlers({ id: report.id })}
               >
+                {selectionMode && (
+                  <div className="w-10 px-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedRecents.includes(report)}
+                      onChange={() => selectRecent(report.id)}
+                      className="size-4 rounded border-gray-300"
+                      aria-label={`Select ${report.name}`}
+                    />
+                  </div>
+                )}
                 <Link
                   to={report.url}
                   className="flex w-full items-center focus:outline-none relative"
                   prefetch="intent"
                   aria-label={`View details for ${report.name}`}
                   onClick={(e) => {
-                    if (selectedRecents.length > 0) {
-                      e.preventDefault(); // Prevent navigation when items are selected
+                    if (selectionMode) {
+                      e.preventDefault(); // Prevent navigation in selection mode
                     }
                   }}
                 >
@@ -296,12 +385,22 @@ const RecentList = () => {
                         : "text-gray-800 dark:text-neutral-200"
                     }`}
                   >
-                    <button
-                      //onClick={() => removeElement(id)}
-                      className="rounded bg-red-300/20 px-1.5 py-2 text-xs text-red-300 transition-colors hover:bg-red-600 hover:text-red-200"
-                    >
-                      <FiTrash2 size={20} />
-                    </button>
+                    {selectionMode &&
+                      selectedRecents.length === 1 &&
+                      selectedRecents.includes(report) && (
+                        <motion.button
+                          initial={{ opacity: 0, y: 0 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ ease: "easeInOut" }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeSingleRecent(report.id);
+                          }}
+                          className="rounded bg-red-300/20 px-1.5 py-2 text-xs text-red-300 transition-colors hover:bg-red-600 hover:text-red-200"
+                        >
+                          <FiTrash2 size={20} />
+                        </motion.button>
+                      )}
                   </div>
                 </Link>
               </motion.li>
