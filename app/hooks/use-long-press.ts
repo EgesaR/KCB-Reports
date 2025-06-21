@@ -1,15 +1,21 @@
 import { useRef, useState } from "react";
 
-// Define the props interface for the hook
-interface UseLongPressProps {
-  onClick?: () => void; // Optional callback for click events
-  onLongPress?: () => void; // Optional callback for long press events (added for flexibility)
+// Define the props interface for the hook with a generic context type
+interface UseLongPressProps<T extends HTMLElement, C> {
+  onClick?: (
+    event: React.MouseEvent<T> | React.TouchEvent<T>,
+    context: C
+  ) => void;
+  onLongPress?: (
+    event: React.MouseEvent<T> | React.TouchEvent<T>,
+    context: C
+  ) => void;
 }
 
 // Define the return type for the hook
-interface UseLongPressReturn<T extends HTMLElement> {
-  action: string | undefined; // Tracks the action type ("click" or "longpress")
-  handlers: {
+interface UseLongPressReturn<T extends HTMLElement, C> {
+  action: string | undefined;
+  handlers: (context: C) => {
     onClick: (event: React.MouseEvent<T>) => void;
     onMouseDown: (event: React.MouseEvent<T>) => void;
     onMouseUp: (event: React.MouseEvent<T>) => void;
@@ -20,112 +26,110 @@ interface UseLongPressReturn<T extends HTMLElement> {
 
 /**
  * Custom hook to handle click and long-press events on an element.
- * Supports both mouse and touch interactions.
+ * Supports both mouse and touch interactions with a generic context type.
  * @param props - Configuration object with optional onClick and onLongPress callbacks
- * @returns Object containing the action state and event handlers
+ * @returns Object containing the action state and event handlers factory
  */
-const useLongPress = <T extends HTMLElement>({
+const useLongPress = <T extends HTMLElement, C = unknown>({
   onClick,
   onLongPress,
-}: UseLongPressProps = {}): UseLongPressReturn<T> => {
-  // State to track the action type ("click" or "longpress")
+}: UseLongPressProps<T, C> = {}): UseLongPressReturn<T, C> => {
   const [action, setAction] = useState<string | undefined>();
-
-  // Ref to store the timeout ID for long-press detection
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Ref to track if the interaction is a long press
   const isLongPress = useRef<boolean>(false);
+  const contextRef = useRef<C | null>(null);
 
   /**
-   * Handles the click event, distinguishing between short clicks and long presses.
-   * @param event - The mouse event
+   * Creates event handlers with the provided context.
+   * @param context - The context object to pass to callbacks
    */
-  const handleOnClick = (event: React.MouseEvent<T>) => {
-    console.log("handleClick");
-    if (isLongPress.current) {
-      console.log("It is a long press");
-      return;
-    }
-
-    setAction("click");
-    if (typeof onClick === "function") {
-      onClick();
-    }
-  };
-
-  /**
-   * Starts the long-press timer when the mouse is pressed.
-   * @param event - The mouse event
-   */
-  const handleOnMouseDown = (event: React.MouseEvent<T>) => {
-    console.log("handleOnMouseDown");
-    startPressTimer();
-  };
-
-  /**
-   * Clears the long-press timer when the mouse is released.
-   * @param event - The mouse event
-   */
-  const handleOnMouseUp = (event: React.MouseEvent<T>) => {
-    console.log("handleOnMouseUp");
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-  /**
-   * Starts the long-press timer when a touch begins.
-   * @param event - The touch event
-   */
-  const handleOnTouchStart = (event: React.TouchEvent<T>) => {
-    console.log("handleOnTouchStart");
-    startPressTimer();
-  };
-
-  /**
-   * Clears the long-press timer when a touch ends.
-   * @param event - The touch event
-   */
-  const handleOnTouchEnd = (event: React.TouchEvent<T>) => {
-    console.log("handleOnTouchEnd");
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-  /**
-   * Starts a timer to detect a long press (500ms).
-   * If the timer completes, it marks the interaction as a long press.
-   */
-  const startPressTimer = () => {
-    isLongPress.current = false;
-    // Clear any existing timeout to prevent multiple timers
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-    // Set a new 500ms timeout for long press detection
-    timerRef.current = setTimeout(() => {
-      console.log("longpress");
-      isLongPress.current = true;
-      setAction("longpress");
-      if (typeof onLongPress === "function") {
-        onLongPress();
+  const handlers = (context: C) => {
+    /**
+     * Handles the click event, distinguishing between short clicks and long presses.
+     * @param event - The mouse event
+     */
+    const handleOnClick = (event: React.MouseEvent<T>) => {
+      if (isLongPress.current) {
+        return;
       }
-    }, 500);
-  };
 
-  return {
-    action,
-    handlers: {
+      setAction("click");
+      if (typeof onClick === "function") {
+        onClick(event, context);
+      }
+    };
+
+    /**
+     * Starts the long-press timer when the mouse is pressed.
+     * @param event - The mouse event
+     */
+    const handleOnMouseDown = (event: React.MouseEvent<T>) => {
+      contextRef.current = context; // Store context for long press
+      startPressTimer();
+    };
+
+    /**
+     * Clears the long-press timer when the mouse is released.
+     * @param event - The mouse event
+     */
+    const handleOnMouseUp = (event: React.MouseEvent<T>) => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+
+    /**
+     * Starts the long-press timer when a touch begins.
+     * @param event - The touch event
+     */
+    const handleOnTouchStart = (event: React.TouchEvent<T>) => {
+      contextRef.current = context; // Store context for long press
+      startPressTimer();
+    };
+
+    /**
+     * Clears the long-press timer when a touch ends.
+     * @param event - The touch event
+     */
+    const handleOnTouchEnd = (event: React.TouchEvent<T>) => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+
+    /**
+     * Starts a timer to detect a long press (500ms).
+     * If the timer completes, it marks the interaction as a long press.
+     */
+    const startPressTimer = () => {
+      isLongPress.current = false;
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+      timerRef.current = setTimeout(() => {
+
+        isLongPress.current = true;
+        setAction("longpress");
+        if (typeof onLongPress === "function" && contextRef.current !== null) {
+          onLongPress({} as React.MouseEvent<T>, contextRef.current); // Dummy event for long press
+        }
+      }, 500);
+    };
+
+    return {
       onClick: handleOnClick,
       onMouseDown: handleOnMouseDown,
       onMouseUp: handleOnMouseUp,
       onTouchStart: handleOnTouchStart,
       onTouchEnd: handleOnTouchEnd,
-    },
+    };
+  };
+
+  return {
+    action,
+    handlers,
   };
 };
 
