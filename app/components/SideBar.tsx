@@ -206,7 +206,7 @@ const SideBarBtn = (
           }
         />
         <motion.button
-          className={`h-9 w-10 grid place-content-center pl-0.5 text-[19px] rounded-lg hover:bg-gray-200/50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200 ${
+          className={`h-9 w-10 grid place-content-center pl-0.5 rounded-lg hover:bg-gray-200/50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200 ${
             className || ""
           } ${
             isActive
@@ -217,8 +217,14 @@ const SideBarBtn = (
           id={id}
           whileTap={{ scale: 0.87 }}
           transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          style={{
+            fontSize: "clamp(16px, 2.5vw, 18px)", // Responsive icon size
+          }}
         >
-          {isActive ? activeIcon : icon}
+          {/* Wrap icons to ensure they inherit fontSize */}
+          <span style={{ display: "inline-block", fontSize: "inherit" }}>
+            {isActive ? activeIcon : icon}
+          </span>
         </motion.button>
         <motion.div
           className="bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-xs font-semibold absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 rounded-lg whitespace-nowrap"
@@ -228,6 +234,9 @@ const SideBarBtn = (
           transition={{
             opacity: { duration: 0.15, ease: "easeOut" },
             x: { duration: 0.2, ease: "easeOut" },
+          }}
+          style={{
+            fontSize: "clamp(10px, 1.5vw, 12px)", // Responsive tooltip font size
           }}
         >
           {label}
@@ -272,6 +281,9 @@ const ActionSideBarBtn = ({
       onClick={handleClick}
       whileTap={{ scale: 0.87 }}
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
+      style={{
+        fontSize: "clamp(14px, 2vw, 16px)", // Responsive icon size
+      }}
     >
       <motion.div
         animate={
@@ -279,6 +291,7 @@ const ActionSideBarBtn = ({
             ? { scale: [1, 1.2, 1], transition: { duration: 0.3 } }
             : {}
         }
+        style={{ display: "inline-block", fontSize: "inherit" }}
       >
         {icon}
       </motion.div>
