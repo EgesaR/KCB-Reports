@@ -200,7 +200,7 @@ const RecentList = () => {
         className="mb-4 flex justify-between items-center"
       >
         <div className="flex items-center gap-4">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-neutral-200">
+          <h3 className="text-lg sm:text-base font-semibold text-gray-800 dark:text-neutral-200">
             Recent Reports
           </h3>
           {selectionMode && recents.length > 0 && (
@@ -209,7 +209,7 @@ const RecentList = () => {
             </span>
           )}
         </div>
-        <motion.div className="flex gap-2">
+        <motion.div className="flex gap-2 sm:text-sm">
           <button
             className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
             onClick={addRecent}
@@ -263,16 +263,16 @@ const RecentList = () => {
               />
             </div>
           )}
-          <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
+          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-neutral-400">
             Name
           </div>
-          <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
+          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-neutral-400">
             Shared
           </div>
-          <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
+          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-neutral-400">
             Status
           </div>
-          <div className="flex-1 px-3 font-medium text-gray-600 dark:text-neutral-400">
+          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-neutral-400">
             Last Updated
           </div>
         </div>
@@ -406,7 +406,7 @@ const ReportItem = ({
       animate="visible"
       exit="exit"
       layout
-      className={`flex w-full text-sm py-3 px-3 last:border-0 border-b items-center hover:bg-gray-50 dark:hover:bg-neutral-800 relative report-item-${
+      className={`flex w-full text-sm sm:text-xs py-3 px-3 last:border-0 border-b items-center hover:bg-gray-50 dark:hover:bg-neutral-800 relative report-item-${
         report.id
       } ${
         selected
