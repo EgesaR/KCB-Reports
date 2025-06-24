@@ -26,25 +26,6 @@ const listVariants = {
   },
 };
 
-const itemVariants = {
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-    },
-  },
-  hidden: {
-    opacity: 0,
-    y: 20,
-  },
-  exit: {
-    opacity: 0,
-    x: -24,
-    transition: { duration: 0.3 },
-  },
-};
-
 // Variants for the selection indicator animation
 const indicatorVariants = {
   initial: { width: 0, left: "0%" },
@@ -64,6 +45,25 @@ const trashBinVariants = {
   initial: { opacity: 0, scale: 0.8 },
   animate: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.8 },
+};
+
+const itemVariants = {
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+    },
+  },
+  hidden: {
+    opacity: 0,
+    y: 20,
+  },
+  exit: {
+    opacity: 0,
+    x: -24,
+    transition: { duration: 0.3 },
+  },
 };
 
 // RecentList Component
@@ -209,33 +209,44 @@ const RecentList = () => {
             </span>
           )}
         </div>
-        <motion.div className="flex gap-2" layout>
+        <motion.div className="flex gap-2">
           <button
             className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
             onClick={addRecent}
           >
             Add
           </button>
-          {recents.length > 0 && (
-            <button
-              className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
-              onClick={clearAllRecents}
-            >
-              Clear All
-            </button>
-          )}
-          {selectionMode && selectedRecents.length > 1 && (
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
-              onClick={removeRecent}
-              disabled={!selectedRecents.length}
-            >
-              Remove Selected
-            </motion.button>
-          )}
+          <AnimatePresence mode="popLayout">
+            {selectionMode && (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="flex gap-2"
+              >
+                {recents.length > 0 && (
+                  <button
+                    className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    onClick={clearAllRecents}
+                  >
+                    Clear All
+                  </button>
+                )}
+                <motion.button
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                  onClick={removeRecent}
+                  disabled={!selectedRecents.length}
+                >
+                  Remove Selected
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </motion.div>
 
