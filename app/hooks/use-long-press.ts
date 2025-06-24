@@ -158,7 +158,11 @@ const useLongPress = <T extends HTMLElement, C = unknown>({
         isLongPress.current = true;
         setAction("longpress");
         if (typeof onLongPress === "function" && contextRef.current !== null) {
-          onLongPress({} as React.MouseEvent<T>, contextRef.current); // Dummy event for long press
+          const mockEvent = {
+            preventDefault: () => {},
+            stopPropagation: () => {},
+          } as React.MouseEvent<T>;
+          onLongPress(mockEvent, contextRef.current);
         }
         clickCountRef.current = 0; // Reset click count on long press
         if (clickTimerRef.current) {
