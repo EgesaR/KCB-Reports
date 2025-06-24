@@ -6,6 +6,8 @@ interface UseLongPressProps<T extends HTMLElement, C> {
     event: React.MouseEvent<T> | React.TouchEvent<T>,
     context: C
   ) => void;
+  onDoubleClick?: (event: React.MouseEvent<T>, context: C) => void;
+  onTripleClick?: (event: React.MouseEvent<T>, context: C) => void;
   onLongPress?: (
     event: React.MouseEvent<T> | React.TouchEvent<T>,
     context: C
@@ -24,20 +26,27 @@ interface UseLongPressReturn<T extends HTMLElement, C> {
   };
 }
 
+// Time interval for detecting multi-clicks (in milliseconds)
+const CLICK_INTERVAL = 300;
+
 /**
- * Custom hook to handle click and long-press events on an element.
+ * Custom hook to handle click, double-click, triple-click, and long-press events on an element.
  * Supports both mouse and touch interactions with a generic context type.
- * @param props - Configuration object with optional onClick and onLongPress callbacks
+ * @param props - Configuration object with optional onClick, onDoubleClick, onTripleClick, and onLongPress callbacks
  * @returns Object containing the action state and event handlers factory
  */
 const useLongPress = <T extends HTMLElement, C = unknown>({
   onClick,
+  onDoubleClick,
+  onTripleClick,
   onLongPress,
 }: UseLongPressProps<T, C> = {}): UseLongPressReturn<T, C> => {
   const [action, setAction] = useState<string | undefined>();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef<boolean>(false);
   const contextRef = useRef<C | null>(null);
+  const clickCountRef = useRef<number>(0);
+  const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Creates event handlers with the provided context.
@@ -45,7 +54,7 @@ const useLongPress = <T extends HTMLElement, C = unknown>({
    */
   const handlers = (context: C) => {
     /**
-     * Handles the click event, distinguishing between short clicks and long presses.
+     * Handles the click event, distinguishing between single, double, and triple clicks, and long presses.
      * @param event - The mouse event
      */
     const handleOnClick = (event: React.MouseEvent<T>) => {
@@ -53,9 +62,46 @@ const useLongPress = <T extends HTMLElement, C = unknown>({
         return;
       }
 
-      setAction("click");
-      if (typeof onClick === "function") {
-        onClick(event, context);
+      clickCountRef.current += 1;
+
+      if (clickCountRef.current === 1) {
+        // First click, set timeout to check for multi-clicks
+        clickTimerRef.current = setTimeout(() => {
+          if (clickCountRef.current === 1 && !isLongPress.current) {
+            // Single click
+            setAction("click");
+            if (typeof onClick === "function") {
+              onClick(event, context);
+            }
+          }
+          clickCountRef.current = 0; // Reset click count
+        }, CLICK_INTERVAL);
+      } else if (clickCountRef.current === 2) {
+        // Double click detected
+        event.preventDefault();
+        event.stopPropagation();
+        setAction("doubleclick");
+        if (typeof onDoubleClick === "function") {
+          onDoubleClick(event, context);
+        }
+        if (clickTimerRef.current) {
+          clearTimeout(clickTimerRef.current);
+          clickTimerRef.current = null;
+        }
+        clickCountRef.current = 0; // Reset click count
+      } else if (clickCountRef.current >= 3) {
+        // Triple click detected
+        event.preventDefault();
+        event.stopPropagation();
+        setAction("tripleclick");
+        if (typeof onTripleClick === "function") {
+          onTripleClick(event, context);
+        }
+        if (clickTimerRef.current) {
+          clearTimeout(clickTimerRef.current);
+          clickTimerRef.current = null;
+        }
+        clickCountRef.current = 0; // Reset click count
       }
     };
 
@@ -109,11 +155,15 @@ const useLongPress = <T extends HTMLElement, C = unknown>({
         clearTimeout(timerRef.current);
       }
       timerRef.current = setTimeout(() => {
-
         isLongPress.current = true;
         setAction("longpress");
         if (typeof onLongPress === "function" && contextRef.current !== null) {
           onLongPress({} as React.MouseEvent<T>, contextRef.current); // Dummy event for long press
+        }
+        clickCountRef.current = 0; // Reset click count on long press
+        if (clickTimerRef.current) {
+          clearTimeout(clickTimerRef.current);
+          clickTimerRef.current = null;
         }
       }, 500);
     };

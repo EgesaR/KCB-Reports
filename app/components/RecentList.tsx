@@ -1,7 +1,7 @@
 import { v7 as uuid } from "uuid";
 import React, { useRef, useEffect, useState } from "react";
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
-import { Link } from "@remix-run/react";
+import { useNavigate } from "@remix-run/react";
 import {
   motion,
   AnimatePresence,
@@ -41,34 +41,25 @@ const itemVariants = {
   exit: {
     opacity: 0,
     x: -24,
-    transition: {
-      duration: 0.3,
-    },
+    transition: { duration: 0.3 },
   },
 };
 
 // Variants for the selection indicator animation
 const indicatorVariants = {
-  initial: { width: 0, left: "-10%" },
+  initial: { width: 0, left: "0%" },
   animate: { width: 4, left: "0%" },
   exit: { width: 0, left: "-10%" },
 };
 
-// Variants for MenuItems animation
+// Variants for menu items animation
 const menuVariants = {
-  open: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.2 },
-  },
-  closed: {
-    opacity: 0,
-    scale: 0.95,
-    transition: { duration: 0.2 },
-  },
+  initial: { opacity: 0, scale: 0.95 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.95 },
 };
 
-// Variants for trash bin animation
+// Variants for trash button animation
 const trashBinVariants = {
   initial: { opacity: 0, scale: 0.8 },
   animate: { opacity: 1, scale: 1 },
@@ -76,40 +67,49 @@ const trashBinVariants = {
 };
 
 // RecentList Component
-// Purpose: Displays a list of recent reports with selection and deletion capabilities.
-// Key Features:
-// - Animated, scrollable list with enter/exit animations for items and selection indicators.
-// - Long-press to enter selection mode for bulk deletion.
-// - Navigation to report details via clicking (non-selection mode).
-// - Supports add, remove, and clear all reports functionality.
-// - Trash bin visible for single selection with enter/exit animations; bulk delete button for multiple selections.
-// - Parent container is unscrollable; <ul> is scrollable with fixed height.
-// Props: None
-// Subcomponents:
-// - ReportItem: Renders individual report items with selection and deletion controls.
 const RecentList = () => {
   const [recents, setRecents] = useState<Report[]>([]);
   const [selectedRecents, setSelectedRecents] = useState<Report[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const listRef = useRef<HTMLUListElement>(null);
-  const isInView = useInView(listRef, { amount: 0.2, once: false });
+  const isInView = useInView(listRef, { amount: 0.2, once: true });
+  const navigate = useNavigate();
 
   // Define the context type for useLongPress
   interface LongPressContext {
     id: string;
   }
 
-  // Use the long-press hook
+  // Use the long-press hook with click, double-click, and triple-click support
   const { action, handlers } = useLongPress<HTMLLIElement, LongPressContext>({
     onClick: (event, { id }) => {
-      if (selectionMode) {
+      if (!selectionMode) {
+        navigate(`/reports/${id}`, { preventScrollReset: false });
+        console.log(`Navigated to report with ID: ${id}`);
+      } else {
         event.preventDefault();
+        event.stopPropagation();
         selectRecent(id);
         console.log(`Clicked report with ID: ${id}`);
       }
     },
+    onDoubleClick: (event, { id }) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setSelectionMode(true);
+      selectRecent(id);
+      console.log(`Double-clicked report with ID: ${id}`);
+    },
+    onTripleClick: (event, { id }) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setSelectionMode(true);
+      selectRecent(id);
+      console.log(`Triple-clicked report with ID: ${id}`);
+    },
     onLongPress: (event, { id }) => {
+      event.preventDefault();
       setSelectionMode(true);
       selectRecent(id);
       console.log(`Long-pressed report with ID: ${id}`);
@@ -126,7 +126,7 @@ const RecentList = () => {
       lastUpdated: new Date("2025-06-10").toLocaleDateString(),
       body: { content: "Content for the end of term report." },
       type: "term-report",
-      url: "/reports/end-of-term",
+      url: `/reports/end-of-term`,
       toJSON: () => ({
         id: newId,
         name: "End of Term",
@@ -270,7 +270,7 @@ const RecentList = () => {
           variants={listVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
-          className="py-2 mt-2 max-h-[60vh] overflow-y-auto"
+          className="py-2 pb-12 mt-2 max-h-[50vh] overflow-y-auto"
           role="list"
           layout
           layoutScroll
@@ -311,23 +311,6 @@ const RecentList = () => {
 };
 
 // ReportItem Component
-// Purpose: Renders a single report item with selection, deletion, and navigation.
-// Key Features:
-// - Displays report details (name, shared users, status, last updated).
-// - Supports long-press to enter selection mode with checkbox and indicator animations.
-// - Trash bin with enter/exit animations for single selection deletion.
-// - Navigation to report details via clicking (non-selection mode).
-// Props:
-// - report: Report data object.
-// - selected: Boolean indicating if the item is selected.
-// - selectionMode: Boolean indicating if selection mode is active.
-// - selectedRecentsCount: Number of currently selected reports.
-// - handlers: Long-press event handlers from useLongPress.
-// - selectRecent: Function to toggle item selection.
-// - setRecents: State setter for recents array.
-// - setSelectedRecents: State setter for selectedRecents array.
-// - setSelectAll: State setter for selectAll boolean.
-// - setSelectionMode: State setter for selectionMode boolean.
 const ReportItem = ({
   report,
   selected,
@@ -344,7 +327,9 @@ const ReportItem = ({
   selected: boolean;
   selectionMode: boolean;
   selectedRecentsCount: number;
-  handlers: any; // Replace with proper type if useLongPress implementation is provided
+  handlers: ReturnType<
+    ReturnType<typeof useLongPress<HTMLLIElement, { id: string }>>["handlers"]
+  >;
   selectRecent: (id: string) => void;
   setRecents: React.Dispatch<React.SetStateAction<Report[]>>;
   setSelectedRecents: React.Dispatch<React.SetStateAction<Report[]>>;
@@ -368,17 +353,13 @@ const ReportItem = ({
       { scale: 1.025 },
       { duration: 0.125, ease: "easeIn" }
     );
-    await animate(
-      scope.current,
-      { opacity: 0, x: -24 },
-      { duration: 0.3, delay: 0.75 }
-    );
+    await animate(scope.current, { opacity: 0, x: -24 }, { duration: 0.3 });
+    setRecents((prev) => prev.filter((r) => r.id !== report.id));
+    setSelectedRecents((prev) => prev.filter((r) => r.id !== report.id));
+    setSelectAll(false);
+    setSelectionMode(false);
     if (safeToRemove) {
       safeToRemove();
-      setRecents((prev) => prev.filter((r) => r.id !== report.id));
-      setSelectedRecents((prev) => prev.filter((r) => r.id !== report.id));
-      setSelectAll(false);
-      setSelectionMode(false);
     }
   };
 
@@ -397,18 +378,14 @@ const ReportItem = ({
           { scale: 1.025 },
           { duration: 0.125, ease: "easeIn" }
         );
-        await animate(
-          scope.current,
-          { opacity: 0, x: -24 },
-          { duration: 0.3, delay: 0.75 }
-        );
+        await animate(scope.current, { opacity: 0, x: -24 }, { duration: 0.3 });
         if (safeToRemove) {
           safeToRemove();
         }
       };
       exitAnimation();
     }
-  }, [isPresent, animate, scope, safeToRemove]);
+  }, [isPresent, animate, safeToRemove]);
 
   return (
     <motion.li
@@ -453,16 +430,9 @@ const ReportItem = ({
           />
         </div>
       )}
-      <Link
-        to={report.url}
-        className="flex w-full items-center focus:outline-none relative"
-        prefetch="intent"
+      <div
+        className="flex w-full items-center focus:outline-none relative cursor-pointer"
         aria-label={`View details for ${report.name}`}
-        onClick={(e) => {
-          if (selectionMode) {
-            e.preventDefault();
-          }
-        }}
       >
         <div
           className={`flex-1 px-3 ${
@@ -508,9 +478,9 @@ const ReportItem = ({
                   <MenuItems
                     as={motion.div}
                     variants={menuVariants}
-                    initial="closed"
-                    animate="open"
-                    exit="closed"
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
                     className="w-48 z-10 mb-2 bg-white shadow-md rounded-lg p-2 dark:bg-neutral-800 dark:divide-neutral-700"
                     anchor="top start"
                   >
@@ -571,13 +541,14 @@ const ReportItem = ({
                   removeSingleRecent();
                 }}
                 className="rounded bg-red-300/20 px-1.5 py-2 text-xs text-red-300 transition-colors hover:bg-red-600 hover:text-red-200"
+                aria-label={`Delete ${report.name}`}
               >
                 <FiTrash2 size={20} />
               </motion.button>
             )}
           </AnimatePresence>
         </div>
-      </Link>
+      </div>
     </motion.li>
   );
 };
