@@ -81,7 +81,7 @@ interface HeaderProps {
   onRedo?: () => void;
   onSave?: () => Promise<boolean>;
   toggleSideSheet?: (id: string) => void; // Made optional
-  openSideSheet?: string | null; // Made optional
+  openSideSheet?: string | null;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -317,6 +317,12 @@ const Header: React.FC<HeaderProps> = ({
             </motion.button>
           );
         })}
+        <button
+          onClick={() => toggleSideSheet?.("settings")}
+          disabled={!toggleSideSheet}
+        >
+          Hello
+        </button>
         {toggleSideSheet && (
           <>
             <motion.button
