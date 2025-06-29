@@ -1,14 +1,30 @@
-import type { MetaFunction } from "@remix-run/node";
-import { Link, useNavigate } from "@remix-run/react";
+
+// app/routes/reports.tsx
+import type { MetaFunction } from "@remix-run/react";
+import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { v7 as uuid } from "uuid";
-import { useRef, useEffect, useState } from "react";
-import { reports, Report, sharedItems } from "~/data/reports";
+import { useRef, useState, useEffect } from "react";
+import { reports, type Report, sharedItems } from "~/data/reports";
 import useLongPress from "~/hooks/use-long-press";
 import { FiTrash2 } from "react-icons/fi";
+import { format } from "date-fns";
 
-// Animation variants
+// Types
+interface SharedAvatar {
+  src: string;
+  alt: string;
+}
+
+interface SharedUser {
+  name: string;
+  href: string;
+}
+
+type SharedItem = SharedAvatar | SharedUser;
+
+// Animation Variants
 const listVariants = {
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
   hidden: { opacity: 0 },
@@ -32,15 +48,23 @@ const trashBinVariants = {
   exit: { opacity: 0, scale: 0.8 },
 };
 
-export const meta: MetaFunction = () => {
+// Loader
+export async function loader() {
+  return { reports } as { reports: Report[] };
+}
+
+// Meta Function
+export const meta: MetaFunction<typeof loader> = () => {
   return [
     { title: "KCB Reports - Reports" },
     { name: "description", content: "View all reports in KCB Reports" },
   ];
 };
 
+// Component
 export default function Reports() {
-  const [recents, setRecents] = useState<Report[]>([]);
+  const { reports: initialReports } = useLoaderData<{ reports: Report[] }>();
+  const [recents, setRecents] = useState<Report[]>(initialReports);
   const [selectedRecents, setSelectedRecents] = useState<Report[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
@@ -53,12 +77,11 @@ export default function Reports() {
     id: string;
   }
 
-  // Long-press hook
+  // Long-press handlers
   const { handlers } = useLongPress<HTMLLIElement, LongPressContext>({
     onClick: (event, { id }) => {
       if (!selectionMode) {
         navigate(`/reports/${id}`);
-        console.log(`Navigated to report with ID: ${id}`);
       } else {
         event.preventDefault();
         event.stopPropagation();
@@ -87,19 +110,19 @@ export default function Reports() {
   // Add a new report
   const addRecent = () => {
     const newId = uuid();
-    const newRecent = {
+    const newRecent: Report = {
       id: newId,
-      name: "End of Term",
-      shared: sharedItems.slice(0, 8),
-      status: "Completed",
-      lastUpdated: new Date("2025-06-10").toLocaleDateString(),
-      body: { content: "Content for the end of term report." },
-      type: "term-report",
-      url: `/reports/end-of-term`,
+      name: `New Report ${newId.slice(0, 4)}`,
+      shared: sharedItems.slice(0, 4),
+      status: "Draft",
+      lastUpdated: new Date().toLocaleDateString(),
+      body: { content: "Content for the new report." },
+      type: "report",
+      url: `/reports/${newId}`,
       toJSON: () => ({
         id: newId,
-        name: "End of Term",
-        status: "Completed",
+        name: `New Report ${newId.slice(0, 4)}`,
+        status: "Draft",
       }),
     };
     setRecents((prev) => [...prev, newRecent]);
@@ -148,11 +171,7 @@ export default function Reports() {
     }
   };
 
-  // Initialize recents and manage select-all state
-  useEffect(() => {
-    setRecents(reports);
-  }, []);
-
+  // Manage select-all and selection mode state
   useEffect(() => {
     setSelectAll(
       recents.length > 0 && selectedRecents.length === recents.length
@@ -164,6 +183,7 @@ export default function Reports() {
 
   return (
     <div className="flex flex-col gap-4 min-h-screen p-4">
+      {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -184,6 +204,7 @@ export default function Reports() {
           <button
             className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
             onClick={addRecent}
+            aria-label="Add new report"
           >
             Add
           </button>
@@ -200,6 +221,7 @@ export default function Reports() {
                   <button
                     className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
                     onClick={clearAllRecents}
+                    aria-label="Clear all reports"
                   >
                     Clear All
                   </button>
@@ -212,6 +234,7 @@ export default function Reports() {
                   className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
                   onClick={removeRecent}
                   disabled={!selectedRecents.length}
+                  aria-label="Remove selected reports"
                 >
                   Remove Selected
                 </motion.button>
@@ -220,6 +243,8 @@ export default function Reports() {
           </AnimatePresence>
         </motion.div>
       </motion.div>
+
+      {/* Reports List Section */}
       <div className="flex flex-col">
         <div className="flex w-full border-b border-gray-200 dark:border-neutral-700 py-2">
           {selectionMode && recents.length > 0 && (
@@ -253,6 +278,7 @@ export default function Reports() {
           animate={isInView ? "visible" : "hidden"}
           className="py-2 mt-2 h-full overflow-y-auto"
           role="list"
+          aria-label="List of reports"
         >
           <AnimatePresence mode="popLayout">
             {recents.length === 0 && (
@@ -280,6 +306,8 @@ export default function Reports() {
                     : "border-zinc-200 dark:border-zinc-700"
                 }`}
                 {...handlers({ id: report.id })}
+                role="listitem"
+                aria-label={`Report: ${report.name}`}
               >
                 <AnimatePresence>
                   {selectionMode && selectedRecents.includes(report) && (
@@ -333,16 +361,17 @@ export default function Reports() {
                   >
                     <div className="flex -space-x-2">
                       {report.shared
-                        .filter((item) => item.src)
+                        .filter((item): item is SharedAvatar => "src" in item)
                         .map((item, index) => (
                           <img
                             key={index}
                             className="inline-block size-8 rounded-full ring-2 ring-white dark:ring-neutral-900"
                             src={item.src}
-                            alt={item.alt}
+                            alt={item.alt || `Avatar for shared user ${index + 1}`}
+                            aria-label={`Avatar for shared user ${index + 1}`}
                           />
                         ))}
-                      {report.shared.some((item) => item.name) && (
+                      {report.shared.some((item): item is SharedUser => "name" in item) && (
                         <Menu
                           as="div"
                           className="[--placement:top-left] outline-none border-none ring-0 relative inline-flex"
@@ -351,11 +380,16 @@ export default function Reports() {
                           <MenuButton
                             className="inline-flex items-center justify-center size-8 rounded-full bg-gray-100 border-2 border-white font-medium text-gray-700 shadow-2xs hover:bg-gray-200 focus:outline-none focus:bg-gray-300 text-sm dark:bg-neutral-700 dark:text-white dark:hover:bg-neutral-600 dark:focus:bg-neutral-600 dark:border-neutral-800"
                             aria-label={`Show ${
-                              report.shared.filter((item) => item.name).length
+                              report.shared.filter((item): item is SharedUser => "name" in item)
+                                .length
                             } more shared users`}
                           >
                             <span className="font-medium">
-                              {report.shared.filter((item) => item.name).length}
+                              {
+                                report.shared.filter(
+                                  (item): item is SharedUser => "name" in item
+                                ).length
+                              }
                               +
                             </span>
                           </MenuButton>
@@ -369,13 +403,14 @@ export default function Reports() {
                               anchor="top start"
                             >
                               {report.shared
-                                .filter((item) => item.name)
+                                .filter((item): item is SharedUser => "name" in item)
                                 .map((item, index) => (
                                   <MenuItem key={index}>
                                     <a
                                       className="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 data-[focus]:bg-gray-100 dark:data-[focus]:bg-neutral-700"
                                       href={item.href}
                                       onClick={(e) => e.stopPropagation()}
+                                      aria-label={`Profile for ${item.name}`}
                                     >
                                       {item.name}
                                     </a>
@@ -403,7 +438,7 @@ export default function Reports() {
                         : "text-gray-600 dark:text-neutral-400"
                     }`}
                   >
-                    {report.lastUpdated}
+                    {format(new Date(report.lastUpdated), "MMMM d, yyyy")}
                   </div>
                 </Link>
                 <div className="flex-1 px-3 absolute right-0">

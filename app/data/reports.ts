@@ -1,23 +1,32 @@
+// ~/data/reports.ts
 export interface ReportBody {
-  content: string; // Adjust based on actual ReportBody definition
+  content: string;
 }
+
+interface SharedAvatar {
+  src: string;
+  alt: string;
+}
+
+interface SharedUser {
+  name: string;
+  href: string;
+}
+
+export type SharedItem = SharedAvatar | SharedUser;
 
 export interface Report {
   id: string;
   name: string;
-  shared: Array<{
-    src?: string;
-    alt?: string;
-    name?: string;
-    href?: string;
-  }>;
+  shared: SharedItem[];
   status: string;
   lastUpdated: string;
-  body: ReportBody | null; // Fixes type error
+  body: ReportBody | null;
   type: string;
   url: string;
   toJSON: () => any;
 }
+
 
 export const sharedItems = [
   {

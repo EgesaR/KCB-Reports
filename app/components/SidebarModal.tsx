@@ -5,11 +5,11 @@ import { useTheme } from "./ThemeProvider";
 import { CgHomeAlt } from "react-icons/cg";
 import { TbBrandGoogleAnalytics, TbChartPie } from "react-icons/tb";
 import { MdOutlineAdminPanelSettings } from "react-icons/md";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoSunnyOutline, IoMoonOutline } from "react-icons/io5";
 
 const SidebarModal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { isDarkMode, toggleTheme, setTheme } = useTheme();
 
   useEffect(() => {
     const handleToggle = () => setIsOpen((prev) => !prev);
@@ -33,7 +33,7 @@ const SidebarModal: React.FC = () => {
       onClick={() => setIsOpen(false)}
     >
       <div
-        className="w-64 bg-zinc-100 dark:bg-zinc-900 p-4 flex flex-col gap-4"
+        className="w-64 bg-dark p-4 flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center">
@@ -61,13 +61,22 @@ const SidebarModal: React.FC = () => {
             </Link>
           ))}
         </nav>
-        <button
-          className="mt-4 flex items-center gap-2 px-4 py-2 text-sm text-gray-800 dark:text-neutral-200 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg"
-          onClick={toggleTheme}
-        >
-          {isDarkMode ? <IoSunnyOutline /> : <IoMoonOutline />}
-          Switch to {isDarkMode ? "Light" : "Dark"} Mode
-        </button>
+        <div className="flex flex-col gap-2">
+          <button
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-800 dark:text-neutral-200 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg"
+            onClick={toggleTheme}
+          >
+            {isDarkMode ? <IoSunnyOutline /> : <IoMoonOutline />}
+            Toggle {isDarkMode ? "Light" : "Dark"} Mode
+          </button>
+          <button
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-800 dark:text-neutral-200 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg"
+            onClick={() => setTheme("system")}
+          >
+            <IoSunnyOutline />
+            Use System Preference
+          </button>
+        </div>
       </div>
     </div>
   );

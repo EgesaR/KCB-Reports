@@ -8,7 +8,7 @@
 
 html,
 body {
-  @apply bg-indigo-50 dark:bg-zinc-950;
+  @apply bg-indigo-50 dark:bg-zinc-950 transition-colors duration-300 ease-in-out;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -34,11 +34,11 @@ body {
 
 @layer utilities {
   .custom-scrollbar {
-    scrollbar-width: thin; /* Firefox */
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent; /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
   }
   .dark .custom-scrollbar {
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent; /* Firefox */
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   }
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
@@ -67,11 +67,13 @@ body {
   --shape-color-01: #e3b8ee;
   --shape-color-02: #7691e8;
   --shape-color-03: #fdd053;
+  --md-sys-color-primary: #685496;
+  --md-sys-color-on-primary: #ffffff;
 }
 
 .font-comfortaa {
   font-family: "Comfortaa", sans-serif;
   font-optical-sizing: auto;
-  font-weight: 300 700; /* Support variable font weights */
+  font-weight: 300 700;
   font-style: normal;
 }
