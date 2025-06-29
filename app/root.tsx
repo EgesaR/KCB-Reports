@@ -61,21 +61,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [openSideSheet, setOpenSideSheet] = useState<string | null>(null);
   const { pathname } = useLocation();
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<boolean> => {
     console.log("Saving...");
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return true;
   };
 
-  const handleUndo = () => {
+  const handleUndo = (): void => {
     console.log("Undo action");
   };
 
-  const handleRedo = () => {
+  const handleRedo = (): void => {
     console.log("Redo action");
   };
 
-  const toggleSideSheet = (id: string) => {
+  const toggleSideSheet = (id: string): void => {
     console.log(
       "Toggling SideSheet:",
       id,
@@ -129,20 +129,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <section className="flex-1 h-[90%] grow flex flex-col gap-2">
                   <motion.main className="h-full relative w-full flex gap-4 p-2 px-1 sm:p-2 transition-all duration-500">
                     <Card className="w-full ease-in-out transition-all duration-300">
-                      <Outlet />
+                      {children}
                     </Card>
-                    {pathname === "/reports/" && <SideSheet
-                      id="settings"
-                      isOpen={openSideSheet === "settings"}
-                      setIsOpen={() => toggleSideSheet("settings")}
-                    >
-                      <div className="text-white">
-                        <p>Settings Panel Content</p>
-                        <button className="mt-2 bg-blue-600 px-4 py-2 rounded">
-                          Adjust Settings
-                        </button>
-                      </div>
-                    </SideSheet>}
+                    {pathname === "/reports/" && (
+                      <SideSheet
+                        id="settings"
+                        isOpen={openSideSheet === "settings"}
+                        setIsOpen={() => toggleSideSheet("settings")}
+                      >
+                        <div className="text-white">
+                          <p>Settings Panel Content</p>
+                          <button className="mt-2 bg-blue-600 px-4 py-2 rounded">
+                            Adjust Settings
+                          </button>
+                        </div>
+                      </SideSheet>
+                    )}
                     <SidebarModal />
                   </motion.main>
                 </section>
