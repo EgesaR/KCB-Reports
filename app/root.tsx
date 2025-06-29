@@ -75,7 +75,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     console.log("Redo action");
   };
 
-  const toggleSideSheet = (id: string): void => {
+  const toggleSideSheet = (id: string) => {
     console.log(
       "Toggling SideSheet:",
       id,
@@ -118,7 +118,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   onUndo={handleUndo}
                   onRedo={handleRedo}
                   onSave={handleSave}
-                  toggleSideSheet={toggleSideSheet}
+                  toggleSideSheet={(id: string) => toggleSideSheet(id)}
                   openSideSheet={openSideSheet}
                 />
               ) : (
@@ -128,7 +128,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <SideBar />
                 <section className="flex-1 h-[90%] grow flex flex-col gap-2">
                   <motion.main className="h-full relative w-full flex gap-4 p-2 px-1 sm:p-2 transition-all duration-500">
-                    <Card className="w-full ease-in-out transition-all duration-300">
+                    <Card className="w-full ease-in-out transition-all duration-300 text-white">
+                      <button
+                        onClick={() => {
+                          console.log("Hello", openSideSheet);
+                          toggleSideSheet?.("settings");
+                        }}
+                      >
+                        Hello
+                      </button>
+                      {openSideSheet}
                       {children}
                     </Card>
                     {pathname === "/reports/" && (
