@@ -223,7 +223,7 @@ const Header: React.FC<HeaderProps> = ({
     ["saving", "failed"].includes(fileState) && fileState !== prevFileState;
 
   return (
-    <nav className="w-full h-14 px-6 py-3 flex items-center justify-between bg-dark border-b border-gray-300 dark:border-zinc-700 fixed top-0 left-0 z-20 transition-colors duration-300 ease-in-out">
+    <nav className="w-full h-14 px-6 py-3 flex items-center justify-between bg-dark border-b border-gray-300 dark:border-zinc-700 fixed top-0 left-0 z-40 transition-colors duration-300 ease-in-out">
       <div className="flex items-center gap-4">
         <motion.button
           className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors duration-200"

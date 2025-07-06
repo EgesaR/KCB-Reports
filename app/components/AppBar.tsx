@@ -29,7 +29,7 @@ const AppBar: React.FC = () => {
     <nav className="w-full py-1.5 px-3 rounded-lg flex justify-between items-center">
       <div className="flex items-center gap-2">
         <button
-          className="h-8 w-8 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800/80 grid place-content-center md:hidden"
+          className="icon-btn md:hidden"
           aria-label="Open menu"
           onClick={() =>
             document.dispatchEvent(new Event("toggleSidebarModal"))
@@ -56,19 +56,19 @@ const AppBar: React.FC = () => {
 
       <div className="flex gap-1.5">
         <button
-          className="h-8 w-8 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800/80 grid place-content-center"
+          className="icon-btn"
           aria-label="Search"
         >
           <IoSearch className="text-gray-800 dark:text-neutral-200" />
         </button>
         <button
-          className="h-8 w-8 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800/80 grid place-content-center"
+          className="icon-btn"
           aria-label="Settings"
         >
           <HiAdjustmentsHorizontal className="text-gray-800 dark:text-neutral-200" />
         </button>
         <button
-          className="h-8 w-8 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800/80 grid place-content-center"
+          className="icon-btn"
           aria-label={
             isDarkMode ? "Switch to light mode" : "Switch to dark mode"
           }
@@ -125,7 +125,7 @@ const AppBar: React.FC = () => {
           </div>
           <MenuItems
             transition
-            className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-zinc-100 rounded-md bg-dark shadow-lg ring-1 ring-black/5 transition focus:outline-none dark:divide-zinc-800 dark:ring-white/5 data-closed:scale-95 data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
+            className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-zinc-100 rounded-md bg-container shadow-lg ring-1 ring-black/5 transition focus:outline-none dark:divide-zinc-800 dark:ring-white/5 data-closed:scale-95 data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
           >
             <div className="px-4 py-3 text-sm text-zinc-700 dark:text-zinc-200">
               <div>{user.name}</div>

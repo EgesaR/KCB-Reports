@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Links,
   Meta,
@@ -15,7 +15,7 @@ import Header from "./components/Header";
 import { ThemeProvider } from "./components/ThemeProvider";
 import SidebarModal from "./components/SidebarModal";
 import Card from "./components/Card";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import SideSheet from "./components/SideSheet";
 import AppBar from "./components/AppBar";
 
@@ -82,7 +82,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       "Current openSideSheet:",
       openSideSheet
     );
-    setOpenSideSheet(openSideSheet === id ? null : id);
+    setOpenSideSheet((prev) => (prev === id ? null : id));
   };
 
   return (
@@ -118,7 +118,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   onUndo={handleUndo}
                   onRedo={handleRedo}
                   onSave={handleSave}
-                  toggleSideSheet={(id: string) => toggleSideSheet(id)}
+                  toggleSideSheet={toggleSideSheet}
                   openSideSheet={openSideSheet}
                 />
               ) : (
@@ -126,25 +126,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
               )}
               <div className="flex-1 h-full flex gap-2">
                 <SideBar />
-                <section className="flex-1 h-[90%] grow flex flex-col gap-2">
-                  <motion.main className="h-full relative w-full flex gap-4 p-2 px-1 sm:p-2 transition-all duration-500">
-                    <Card className="w-full ease-in-out transition-all duration-300 text-white">
-                      <button
-                        onClick={() => {
-                          console.log("Hello", openSideSheet);
-                          toggleSideSheet?.("settings");
-                        }}
-                      >
-                        Hello
-                      </button>
-                      {openSideSheet}
-                      {children}
-                    </Card>
-                    {pathname === "/reports/" && (
+
+                <AnimatePresence>
+                  <section className="flex-1 h-[90%] grow flex flex-col gap-2">
+                    <motion.main className="h-full relative w-full flex gap-4 p-2 px-1 sm:p-2 transition-all duration-500">
+                      <Card className="w-full ease-in-out transition-all duration-300 text-white">
+                        <button
+                          onClick={() => toggleSideSheet("settings")}
+                          className="bg-blue-600 px-4 py-2 rounded"
+                        >
+                          Open Settings
+                        </button>
+                        {children}
+                      </Card>
                       <SideSheet
                         id="settings"
                         isOpen={openSideSheet === "settings"}
-                        setIsOpen={() => toggleSideSheet("settings")}
+                        setIsOpen={toggleSideSheet}
+                        className="z-50"
                       >
                         <div className="text-white">
                           <p>Settings Panel Content</p>
@@ -153,10 +152,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                           </button>
                         </div>
                       </SideSheet>
-                    )}
-                    <SidebarModal />
-                  </motion.main>
-                </section>
+                      <SidebarModal />
+                    </motion.main>
+                  </section>
+                </AnimatePresence>
               </div>
             </div>
             <ScrollRestoration />

@@ -18,18 +18,30 @@ body {
   }
 }
 
-.bg-dark {
-  @apply bg-white dark:bg-zinc-900 transition-colors duration-300 ease-in-out;
+.bg-surface {
+  @apply bg-[#FCF8FF] dark:bg-[#141318] transition-colors duration-300 ease-in-out;
+}
+
+.bg-container {
+  @apply bg-[#F1ECF4] dark:bg-[#201F25] transition-colors duration-300 ease-in-out;
 }
 
 @media (prefers-color-scheme: dark) {
-  .bg-dark {
+  .bg-surface {
     color-scheme: dark;
   }
 }
 
 .bg-sidebar {
   @apply bg-white dark:bg-zinc-800 transition-colors duration-300 ease-in-out;
+}
+
+.btn {
+ @apply flex items-center gap-2 px-4 sm:px-3 py-1.5 text-sm sm:text-xs rounded-full bg-black text-white dark:bg-white dark:text-neutral-900 hover:bg-zinc-700 dark:hover:bg-neutral-200 transition-colors
+}
+
+.icon-btn{
+  @apply h-8 w-8 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800/80 grid place-content-center  text-zinc-700 dark:text-zinc-200
 }
 
 @layer utilities {
