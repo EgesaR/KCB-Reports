@@ -125,7 +125,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <AppBar />
               )}
               <div className="flex-1 h-full flex gap-2">
-                <SideBar />
+                <SideBar toggleSideSheet={toggleSideSheet} />
 
                 <AnimatePresence>
                   <section className="flex-1 h-[90%] grow flex flex-col gap-2">

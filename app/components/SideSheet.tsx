@@ -62,7 +62,7 @@ const SideSheet: React.FC<SideSheetProps> = ({
       <Card
         ref={scope}
         initial={{ opacity: 0, width: 0 }}
-        transition={{ duration: 0.3, ease: "easeOut", staggerChildren: -0.3 }}
+        transition={{ duration: 0.3, ease: "easeOut", staggerChildren: -0.5, when: "staggerChildren" }}
         className={`h-full ${className}`}
       >
         <div className="h-full w-full flex">
