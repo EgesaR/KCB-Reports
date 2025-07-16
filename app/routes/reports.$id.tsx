@@ -1,10 +1,9 @@
-import type { MetaFunction } from "@remix-run/react";
-import type { LoaderFunctionArgs } from "@remix-run/node";
+// app/routes/reports.$id.tsx
+import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { format } from "date-fns";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { useState } from "react";
-import Header from "~/components/Header";
+import { useReport } from "~/contexts/ReportContext";
 import { useTheme } from "~/components/ThemeProvider";
 import { reports, type Report } from "~/data/reports";
 
@@ -21,16 +20,16 @@ interface SharedUser {
 
 type SharedItem = SharedAvatar | SharedUser;
 
-// Loader function with explicit return type
-export async function loader({ params }: LoaderFunctionArgs) {
+// Loader function
+export const loader = async ({ params }: LoaderFunctionArgs) => {
   const report = reports.find((report) => report.id === params.id);
   if (!report) {
     throw new Response("Report not found", { status: 404 });
   }
-  return { report } as { report: Report };
-}
+  return { report };
+};
 
-// Meta function with typed data
+// Meta function
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const report = data?.report as Report | undefined;
   return [
@@ -55,16 +54,14 @@ const tabs = {
   ],
 };
 
-// Component
 export default function ReportPage() {
   const { report } = useLoaderData<{ report: Report }>();
   const { isDarkMode } = useTheme();
-  const [mode, setMode] = useState<"edit" | "view">("view");
+  const { mode, setMode } = useReport();
 
   if (!report) {
     return (
       <div className="pt-16 p-4 bg-indigo-50 dark:bg-zinc-950 text-gray-900 dark:text-neutral-200 min-h-screen transition-colors duration-300 ease-in-out">
-        <Header title="Report Not Found" mode={mode} setMode={setMode} />
         <h1 className="text-2xl font-bold font-comfortaa">Report Not Found</h1>
         <p className="font-comfortaa">No report found with ID</p>
       </div>
@@ -73,7 +70,6 @@ export default function ReportPage() {
 
   return (
     <div className="w-full h-full overflow-hidden bg-indigo-50 dark:bg-zinc-950 transition-colors duration-300 ease-in-out">
-      <Header title={report.name} mode={mode} setMode={setMode} />
       <article className="pt-16 p-4 relative overflow-hidden h-full text-gray-900 dark:text-neutral-200">
         <div className="overflow-auto h-[99%] pb-4 custom-scrollbar">
           <TabGroup>
@@ -91,7 +87,6 @@ export default function ReportPage() {
             <TabPanels>
               {mode === "view" ? (
                 <>
-                  {/* View Mode: Overview Tab */}
                   <TabPanel className="rounded-xl bg-gray-100 dark:bg-zinc-800/50 p-3 transition-colors duration-200">
                     <h1 className="text-2xl font-bold mb-2 font-comfortaa">
                       {report.name}
@@ -100,7 +95,6 @@ export default function ReportPage() {
                       {report.body?.content || "No content available"}
                     </p>
                   </TabPanel>
-                  {/* View Mode: Shared With Tab */}
                   <TabPanel className="rounded-xl bg-gray-100 dark:bg-zinc-800/50 p-3 transition-colors duration-200">
                     <h2 className="text-lg font-semibold mb-2 font-comfortaa">
                       Shared With
@@ -140,7 +134,6 @@ export default function ReportPage() {
                       <p className="font-comfortaa">None</p>
                     )}
                   </TabPanel>
-                  {/* View Mode: Metadata Tab */}
                   <TabPanel className="rounded-xl bg-gray-100 dark:bg-zinc-800/50 p-3 transition-colors duration-200">
                     <h2 className="text-lg font-semibold mb-2 font-comfortaa">
                       Metadata
@@ -171,7 +164,6 @@ export default function ReportPage() {
                 </>
               ) : (
                 <>
-                  {/* Edit Mode: Content Tab */}
                   <TabPanel className="rounded-xl bg-gray-100 dark:bg-zinc-800/50 p-3 transition-colors duration-200">
                     <h2 className="text-lg font-semibold mb-2 font-comfortaa">
                       Edit Content
@@ -190,7 +182,6 @@ export default function ReportPage() {
                       Save Content
                     </button>
                   </TabPanel>
-                  {/* Edit Mode: Metadata Tab */}
                   <TabPanel className="rounded-xl bg-gray-100 dark:bg-zinc-800/50 p-3 transition-colors duration-200">
                     <h2 className="text-lg font-semibold mb-2 font-comfortaa">
                       Edit Metadata
@@ -228,7 +219,7 @@ export default function ReportPage() {
                         />
                       </div>
                       <button
-                        className="mt-2 px-4 py-2 bg-[var(--md-sys-color-primary)] text-white rounded-md hover:bg-opacity-90 font-comfortaa"
+                        className="mt-2 px4- py-2 bg-[var(--md-sys-color-primary)] text-white rounded-md hover:bg-gray-700"
                         aria-label="Save metadata changes"
                       >
                         Save Metadata
@@ -238,10 +229,10 @@ export default function ReportPage() {
                 </>
               )}
             </TabPanels>
+            <p className="mt-4 font-comfortaa">
+              Current theme: {isDarkMode ? "Dark" : "Light"}
+            </p>
           </TabGroup>
-          <p className="mt-4 font-comfortaa">
-            Current theme: {isDarkMode ? "Dark" : "Light"}
-          </p>
         </div>
       </article>
     </div>
