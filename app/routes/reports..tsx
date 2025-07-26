@@ -1,4 +1,3 @@
-
 // app/routes/reports.tsx
 import type { MetaFunction } from "@remix-run/react";
 import { Link, useLoaderData, useNavigate } from "@remix-run/react";
@@ -72,6 +71,7 @@ export default function Reports() {
   const isInView = useInView(listRef, { amount: 0.2, once: true });
   const navigate = useNavigate();
 
+  console.log("DATABASE_URL", import.meta.env.VITE_DATABASE_URL);
   // Long-press context
   interface LongPressContext {
     id: string;
@@ -367,11 +367,15 @@ export default function Reports() {
                             key={index}
                             className="inline-block size-8 rounded-full ring-2 ring-white dark:ring-neutral-900"
                             src={item.src}
-                            alt={item.alt || `Avatar for shared user ${index + 1}`}
+                            alt={
+                              item.alt || `Avatar for shared user ${index + 1}`
+                            }
                             aria-label={`Avatar for shared user ${index + 1}`}
                           />
                         ))}
-                      {report.shared.some((item): item is SharedUser => "name" in item) && (
+                      {report.shared.some(
+                        (item): item is SharedUser => "name" in item
+                      ) && (
                         <Menu
                           as="div"
                           className="[--placement:top-left] outline-none border-none ring-0 relative inline-flex"
@@ -380,8 +384,9 @@ export default function Reports() {
                           <MenuButton
                             className="inline-flex items-center justify-center size-8 rounded-full bg-gray-100 border-2 border-white font-medium text-gray-700 shadow-2xs hover:bg-gray-200 focus:outline-none focus:bg-gray-300 text-sm dark:bg-neutral-700 dark:text-white dark:hover:bg-neutral-600 dark:focus:bg-neutral-600 dark:border-neutral-800"
                             aria-label={`Show ${
-                              report.shared.filter((item): item is SharedUser => "name" in item)
-                                .length
+                              report.shared.filter(
+                                (item): item is SharedUser => "name" in item
+                              ).length
                             } more shared users`}
                           >
                             <span className="font-medium">
@@ -403,7 +408,9 @@ export default function Reports() {
                               anchor="top start"
                             >
                               {report.shared
-                                .filter((item): item is SharedUser => "name" in item)
+                                .filter(
+                                  (item): item is SharedUser => "name" in item
+                                )
                                 .map((item, index) => (
                                   <MenuItem key={index}>
                                     <a

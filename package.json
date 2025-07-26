@@ -8,10 +8,12 @@
     "dev": "remix vite:dev",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/server/index.js",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
-    "@headlessui/react": "^2.2.2",
+    "@headlessui/react": "^2.2.4",
+    "@neondatabase/serverless": "^1.0.1",
     "@remix-run/node": "^2.16.5",
     "@remix-run/react": "^2.16.8",
     "@remix-run/serve": "^2.16.5",
@@ -22,6 +24,7 @@
     "chroma-js": "^3.1.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "drizzle-orm": "^0.44.3",
     "framer-motion": "^12.12.1",
     "isbot": "^5.1.28",
     "npm": "^11.4.0",
@@ -34,6 +37,7 @@
     "styled-components": "^6.1.17",
     "tailwind-merge": "^3.3.0",
     "uuid": "^11.1.0",
+    "v": "^0.3.0",
     "wait": "^0.4.2"
   },
   "devDependencies": {
@@ -47,6 +51,7 @@
     "@typescript-eslint/eslint-plugin": "^8.33.1",
     "@typescript-eslint/parser": "^8.33.1",
     "autoprefixer": "^10.4.19",
+    "drizzle-kit": "^0.31.4",
     "eslint": "^9.28.0",
     "eslint-import-resolver-typescript": "^4.4.3",
     "eslint-plugin-import": "^2.28.1",

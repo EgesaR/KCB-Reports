@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { memo, useState, useEffect } from "react";
 import { HiX } from "react-icons/hi";
 import Card from "./Card";
 import { useAnimate, usePresence } from "framer-motion";
@@ -20,10 +20,11 @@ const SideSheet: React.FC<SideSheetProps> = ({
 }) => {
   const [isPresent, safeToRemove] = usePresence();
   const [scope, animate] = useAnimate();
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" && window.innerWidth < 768
+  );
 
   useEffect(() => {
-    // Handle window resize for mobile detection (client-side only)
     if (typeof window !== "undefined") {
       setIsMobile(window.innerWidth < 768);
       const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -33,54 +34,33 @@ const SideSheet: React.FC<SideSheetProps> = ({
   }, []);
 
   useEffect(() => {
+    console.log("SideSheet isOpen:", isOpen, "isPresent:", isPresent);
     if (isOpen && isPresent) {
-      // Entry animation
       animate(
         scope.current,
-        { opacity: 1, width: isMobile ? "100vw" : 500, display: "flex" },
+        {
+          opacity: 1,
+          width: isMobile ? "100vw" : 600,
+          height: isMobile ? "100%" : "auto",
+          display: "flex",
+        },
         { duration: 0.3, ease: "easeOut" }
       );
     } else {
-      // Exit animation
       const exitAnimation = async () => {
         await animate(
           scope.current,
-          { opacity: 0, width: 0 },
+          { opacity: 0, width: 0, height: isMobile ? "100%" : "auto" },
           { duration: 0.3, ease: "easeOut" }
         );
         if (!isPresent) {
+          console.log("Safe to remove SideSheet");
           safeToRemove();
         }
       };
       exitAnimation();
     }
   }, [isOpen, isPresent, animate, scope, safeToRemove, isMobile]);
-
-  if (!isOpen && isPresent) {
-    // Allow rendering during exit animation
-    return (
-      <Card
-        ref={scope}
-        initial={{ opacity: 0, width: 0 }}
-        transition={{ duration: 0.3, ease: "easeOut", staggerChildren: -0.5, when: "staggerChildren" }}
-        className={`h-full ${className}`}
-      >
-        <div className="h-full w-full flex">
-          <div className="w-full h-full px-[18px] py-[9px]">
-            <section className="flex items-center justify-between">
-              <h1 className="text-xl">
-                {id.charAt(0).toUpperCase() + id.slice(1)}
-              </h1>
-              <button onClick={() => setIsOpen(id)}>
-                <HiX />
-              </button>
-            </section>
-            <div className="mt-4">{children}</div>
-          </div>
-        </div>
-      </Card>
-    );
-  }
 
   if (!isOpen && !isPresent) {
     return null;
@@ -91,21 +71,25 @@ const SideSheet: React.FC<SideSheetProps> = ({
       ref={scope}
       initial={{ opacity: 0, width: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className={`h-full relative ${className}`}
+      className={`h-full text-black dark:text-white ${className} ${
+        isMobile
+          ? "absolute top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-50 sm:py-1"
+          : "relative"
+      }`}
     >
-        <div className="w-full h-full px-[12px] py-[9px]">
-          <section className="flex items-center justify-between">
-            <h1 className="text-xl">
-              {id.charAt(0).toUpperCase() + id.slice(1)}
-            </h1>
-            <button onClick={() => setIsOpen(id)}>
-              <HiX />
-            </button>
-          </section>
-          <div className="mt-4">{children}</div>
-        </div>
+      <div className="w-full h-full px-[12px] py-[9px]">
+        <section className="flex items-center justify-between">
+          <h1 className="text-xl">
+            {id.charAt(0).toUpperCase() + id.slice(1)}
+          </h1>
+          <button onClick={() => setIsOpen(id)}>
+            <HiX />
+          </button>
+        </section>
+        <div className="mt-4">{children}</div>
+      </div>
     </Card>
   );
 };
 
-export default SideSheet;
+export default memo(SideSheet);

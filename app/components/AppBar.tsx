@@ -1,6 +1,6 @@
 // app/components/AppBar.tsx
-import React from "react";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import React, { useState } from "react";
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { HiAdjustmentsHorizontal, HiOutlineUser } from "react-icons/hi2";
 import { IoSearch, IoSunnyOutline, IoMoonOutline } from "react-icons/io5";
 import { useTheme } from "./ThemeProvider";
@@ -13,9 +13,13 @@ interface User {
   notifications: number;
 }
 
-const AppBar: React.FC = () => {
-  const { isDarkMode, toggleTheme } = useTheme();
+interface AppBarProps {
+  setSidesheet: (id: string) => void;
+}
 
+const AppBar: React.FC<AppBarProps> = ({ setSidesheet }) => {
+  const { isDarkMode, toggleTheme } = useTheme();
+  const [isOpenLogoutModal, setIsOpenLogoutModal] = useState(false);
   const user: User = {
     name: "Bonnie Green",
     email: "name@flowbite.com",
@@ -27,6 +31,28 @@ const AppBar: React.FC = () => {
 
   return (
     <nav className="w-full py-1.5 px-3 rounded-lg flex justify-between items-center">
+      <Dialog
+        open={isOpenLogoutModal}
+        onClose={() => setIsOpenLogoutModal(false)}
+        className={"relative z-80"}
+      >
+        <DialogBackdrop className={"fixed inset-0 bg-black/30"} />
+        <div className="fixed inset-0 flex w-screen justify-center items-center p-4">
+          <DialogPanel className={"max-w-2xl min-w-lg space-y-4 rounded-lg bg-container px-12 py-10"}>
+            <DialogTitle className={"font-bold text-lg"}>
+              You're signing out
+            </DialogTitle>
+            <div className="flex gap-4 items-center justify-end mt-4 text-base">
+              <button onClick={() => setIsOpenLogoutModal(false)}>
+                Cancel
+              </button>
+              <button onClick={() => setIsOpenLogoutModal(false)}>
+                Logout
+              </button>
+            </div>
+          </DialogPanel>
+        </div>
+      </Dialog>
       <div className="flex items-center gap-2">
         <button
           className="icon-btn md:hidden"
@@ -49,22 +75,17 @@ const AppBar: React.FC = () => {
             />
           </svg>
         </button>
+        <button onClick={() => setIsOpenLogoutModal(true)}>Open</button>
         <span className="font-semibold text-[17px] text-gray-800 dark:text-neutral-200">
           KCB Reports
         </span>
       </div>
 
       <div className="flex gap-1.5">
-        <button
-          className="icon-btn"
-          aria-label="Search"
-        >
+        <button className="icon-btn" aria-label="Search">
           <IoSearch className="text-gray-800 dark:text-neutral-200" />
         </button>
-        <button
-          className="icon-btn"
-          aria-label="Settings"
-        >
+        <button className="icon-btn" aria-label="Settings">
           <HiAdjustmentsHorizontal className="text-gray-800 dark:text-neutral-200" />
         </button>
         <button
@@ -125,7 +146,7 @@ const AppBar: React.FC = () => {
           </div>
           <MenuItems
             transition
-            className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-zinc-100 rounded-md bg-container shadow-lg ring-1 ring-black/5 transition focus:outline-none dark:divide-zinc-800 dark:ring-white/5 data-closed:scale-95 data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
+            className="absolute right-0 z-60 mt-2 w-56 origin-top-right divide-y divide-zinc-100 rounded-md bg-container shadow-lg ring-1 ring-black/5 transition focus:outline-none dark:divide-zinc-800 dark:ring-white/5 data-closed:scale-95 data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
           >
             <div className="px-4 py-3 text-sm text-zinc-700 dark:text-zinc-200">
               <div>{user.name}</div>
@@ -133,12 +154,12 @@ const AppBar: React.FC = () => {
             </div>
             <div className="py-1">
               <MenuItem>
-                <a
-                  href="#"
-                  className="block px-4 py-2 text-sm text-zinc-700 data-focus:bg-zinc-100 data-focus:text-zinc-900 dark:text-zinc-200 dark:data-focus:bg-zinc-800 dark:data-focus:text-zinc-200"
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm text-zinc-700 data-focus:bg-zinc-100 data-focus:text-zinc-900 dark:text-zinc-200 dark:data-focus:bg-zinc-800 dark:data-focus:text-zinc-200"
+                  onClick={() => setSidesheet("settings")}
                 >
                   Account settings
-                </a>
+                </button>
               </MenuItem>
               <MenuItem>
                 <a
@@ -177,12 +198,12 @@ const AppBar: React.FC = () => {
             </div>
             <div className="py-1">
               <MenuItem>
-                <a
-                  href="#"
-                  className="block px-4 py-2 text-sm bg-red-300/20 text-red-300 transition-colors data-focus:bg-red-600 data-focus:text-red-200"
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm bg-red-300/20 text-red-300 transition-colors data-focus:bg-red-600 data-focus:text-red-200"
+                  onClick={() => setIsOpenLogoutModal(true)}
                 >
                   Sign out
-                </a>
+                </button>
               </MenuItem>
             </div>
           </MenuItems>

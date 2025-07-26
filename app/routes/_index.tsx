@@ -58,7 +58,7 @@ const EventCard = memo(
 
 export default function Index() {
   return (
-    <div className="flex flex-col gap-4 h-full overflow-hidden">
+    <div className="flex flex-col gap-2.5 h-full pt-4 overflow-hidden">
       <EventCard
         eventType="welcome"
         eventDate={new Date().toLocaleDateString()}

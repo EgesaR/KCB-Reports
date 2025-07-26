@@ -5,7 +5,7 @@ interface CardProps extends MotionProps {
   children: React.ReactNode;
   className?: string;
 }
-
+  
 // Use forwardRef to allow passing refs to the component
 const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ children, className = "", ...motionProps }, ref) => {
