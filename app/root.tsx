@@ -1,3 +1,4 @@
+import type { LinksFunction } from "@remix-run/node";
 import {
   Links,
   Meta,
@@ -5,37 +6,34 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import type { LinksFunction } from "@remix-run/node";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import styles from "~/tailwind.css?url";
+import stylesHref from "~/tailwind.css?url";
 import { ThemeProvider } from "~/components/ThemeProvider";
-import AppContent from "~/components/AppContent";
 import { ReportProvider } from "~/contexts/ReportContext";
+import LayoutShell from "~/components/LayoutShell"; // sidebar/header
+import AppContent from "./components/AppContent";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 3, // 3 minutes
-      gcTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 3,
+      gcTime: 1000 * 60 * 5,
     },
   },
 });
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: styles },
-  { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
+  { rel: "stylesheet", href: stylesHref },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&family=Inter:ital,wght@0,400;1,700&display=swap",
   },
 ];
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export default function App() {
   return (
     <html lang="en">
       <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
         <script
@@ -53,11 +51,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
           }}
         />
       </head>
-      <body className="w-full h-screen overflow-hidden font-comfortaa">
+      <body className="font-comfortaa bg-background text-foreground w-full h-screen overflow-hidden">
         <ThemeProvider>
           <QueryClientProvider client={queryClient}>
             <ReportProvider>
-              <AppContent>{children}</AppContent>
+              <AppContent>
+                <Outlet />
+              </AppContent>
+
               <ScrollRestoration />
               <Scripts />
             </ReportProvider>
@@ -66,8 +67,4 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </body>
     </html>
   );
-}
-
-export default function App() {
-  return <Outlet />;
 }

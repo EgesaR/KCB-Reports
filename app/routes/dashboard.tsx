@@ -1,22 +1,28 @@
-// routes/dashboard.tsx
+// app/routes/dashboard.tsx
 import { LoaderFunction, json, redirect } from "@remix-run/node";
-import { User } from "~/types/user"; // Import your User type if needed
+import { useLoaderData } from "@remix-run/react";
 import { getUserFromSession } from "~/utlis/auth";
 
-// Define the structure of data returned by the loader
 interface LoaderData {
-  user: User;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUserFromSession(request);
+
   if (!user) {
     return redirect("/auth/login");
   }
+
   return json<LoaderData>({ user });
 };
 
-// Update the Dashboard component to accept the correct typed data
-export default function Dashboard({ data }: { data: LoaderData }) {
-  return <div>Welcome {data.user.name}</div>;
+export default function Dashboard() {
+  const { user } = useLoaderData<LoaderData>();
+
+  return <div className="p-6 text-xl font-semibold">Welcome, {user.name}!</div>;
 }

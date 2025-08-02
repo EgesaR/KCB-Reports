@@ -40,11 +40,11 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function LoginPage() {
   return (
-    <form method="post">
+    <form method="post" className="flex flex-col gap-2">
       <label htmlFor="email">Email:</label>
-      <input type="email" id="email" name="email" required />
+      <input type="email" id="email" name="email" className="border-0 border-b border-blue-400 focus:outline-0 focus:border-blue-600" required />
       <label htmlFor="password">Password:</label>
-      <input type="password" id="password" name="password" required />
+      <input type="password" id="password" name="password" className="border-0 border-b border-blue-400 focus:outline-0 focus:border-blue-600" required />
       <button type="submit">Login</button>
     </form>
   );
