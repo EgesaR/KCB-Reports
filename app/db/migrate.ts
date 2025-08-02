@@ -1,5 +1,22 @@
-await migrate(db, {
-    migrationsFolder: './drizzle'
-})
+import "dotenv/config";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
+import { migrate } from "drizzle-orm/neon-http/migrator";
 
-await connections.end()
+const sql = neon(process.env.VITE_DATABASE_URL!);
+const db = drizzle(sql);
+
+const main = async () => {
+  try {
+    await migrate(db, {
+      migrationsFolder: "./app/db/migrations",
+    });
+
+    console.log("Migrations Successful");
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+};
+
+main();
