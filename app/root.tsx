@@ -10,7 +10,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import stylesHref from "~/tailwind.css?url";
 import { ThemeProvider } from "~/components/ThemeProvider";
 import { ReportProvider } from "~/contexts/ReportContext";
-import LayoutShell from "~/components/LayoutShell"; // sidebar/header
 import AppContent from "./components/AppContent";
 
 const queryClient = new QueryClient({
@@ -51,7 +50,7 @@ export default function App() {
           }}
         />
       </head>
-      <body className="font-comfortaa bg-background text-foreground w-full h-screen overflow-hidden">
+      <body className="font-comfortaa text-foreground w-full h-screen overflow-hidden">
         <ThemeProvider>
           <QueryClientProvider client={queryClient}>
             <ReportProvider>

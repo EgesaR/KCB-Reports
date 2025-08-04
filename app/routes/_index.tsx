@@ -1,8 +1,9 @@
 import type { MetaFunction } from "@remix-run/node";
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import { FaRegHeart } from "react-icons/fa";
 import { motion } from "framer-motion";
 import RecentList from "~/components/RecentList";
+import SideSheet from "~/components/SideSheet";
 
 export const meta: MetaFunction = () => {
   return [
@@ -41,11 +42,7 @@ const EventCard = memo(
         </h1>
         <div className="flex gap-2">
           {actions.map((action, index) => (
-            <button
-              key={index}
-              onClick={action.action}
-              className="btn"
-            >
+            <button key={index} onClick={action.action} className="btn">
               {action.text}
               {action.icon}
             </button>
@@ -57,8 +54,10 @@ const EventCard = memo(
 );
 
 export default function Index() {
+  const [isSideSheetOpen, setIsSideSheetOpen] = useState(false);
+
   return (
-    <div className="flex flex-col gap-2.5 h-full pt-4 overflow-hidden">
+    <div className="flex flex-col gap-2.5 h-full pt-4 overflow-hidden relative">
       <EventCard
         eventType="welcome"
         eventDate={new Date().toLocaleDateString()}
@@ -69,10 +68,21 @@ export default function Index() {
             action: () => alert("Joining now!"),
             icon: <FaRegHeart className="fill-current" />,
           },
-          { text: "Edit", action: () => alert("Editing dashboard") },
+          { text: "Edit", action: () => setIsSideSheetOpen(true) },
         ]}
       />
       <RecentList />
+      <SideSheet
+        id="dashboardSettings"
+        isOpen={isSideSheetOpen}
+        setIsOpen={() => setIsSideSheetOpen(false)}
+        className="absolute top-0 right-0 h-full w-1/3 bg-white dark:bg-gray-800 shadow-lg z-50"
+      >
+        <div className="p-4">
+          <h2>Dashboard Settings</h2>
+          <p>Customize your dashboard here.</p>
+        </div>
+      </SideSheet>
     </div>
   );
 }

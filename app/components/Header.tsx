@@ -2,15 +2,17 @@ import { useNavigate } from "@remix-run/react";
 import { FaArrowLeft, FaCloudUploadAlt, FaUndo, FaRedo } from "react-icons/fa";
 import { MdCloudOff, MdOutlineEdit } from "react-icons/md";
 import { FiEye } from "react-icons/fi";
-import { HiMenu } from "react-icons/hi";
+import { HiMenu, HiOutlineDocumentReport } from "react-icons/hi";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import { IoCloudDoneOutline } from "react-icons/io5";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import {
   RiSignalWifiFill,
   RiSignalWifiOffLine,
   RiSignalWifi1Fill,
 } from "react-icons/ri";
 import { useState, useEffect } from "react";
+import { TbSettings2 } from "react-icons/tb";
 
 // Animation variants for buttons
 const buttonVariants = {
@@ -223,7 +225,81 @@ const Header: React.FC<HeaderProps> = ({
     ["saving", "failed"].includes(fileState) && fileState !== prevFileState;
 
   return (
-    <nav className="w-full h-14 px-6 py-3 flex items-center justify-between bg-dark border-b border-gray-300 dark:border-zinc-700 fixed top-0 left-0 z-40 transition-colors duration-300 ease-in-out">
+    <nav className="fixed left-0 top-0 w-full h-12 px-2 flex items-center justify-between z-50 bg">
+      <div className="flex items-center gap-4">
+        <motion.button
+          className="h-8 w-8 grid place-content-center rounded-full hover:bg-black/20 dark:hover:bg-zinc-800 transition-colors duration-200"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          aria-label="Go back"
+          onClick={() => navigate(-1)}
+        >
+          <FaArrowLeft className="text-gray-900 dark:text-neutral-200 text-[14px]" />
+        </motion.button>
+        <div className="flex gap-2 items-center">
+          <div className="h-6 w-6 grid place-content-center rounded-full bg-pink-200 text-pink-900/50">
+            <HiOutlineDocumentReport className="text-lg" />
+          </div>
+          <label className="text-[15px]">End Of Term Report</label>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={fileState}
+              variants={shouldAnimateFile ? statusVariants : undefined}
+              initial={shouldAnimateFile ? "initial" : undefined}
+              animate={shouldAnimateFile ? "animate" : undefined}
+              exit={shouldAnimateFile ? "exit" : undefined}
+              aria-label={`File status: ${fileState}`}
+            >
+              {fileStatus[fileState]}
+            </motion.div>
+          </AnimatePresence>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={networkState}
+              variants={shouldAnimateNetwork ? statusVariants : undefined}
+              initial={shouldAnimateNetwork ? "initial" : undefined}
+              animate={shouldAnimateNetwork ? "animate" : undefined}
+              exit={shouldAnimateNetwork ? "exit" : undefined}
+              aria-label={`Network status: ${networkState}`}
+            >
+              {networkStatus[networkState]}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button className="bg-sky-500/75 text-white font-600 rounded-md px-3 py-0.75">
+          Share
+        </button>
+        <motion.button className="h-7 w-7 grid place-content-center rounded-md border border-[#eee] dark:border-[#333]">
+          <BsThreeDotsVertical />
+        </motion.button>
+        {toggleSideSheet && (
+          <>
+            <motion.button
+              className="h-8 w-8 grid place-content-center rounded-full hover:bg-black/20 dark:hover:bg-zinc-800 transition-colors duration-200"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label={
+                openSideSheet === "settings"
+                  ? "Close settings panel"
+                  : "Open settings panel"
+              }
+              onClick={() => toggleSideSheet("settings")}
+            >
+              <TbSettings2 className="text-gray-900 dark:text-neutral-200 text-[14px]" />
+            </motion.button>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+export default Header;
+
+/*
+ <nav className="w-full h-14 px-6 py-3 flex items-center justify-between bg-dark border-b border-gray-300 dark:border-zinc-700 fixed top-0 left-0 z-40 transition-colors duration-300 ease-in-out">
       <div className="flex items-center gap-4">
         <motion.button
           className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors duration-200"
@@ -365,7 +441,4 @@ const Header: React.FC<HeaderProps> = ({
         )}
       </div>
     </nav>
-  );
-};
-
-export default Header;
+*/

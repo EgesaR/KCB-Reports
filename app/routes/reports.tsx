@@ -71,7 +71,7 @@ export default function Reports() {
   const isInView = useInView(listRef, { amount: 0.2, once: true });
   const navigate = useNavigate();
 
-  console.log("DATABASE_URL", import.meta.env.VITE_DATABASE_URL);
+  //console.log("DATABASE_URL", import.meta.env.VITE_DATABASE_URL);
   // Long-press context
   interface LongPressContext {
     id: string;
@@ -182,7 +182,7 @@ export default function Reports() {
   }, [selectedRecents, recents]);
 
   return (
-    <div className="flex flex-col gap-4 min-h-screen p-4">
+    <div className="flex flex-col gap-4 min-h-screen p-4 reports">
       {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

@@ -38,17 +38,15 @@ export default function AppContent({
       {isReportRoute(matches) ? (
         <ReportHeader />
       ) : (
-        <AppBar
-          setSidesheet={toggleSideSheet}
-        />
+        <AppBar setSidesheet={toggleSideSheet} />
       )}
       <div className="flex-1 h-full flex gap-2 relative">
-                      {/* Render SideBar always on desktop, only when SideSheet is open on mobile */}
+        {/* Render SideBar always on desktop, only when SideSheet is open on mobile */}
         {(!isMobile || openSideSheet === "settings") && (
           <SideBar toggleSideSheet={toggleSideSheet} />
         )}
         <AnimatePresence mode="wait">
-          <section className="flex-1 h-[90%] grow flex flex-col gap-2">
+          <section className="flex-1 h-full grow flex flex-col gap-2">
             <motion.main
               className={`h-full relative w-full flex gap-4 p-2 px-1 sm:py-2 transition-all duration-500 ${
                 openSideSheet === "settings" && isMobile ? "hidden" : ""
@@ -71,7 +69,7 @@ export default function AppContent({
                   id="settings"
                   isOpen={openSideSheet === "settings"}
                   setIsOpen={toggleSideSheet}
-                  className="z-50"
+                  className="z-40"
                 >
                   <div className="">
                     <p>Settings Panel Content</p>
