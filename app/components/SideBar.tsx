@@ -1,3 +1,4 @@
+// app/components/SideBar.tsx
 import React, { useRef, useEffect, useState, forwardRef } from "react";
 import { FaRegHeart, FaHeart, FaRegClock } from "react-icons/fa";
 import { FiMoreHorizontal } from "react-icons/fi";

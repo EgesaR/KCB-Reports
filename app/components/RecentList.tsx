@@ -460,7 +460,9 @@ const ReportItem = ({
         >
           <div className="flex -space-x-2">
             {report.shared
-              .filter((item) => item.src)
+              .filter(
+                (item): item is { src: string; alt: string } => "src" in item
+              )
               .map((item, index) => (
                 <img
                   key={index}
@@ -469,7 +471,9 @@ const ReportItem = ({
                   alt={item.alt}
                 />
               ))}
-            {report.shared.some((item) => item.name) && (
+            {report.shared.some(
+              (item): item is { name: string; href: string } => "name" in item
+            ) && (
               <Menu
                 as="div"
                 className="[--placement:top-left] outline-none border-none ring-0 relative inline-flex"
@@ -478,11 +482,20 @@ const ReportItem = ({
                 <MenuButton
                   className="inline-flex items-center justify-center size-8 rounded-full bg-gray-100 border-2 border-white font-medium text-gray-700 shadow-2xs hover:bg-gray-200 focus:outline-none focus:bg-gray-300 text-sm dark:bg-neutral-700 dark:text-white dark:hover:bg-neutral-600 dark:focus:bg-neutral-600 dark:border-neutral-800"
                   aria-label={`Show ${
-                    report.shared.filter((item) => item.name).length
+                    report.shared.filter(
+                      (item): item is { name: string; href: string } =>
+                        "name" in item
+                    ).length
                   } more shared users`}
                 >
                   <span className="font-medium">
-                    {report.shared.filter((item) => item.name).length}+
+                    {
+                      report.shared.filter(
+                        (item): item is { name: string; href: string } =>
+                          "name" in item
+                      ).length
+                    }
+                    +
                   </span>
                 </MenuButton>
                 <AnimatePresence>
@@ -496,7 +509,10 @@ const ReportItem = ({
                     anchor="top start"
                   >
                     {report.shared
-                      .filter((item) => item.name)
+                      .filter(
+                        (item): item is { name: string; href: string } =>
+                          "name" in item
+                      )
                       .map((item, index) => (
                         <MenuItem key={index}>
                           <a

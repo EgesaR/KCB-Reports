@@ -10,31 +10,39 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 // Helper function to validate theme value
-const getValidTheme = (storedTheme: string | null): "light" | "dark" | "system" => {
-  if (storedTheme === "light" || storedTheme === "dark" || storedTheme === "system") {
+const getValidTheme = (
+  storedTheme: string | null
+): "light" | "dark" | "system" => {
+  if (
+    storedTheme === "light" ||
+    storedTheme === "dark" ||
+    storedTheme === "system"
+  ) {
     return storedTheme;
   }
   return "system";
 };
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [theme, setTheme] = useState<"light" | "dark" | "system">(() => {
-    if (typeof window !== "undefined") {
-      return getValidTheme(localStorage.getItem("theme"));
+export const ThemeProvider: React.FC<{
+  children: React.ReactNode;
+  initialTheme?: "light" | "dark" | "system";
+}> = ({ children, initialTheme = "system" }) => {
+  const [theme, setTheme] = useState<"light" | "dark" | "system">(initialTheme);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(
+    initialTheme === "dark"
+  );
+
+  useEffect(() => {
+    const savedTheme = getValidTheme(localStorage.getItem("theme"));
+    setTheme(savedTheme);
+    if (savedTheme === "dark") {
+      setIsDarkMode(true);
+    } else if (savedTheme === "light") {
+      setIsDarkMode(false);
+    } else {
+      setIsDarkMode(window.matchMedia("(prefers-color-scheme: dark)").matches);
     }
-    return "system";
-  });
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      const savedTheme = getValidTheme(localStorage.getItem("theme"));
-      if (savedTheme === "dark") return true;
-      if (savedTheme === "light") return false;
-      return window.matchMedia("(prefers-color-scheme: dark)").matches;
-    }
-    return false;
-  });
+  }, []);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -56,15 +64,25 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     if (theme !== "system") {
       localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+      document.cookie = `theme=${
+        isDarkMode ? "dark" : "light"
+      }; path=/; max-age=31536000; SameSite=Lax; Secure`;
     } else {
       localStorage.removeItem("theme");
+      document.cookie = `theme=system; path=/; max-age=31536000; SameSite=Lax; Secure`;
     }
   }, [isDarkMode, theme]);
 
   const toggleTheme = () => {
     setIsDarkMode((prev) => !prev);
     setTheme((prev) =>
-      prev === "system" ? (!isDarkMode ? "dark" : "light") : !isDarkMode ? "dark" : "light"
+      prev === "system"
+        ? !isDarkMode
+          ? "dark"
+          : "light"
+        : !isDarkMode
+        ? "dark"
+        : "light"
     );
   };
 
@@ -78,7 +96,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleTheme, setTheme: setThemeMode }}>
+    <ThemeContext.Provider
+      value={{ isDarkMode, toggleTheme, setTheme: setThemeMode }}
+    >
       {children}
     </ThemeContext.Provider>
   );

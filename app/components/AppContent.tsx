@@ -1,89 +1,98 @@
-import { useState, useEffect } from "react";
+// app/components/AppContent.tsx
 import { useMatches } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import SideBar from "~/components/SideBar";
 import ReportHeader from "~/components/ReportHeader";
-import Card from "~/components/Card";
 import SideSheet from "~/components/SideSheet";
 import AppBar from "~/components/AppBar";
 import SidebarModal from "~/components/SidebarModal";
-import { useReport } from "~/contexts/ReportContext";
+import { memo, useMemo, useState, type ReactNode } from "react";
 
-const isReportRoute = (matches: ReturnType<typeof useMatches>): boolean => {
-  return matches.some((match) => match.id.includes("routes/reports"));
+/**
+ * Determines if the current route is a report detail route (/reports/:id)
+ */
+const isReportDetailRoute = (
+  matches: ReturnType<typeof useMatches>
+): boolean => {
+  return matches.some(
+    (match) =>
+      match.id === "routes/reports.$id" ||
+      (match.id?.startsWith("routes/reports.") && !!match.params?.id)
+  );
 };
 
-export default function AppContent({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const matches = useMatches();
-  const { toggleSideSheet, openSideSheet } = useReport();
-  const [isMobile, setIsMobile] = useState(
-    typeof window !== "undefined" && window.innerWidth < 768
-  );
+interface AppContentProps {
+  children: ReactNode;
+}
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setIsMobile(window.innerWidth < 768);
-      const handleResize = () => setIsMobile(window.innerWidth < 768);
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }
-  }, []);
+const AppContent = memo(({ children }: AppContentProps) => {
+  const matches = useMatches();
+  const [openSideSheet, setOpenSideSheet] = useState<string | null>(null);
+
+  // Memoize the route type so we don't recalc on every render unless matches change
+  const reportDetail = useMemo(() => isReportDetailRoute(matches), [matches]);
+
+  // Function to toggle the side sheet
+  const toggleSideSheet = (id: string) => {
+    setOpenSideSheet((prev) => (prev === id ? null : id));
+  };
 
   return (
-    <div className="w-full h-full flex flex-col py-2 px-0 sm:px-2.5 gap-2.5">
-      {isReportRoute(matches) ? (
-        <ReportHeader />
-      ) : (
-        <AppBar setSidesheet={toggleSideSheet} />
-      )}
-      <div className="flex-1 h-full flex gap-2 relative">
-        {/* Render SideBar always on desktop, only when SideSheet is open on mobile */}
-        {(!isMobile || openSideSheet === "settings") && (
-          <SideBar toggleSideSheet={toggleSideSheet} />
-        )}
-        <AnimatePresence mode="wait">
-          <section className="flex-1 h-full grow flex flex-col gap-2">
-            <motion.main
-              className={`h-full relative w-full flex gap-4 p-2 px-1 sm:py-2 transition-all duration-500 ${
-                openSideSheet === "settings" && isMobile ? "hidden" : ""
-              }`}
-              initial={{ opacity: 0, width: "100%" }}
-              animate={{
-                opacity: 1,
-                //width:
-                //openSideSheet === "settings" && !isMobile
-                //</section>? `calc(100% - ${600 + (isMobile ? 0 : 256)}px)` // 600px SideSheet + 256px SideBar
-                //: `calc(100% - ${isMobile ? 0 : 256}px)`, // 256px SideBar on desktop
-              }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              <Card className="w-full ease-in-out transition-opacity duration-300 text-white">
-                {children}
-              </Card>
-              {openSideSheet && (
-                <SideSheet
-                  id="settings"
-                  isOpen={openSideSheet === "settings"}
-                  setIsOpen={toggleSideSheet}
-                  className="z-40"
-                >
-                  <div className="">
-                    <p>Settings Panel Content</p>
-                    <button className="mt-2 bg-blue-600 px-4 py-2 rounded">
-                      Adjust Settings
-                    </button>
-                  </div>
-                </SideSheet>
-              )}
-              <SidebarModal />
-            </motion.main>
-          </section>
-        </AnimatePresence>
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
+      {/* Sidebar (desktop) */}
+      <div className="hidden lg:flex">
+        <SideBar toggleSideSheet={toggleSideSheet} />
       </div>
+
+      {/* Sidebar Modal (mobile) */}
+      <SidebarModal />
+
+      {/* Main Content Area */}
+      <div className="flex flex-col flex-1 min-w-0">
+        <AnimatePresence mode="wait">
+          {reportDetail ? (
+            <motion.div
+              key="report-header"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ReportHeader />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="app-bar"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <AppBar setSidesheet={toggleSideSheet} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto p-4">{children}</main>
+      </div>
+
+      {/* Right Panel (optional) */}
+      {openSideSheet && (
+        <SideSheet
+          id={openSideSheet}
+          isOpen={!!openSideSheet}
+          setIsOpen={() => setOpenSideSheet(null)}
+        >
+          <div className="font-comfortaa text-gray-900 dark:text-neutral-200">
+            Content for {openSideSheet} panel
+          </div>
+        </SideSheet>
+      )}
     </div>
   );
-}
+});
+
+AppContent.displayName = "AppContent";
+
+export default AppContent;

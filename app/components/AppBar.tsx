@@ -1,6 +1,15 @@
 // app/components/AppBar.tsx
 import React, { useState } from "react";
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+} from "@headlessui/react";
 import { HiAdjustmentsHorizontal, HiOutlineUser } from "react-icons/hi2";
 import { IoSearch, IoSunnyOutline, IoMoonOutline } from "react-icons/io5";
 import { useTheme } from "./ThemeProvider";
@@ -38,7 +47,11 @@ const AppBar: React.FC<AppBarProps> = ({ setSidesheet }) => {
       >
         <DialogBackdrop className={"fixed inset-0 bg-black/30"} />
         <div className="fixed inset-0 flex w-screen justify-center items-center p-4">
-          <DialogPanel className={"max-w-2xl min-w-lg space-y-4 rounded-lg bg-container px-12 py-10"}>
+          <DialogPanel
+            className={
+              "max-w-2xl min-w-lg space-y-4 rounded-lg bg-container px-12 py-10"
+            }
+          >
             <DialogTitle className={"font-bold text-lg"}>
               You're signing out
             </DialogTitle>

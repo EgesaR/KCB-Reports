@@ -20,13 +20,12 @@ export interface Report {
   name: string;
   shared: SharedItem[];
   status: string;
-  lastUpdated: string;
+  lastUpdated: string; // ISO string for consistent hydration
   body: ReportBody | null;
   type: string;
   url: string;
   toJSON: () => any;
 }
-
 
 export const sharedItems = [
   {
@@ -61,7 +60,7 @@ export const reports: Report[] = [
     name: "End of Term",
     shared: sharedItems.slice(0, 8),
     status: "Completed",
-    lastUpdated: new Date("2025-06-10").toLocaleDateString(),
+    lastUpdated: new Date("2025-06-10").toISOString(),
     body: { content: "Content for the end of term report." },
     type: "term-report",
     url: "/reports/end-of-term",
@@ -76,7 +75,7 @@ export const reports: Report[] = [
     name: "Beginning of Term",
     shared: sharedItems.slice(0, 6),
     status: "In Progress",
-    lastUpdated: new Date("2025-06-09").toLocaleDateString(),
+    lastUpdated: new Date("2025-06-09").toISOString(),
     body: { content: "Content for the beginning of term report." },
     type: "term-report",
     url: "/reports/beginning-of-term",
@@ -91,7 +90,7 @@ export const reports: Report[] = [
     name: "Activity Of Integration",
     shared: sharedItems.slice(0, 7),
     status: "Active",
-    lastUpdated: new Date().toLocaleDateString(),
+    lastUpdated: new Date().toISOString(),
     body: { content: "Content for the activity of integration report." },
     type: "activity-report",
     url: "/reports/activity-of-integration",
@@ -106,7 +105,7 @@ export const reports: Report[] = [
     name: "Mid Term",
     shared: sharedItems.slice(0, 5),
     status: "Pending",
-    lastUpdated: new Date("2025-06-08").toLocaleDateString(),
+    lastUpdated: new Date("2025-06-08").toISOString(),
     body: { content: "Content for the mid-term report." },
     type: "term-report",
     url: "/reports/mid-term",
@@ -121,7 +120,7 @@ export const reports: Report[] = [
     name: "Test 09",
     shared: sharedItems.slice(0, 4),
     status: "Draft",
-    lastUpdated: new Date("2025-06-07").toLocaleDateString(),
+    lastUpdated: new Date("2025-06-07").toISOString(),
     body: { content: "Content for the test 09 report." },
     type: "test-report",
     url: "/reports/test-09",
@@ -136,7 +135,7 @@ export const reports: Report[] = [
     name: "Resource Paper",
     shared: sharedItems.slice(0, 3),
     status: "Review",
-    lastUpdated: new Date("2025-06-06").toLocaleDateString(),
+    lastUpdated: new Date("2025-06-06").toISOString(),
     body: { content: "Content for the resource paper report." },
     type: "resource-report",
     url: "/reports/resource-paper",
@@ -151,7 +150,7 @@ export const reports: Report[] = [
     name: "Quarterly Review",
     shared: sharedItems.slice(0, 7),
     status: "Completed",
-    lastUpdated: new Date("2025-06-05").toLocaleDateString(),
+    lastUpdated: new Date("2025-06-05").toISOString(),
     body: { content: "Content for the quarterly review report." },
     type: "quarterly-report",
     url: "/reports/quarterly-review",
@@ -166,7 +165,7 @@ export const reports: Report[] = [
     name: "Project Proposal",
     shared: sharedItems.slice(0, 5),
     status: "In Progress",
-    lastUpdated: new Date("2025-06-04").toLocaleDateString(),
+    lastUpdated: new Date("2025-06-04").toISOString(),
     body: { content: "Content for the project proposal report." },
     type: "proposal-report",
     url: "/reports/project-proposal",
@@ -181,7 +180,7 @@ export const reports: Report[] = [
     name: "Annual Summary",
     shared: sharedItems.slice(0, 6),
     status: "Draft",
-    lastUpdated: new Date("2025-06-03").toLocaleDateString(),
+    lastUpdated: new Date("2025-06-03").toISOString(),
     body: { content: "Content for the annual summary report." },
     type: "summary-report",
     url: "/reports/annual-summary",
@@ -196,7 +195,7 @@ export const reports: Report[] = [
     name: "Evaluation Report",
     shared: sharedItems.slice(0, 4),
     status: "Pending",
-    lastUpdated: new Date("2025-06-02").toLocaleDateString(),
+    lastUpdated: new Date("2025-06-02").toISOString(),
     body: { content: "Content for the evaluation report." },
     type: "evaluation-report",
     url: "/reports/evaluation-report",
@@ -211,7 +210,7 @@ export const reports: Report[] = [
     name: "Research Notes",
     shared: sharedItems.slice(0, 8),
     status: "Review",
-    lastUpdated: new Date("2025-06-01").toLocaleDateString(),
+    lastUpdated: new Date("2025-06-01").toISOString(),
     body: { content: "Content for the research notes report." },
     type: "research-report",
     url: "/reports/research-notes",

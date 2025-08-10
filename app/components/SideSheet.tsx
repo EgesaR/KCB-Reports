@@ -1,70 +1,69 @@
+// app/components/SideSheet.tsx
 import { memo, useState, useEffect } from "react";
 import { HiX } from "react-icons/hi";
 import Card from "./Card";
 import { useAnimate, usePresence } from "framer-motion";
 
 interface SideSheetProps {
-  id: string;
+  id?: string;
   children: React.ReactNode;
   isOpen: boolean;
   className?: string;
-  setIsOpen: (id: string) => void;
+  setIsOpen: (id?: string) => void;
 }
 
 const SideSheet: React.FC<SideSheetProps> = ({
-  id,
+  id = "",
   children,
   isOpen,
   setIsOpen,
-  className,
+  className = "",
 }) => {
   const [isPresent, safeToRemove] = usePresence();
   const [scope, animate] = useAnimate();
-  const [isMobile, setIsMobile] = useState(
-    typeof window !== "undefined" && window.innerWidth < 768
-  );
+  const [isMobile, setIsMobile] = useState(false);
 
+  // Keep resize listener minimal
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setIsMobile(window.innerWidth < 768);
-      const handleResize = () => setIsMobile(window.innerWidth < 768);
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }
+    setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Animate in/out
   useEffect(() => {
-    console.log("SideSheet isOpen:", isOpen, "isPresent:", isPresent);
-    if (isOpen && isPresent) {
-      animate(
-        scope.current,
-        {
-          opacity: 1,
-          width: isMobile ? "100vw" : 600,
-          height: isMobile ? "100%" : "auto",
-          display: "flex",
-        },
-        { duration: 0.3, ease: "easeOut" }
-      );
-    } else {
-      const exitAnimation = async () => {
+    const run = async () => {
+      if (isOpen && isPresent) {
+        await animate(
+          scope.current,
+          {
+            opacity: 1,
+            width: isMobile ? "100vw" : 600,
+            height: isMobile ? "100%" : "auto",
+            display: "flex",
+          },
+          { duration: 0.3, ease: "easeOut" }
+        );
+      } else {
         await animate(
           scope.current,
           { opacity: 0, width: 0, height: isMobile ? "100%" : "auto" },
           { duration: 0.3, ease: "easeOut" }
         );
-        if (!isPresent) {
-          console.log("Safe to remove SideSheet");
-          safeToRemove();
-        }
-      };
-      exitAnimation();
-    }
+        if (!isPresent) safeToRemove();
+      }
+    };
+    run();
   }, [isOpen, isPresent, animate, scope, safeToRemove, isMobile]);
 
-  if (!isOpen && !isPresent) {
-    return null;
-  }
+  if (!isOpen && !isPresent) return null;
+
+  // Safe capitalization
+  const safeTitle =
+    typeof id === "string" && id.length > 0
+      ? id.charAt(0).toUpperCase() + id.slice(1)
+      : "";
 
   return (
     <Card
@@ -79,9 +78,7 @@ const SideSheet: React.FC<SideSheetProps> = ({
     >
       <div className="w-full h-full px-[12px] py-[9px]">
         <section className="flex items-center justify-between">
-          <h1 className="text-xl">
-            {id.charAt(0).toUpperCase() + id.slice(1)}
-          </h1>
+          <h1 className="text-xl">{safeTitle}</h1>
           <button onClick={() => setIsOpen(id)}>
             <HiX />
           </button>

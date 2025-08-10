@@ -223,9 +223,9 @@ const Header: React.FC<HeaderProps> = ({
     networkState !== prevNetworkState;
   const shouldAnimateFile =
     ["saving", "failed"].includes(fileState) && fileState !== prevFileState;
-
+  //fixed left-0 top-0 w-full h-12 px-2 flex items-center justify-between z-50 bg
   return (
-    <nav className="fixed left-0 top-0 w-full h-12 px-2 flex items-center justify-between z-50 bg">
+    <nav className="w-full py-1.5 px-3 rounded-lg flex justify-between items-center">
       <div className="flex items-center gap-4">
         <motion.button
           className="h-8 w-8 grid place-content-center rounded-full hover:bg-black/20 dark:hover:bg-zinc-800 transition-colors duration-200"

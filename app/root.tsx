@@ -1,10 +1,12 @@
-import type { LinksFunction } from "@remix-run/node";
+// app/root.tsx
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import stylesHref from "~/tailwind.css?url";
@@ -29,35 +31,41 @@ export const links: LinksFunction = () => [
   },
 ];
 
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const cookieHeader = request.headers.get("Cookie") || "";
+  const themeMatch = cookieHeader.match(/theme=([^;]*)/);
+  let initialTheme: "light" | "dark" | "system" = "system";
+
+  if (themeMatch && themeMatch[1]) {
+    const theme = themeMatch[1];
+    if (theme === "light" || theme === "dark" || theme === "system") {
+      initialTheme = theme;
+    }
+  }
+
+  return { initialTheme };
+};
+
 export default function App() {
+  const { initialTheme } = useLoaderData<{
+    initialTheme: "light" | "dark" | "system";
+  }>();
+
   return (
-    <html lang="en">
+    <html lang="en" data-theme={initialTheme === "dark" ? "dark" : undefined}>
       <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
-        <script
-          defer
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                const theme = localStorage.getItem('theme');
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (theme === 'dark' || (!theme && prefersDark)) {
-                  document.documentElement.setAttribute('data-theme', 'dark');
-                }
-              })();
-            `,
-          }}
-        />
       </head>
       <body className="font-comfortaa text-foreground w-full h-screen overflow-hidden">
-        <ThemeProvider>
+        <ThemeProvider initialTheme={initialTheme}>
           <QueryClientProvider client={queryClient}>
             <ReportProvider>
               <AppContent>
                 <Outlet />
               </AppContent>
-
               <ScrollRestoration />
               <Scripts />
             </ReportProvider>

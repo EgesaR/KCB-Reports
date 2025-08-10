@@ -49,7 +49,15 @@ const trashBinVariants = {
 
 // Loader
 export async function loader() {
-  return { reports } as { reports: Report[] };
+  // Make sure all dates in reports use ISO strings here
+  const reportsWithISO = reports.map((r) => ({
+    ...r,
+    lastUpdated:
+      typeof r.lastUpdated === "string"
+        ? r.lastUpdated
+        : new Date(r.lastUpdated).toISOString(),
+  }));
+  return { reports: reportsWithISO } as { reports: Report[] };
 }
 
 // Meta Function
@@ -71,7 +79,6 @@ export default function Reports() {
   const isInView = useInView(listRef, { amount: 0.2, once: true });
   const navigate = useNavigate();
 
-  //console.log("DATABASE_URL", import.meta.env.VITE_DATABASE_URL);
   // Long-press context
   interface LongPressContext {
     id: string;
@@ -115,7 +122,7 @@ export default function Reports() {
       name: `New Report ${newId.slice(0, 4)}`,
       shared: sharedItems.slice(0, 4),
       status: "Draft",
-      lastUpdated: new Date().toLocaleDateString(),
+      lastUpdated: new Date().toISOString(),
       body: { content: "Content for the new report." },
       type: "report",
       url: `/reports/${newId}`,
@@ -182,7 +189,7 @@ export default function Reports() {
   }, [selectedRecents, recents]);
 
   return (
-    <div className="flex flex-col gap-4 min-h-screen p-4 reports">
+    <div className="flex flex-col gap-2.5 h-full pt-4 overflow-hidden relative">
       {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -445,6 +452,7 @@ export default function Reports() {
                         : "text-gray-600 dark:text-neutral-400"
                     }`}
                   >
+                    {/* Format date safely */}
                     {format(new Date(report.lastUpdated), "MMMM d, yyyy")}
                   </div>
                 </Link>
