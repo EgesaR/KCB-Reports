@@ -9,9 +9,10 @@ import {
   usePresence,
   useAnimate,
 } from "framer-motion";
-import { reports, Report, sharedItems } from "~/data/reports";
-import useLongPress from "~/hooks/use-long-press";
+import { reports as initialReports, Report, sharedItems } from "~/data/reports";
+import useLongPress from "~/hooks/useLongPress";
 import { FiTrash2 } from "react-icons/fi";
+import { useSafeFormattedDate } from "~/hooks/useSafeFormattedDate";
 
 // Variants for the parent <ul> and child <li> elements
 const listVariants = {
@@ -66,10 +67,10 @@ const itemVariants = {
   },
 };
 
-// RecentList Component
-const RecentList = () => {
-  const [recents, setRecents] = useState<Report[]>([]);
-  const [selectedRecents, setSelectedRecents] = useState<Report[]>([]);
+// ReportList Component
+const ReportList = ({ reports = [] }: { reports: Report[] }) => {
+  const [reportsState, setReportsState] = useState<Report[]>([]);
+  const [selectedReports, setSelectedReports] = useState<Report[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const listRef = useRef<HTMLUListElement>(null);
@@ -90,7 +91,7 @@ const RecentList = () => {
       } else {
         event.preventDefault();
         event.stopPropagation();
-        selectRecent(id);
+        selectReport(id);
         console.log(`Clicked report with ID: ${id}`);
       }
     },
@@ -98,27 +99,27 @@ const RecentList = () => {
       event.preventDefault();
       event.stopPropagation();
       setSelectionMode(true);
-      selectRecent(id);
+      selectReport(id);
       console.log(`Double-clicked report with ID: ${id}`);
     },
     onTripleClick: (event, { id }) => {
       event.preventDefault();
       event.stopPropagation();
       setSelectionMode(true);
-      selectRecent(id);
+      selectReport(id);
       console.log(`Triple-clicked report with ID: ${id}`);
     },
     onLongPress: (event, { id }) => {
       event.preventDefault();
       setSelectionMode(true);
-      selectRecent(id);
+      selectReport(id);
       console.log(`Long-pressed report with ID: ${id}`);
     },
   });
 
-  const addRecent = () => {
+  const addReport = () => {
     const newId = uuid();
-    const newRecent = {
+    const newReport: Report = {
       id: newId,
       name: "End of Term",
       shared: sharedItems.slice(0, 8),
@@ -134,13 +135,13 @@ const RecentList = () => {
       }),
     };
 
-    setRecents((prev) => [...prev, newRecent]);
+    setReportsState((prev) => [...prev, newReport]);
   };
 
-  const selectRecent = (id: string) => {
-    const report = recents.find((r) => r.id === id);
+  const selectReport = (id: string) => {
+    const report = reportsState.find((r) => r.id === id);
     if (report) {
-      setSelectedRecents((prev) => {
+      setSelectedReports((prev) => {
         if (prev.includes(report)) {
           return prev.filter((i) => i.id !== id);
         } else {
@@ -150,46 +151,51 @@ const RecentList = () => {
     }
   };
 
-  const removeRecent = () => {
-    setRecents((prev) =>
-      prev.filter((report) => !selectedRecents.includes(report))
+  const removeReports = () => {
+    setReportsState((prev) =>
+      prev.filter((report) => !selectedReports.includes(report))
     );
-    setSelectedRecents([]);
+    setSelectedReports([]);
     setSelectAll(false);
     setSelectionMode(false);
   };
 
-  const clearAllRecents = () => {
-    setRecents([]);
-    setSelectedRecents([]);
+  const clearAllReports = () => {
+    setReportsState([]);
+    setSelectedReports([]);
     setSelectAll(false);
     setSelectionMode(false);
   };
 
   const toggleSelectAll = () => {
     if (selectAll) {
-      setSelectedRecents([]);
+      setSelectedReports([]);
       setSelectAll(false);
       setSelectionMode(false);
     } else {
-      setSelectedRecents(recents);
+      setSelectedReports(reportsState);
       setSelectAll(true);
       setSelectionMode(true);
     }
   };
 
+  // Initialize reports state only once or when 'reports' changes
   useEffect(() => {
-    setRecents(reports);
-  }, []);
+    setReportsState(reports);
+  }, [reports]);
 
+  // Update selectAll and selectionMode properly, avoiding infinite loops
   useEffect(() => {
     setSelectAll(
-      recents.length > 0 && selectedRecents.length === recents.length
+      reportsState.length > 0 && selectedReports.length === reportsState.length
     );
-    if (selectedRecents.length === 0) {
+    if (selectedReports.length === 0) {
       setSelectionMode(false);
+    } else {
+      setSelectionMode(true);
     }
-  }, [selectedRecents, recents]);
+  }, [selectedReports, reportsState]);
+  console.log("Report List Date: ", reports);
 
   return (
     <section className="p-4">
@@ -200,19 +206,19 @@ const RecentList = () => {
         className="mb-4 flex justify-between items-center"
       >
         <div className="flex items-center gap-4">
-          <h3 className="text-lg sm:text-base font-semibold text-gray-800 dark:text-neutral-200">
+          <h3 className="text-lg sm:text-base font-semibold text-gray-800 dark:text-gray-200">
             Recent Reports
           </h3>
-          {selectionMode && recents.length > 0 && (
-            <span className="text-sm text-gray-600 dark:text-neutral-400">
-              ({selectedRecents.length} selected)
+          {selectionMode && reportsState.length > 0 && (
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              ({selectedReports.length} selected)
             </span>
           )}
         </div>
         <motion.div className="flex gap-2 sm:text-sm">
           <button
             className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-            onClick={addRecent}
+            onClick={addReport}
           >
             Add
           </button>
@@ -225,10 +231,10 @@ const RecentList = () => {
                 transition={{ duration: 0.2, ease: "easeInOut" }}
                 className="flex gap-2"
               >
-                {recents.length > 0 && (
+                {reportsState.length > 0 && (
                   <button
                     className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
-                    onClick={clearAllRecents}
+                    onClick={clearAllReports}
                   >
                     Clear All
                   </button>
@@ -239,8 +245,8 @@ const RecentList = () => {
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.2, ease: "easeInOut" }}
                   className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
-                  onClick={removeRecent}
-                  disabled={!selectedRecents.length}
+                  onClick={removeReports}
+                  disabled={!selectedReports.length}
                 >
                   Remove Selected
                 </motion.button>
@@ -251,8 +257,8 @@ const RecentList = () => {
       </motion.div>
 
       <div className="flex flex-col overflow-hidden">
-        <div className="flex w-full border-b border-gray-400 dark:border-neutral-600 py-2">
-          {selectionMode && recents.length > 0 && (
+        <div className="flex w-full border-b border-gray-400 dark:border-gray-600 py-2">
+          {selectionMode && reportsState.length > 0 && (
             <div className="w-10 px-3">
               <input
                 type="checkbox"
@@ -263,16 +269,16 @@ const RecentList = () => {
               />
             </div>
           )}
-          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-neutral-400">
+          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-gray-400">
             Name
           </div>
-          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-neutral-400">
+          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-gray-400">
             Shared
           </div>
-          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-neutral-400">
+          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-gray-400">
             Status
           </div>
-          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-neutral-400">
+          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-gray-400">
             Last Updated
           </div>
         </div>
@@ -287,7 +293,7 @@ const RecentList = () => {
           layoutScroll
         >
           <AnimatePresence mode="popLayout">
-            {recents.length === 0 && (
+            {reportsState.length === 0 && (
               <motion.li
                 key="empty"
                 variants={itemVariants}
@@ -299,17 +305,17 @@ const RecentList = () => {
                 There is nothing today.
               </motion.li>
             )}
-            {[...recents].reverse().map((report) => (
+            {[...reportsState].reverse().map((report) => (
               <ReportItem
                 key={report.id}
                 report={report}
-                selected={selectedRecents.includes(report)}
+                selected={selectedReports.includes(report)}
                 selectionMode={selectionMode}
-                selectedRecentsCount={selectedRecents.length}
+                selectedRecentsCount={selectedReports.length}
                 handlers={handlers({ id: report.id })}
-                selectRecent={selectRecent}
-                setRecents={setRecents}
-                setSelectedRecents={setSelectedRecents}
+                selectRecent={selectReport}
+                setRecents={setReportsState}
+                setSelectedRecents={setSelectedReports}
                 setSelectAll={setSelectAll}
                 setSelectionMode={setSelectionMode}
               />
@@ -351,7 +357,7 @@ const ReportItem = ({
   const [scope, animate] = useAnimate();
   const indicatorRef = useRef<HTMLDivElement>(null);
 
-  const removeSingleRecent = async () => {
+  const removeSingleReport = async () => {
     if (indicatorRef.current) {
       await animate(
         indicatorRef.current,
@@ -398,6 +404,10 @@ const ReportItem = ({
     }
   }, [isPresent, animate, safeToRemove]);
 
+  // Make sure shared is always an array
+  const sharedItems = report.shared ?? [];
+  console.log("Report date: ", report.lastUpdated);
+
   return (
     <motion.li
       ref={scope}
@@ -406,12 +416,12 @@ const ReportItem = ({
       animate="visible"
       exit="exit"
       layout
-      className={`flex w-full text-sm sm:text-xs py-3 px-3 last:border-0 border-b items-center hover:bg-gray-50 dark:hover:bg-neutral-800 relative report-item-${
+      className={`flex w-full text-sm sm:text-xs py-3 px-3 last:border-0 border-b items-center hover:bg-gray-50 dark:hover:bg-gray-700 relative report-item-${
         report.id
       } ${
         selected
-          ? "bg-blue-100 dark:bg-neutral-700 hover:bg-blue-200 hover:dark:bg-neutral-800 border-zinc-200 dark:border-neutral-600"
-          : "border-zinc-200 dark:border-neutral-700"
+          ? "bg-blue-100 dark:bg-gray-700 hover:bg-blue-200 hover:dark:bg-gray-800 border-zinc-200 dark:border-gray-600"
+          : "border-zinc-200 dark:border-gray-700"
       }`}
       {...handlers}
     >
@@ -449,7 +459,7 @@ const ReportItem = ({
           className={`flex-1 px-3 ${
             selected
               ? "text-gray-800 dark:text-white"
-              : "text-gray-800 dark:text-neutral-200"
+              : "text-gray-800 dark:text-gray-200"
           }`}
         >
           {report.name}
@@ -459,19 +469,19 @@ const ReportItem = ({
           onClick={(e) => selectionMode && e.stopPropagation()}
         >
           <div className="flex -space-x-2">
-            {report.shared
+            {sharedItems
               .filter(
                 (item): item is { src: string; alt: string } => "src" in item
               )
               .map((item, index) => (
                 <img
                   key={index}
-                  className="inline-block size-8 rounded-full ring-2 ring-white dark:ring-neutral-900"
+                  className="inline-block size-8 rounded-full ring-2 ring-white dark:ring-gray-900"
                   src={item.src}
                   alt={item.alt}
                 />
               ))}
-            {report.shared.some(
+            {sharedItems.some(
               (item): item is { name: string; href: string } => "name" in item
             ) && (
               <Menu
@@ -480,9 +490,9 @@ const ReportItem = ({
                 onClick={(e) => selectionMode && e.stopPropagation()}
               >
                 <MenuButton
-                  className="inline-flex items-center justify-center size-8 rounded-full bg-gray-100 border-2 border-white font-medium text-gray-700 shadow-2xs hover:bg-gray-200 focus:outline-none focus:bg-gray-300 text-sm dark:bg-neutral-700 dark:text-white dark:hover:bg-neutral-600 dark:focus:bg-neutral-600 dark:border-neutral-800"
+                  className="inline-flex items-center justify-center size-8 rounded-full bg-gray-100 border-2 border-white font-medium text-gray-700 shadow-2xs hover:bg-gray-200 focus:outline-none focus:bg-gray-300 text-sm dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:border-gray-800"
                   aria-label={`Show ${
-                    report.shared.filter(
+                    sharedItems.filter(
                       (item): item is { name: string; href: string } =>
                         "name" in item
                     ).length
@@ -490,7 +500,7 @@ const ReportItem = ({
                 >
                   <span className="font-medium">
                     {
-                      report.shared.filter(
+                      sharedItems.filter(
                         (item): item is { name: string; href: string } =>
                           "name" in item
                       ).length
@@ -505,10 +515,10 @@ const ReportItem = ({
                     initial="initial"
                     animate="animate"
                     exit="exit"
-                    className="w-48 z-10 mb-2 bg-white shadow-md rounded-lg p-2 dark:bg-neutral-800 dark:divide-neutral-700"
+                    className="w-48 z-10 mb-2 bg-white shadow-md rounded-lg p-2 dark:bg-gray-800 dark:divide-gray-700"
                     anchor="top start"
                   >
-                    {report.shared
+                    {sharedItems
                       .filter(
                         (item): item is { name: string; href: string } =>
                           "name" in item
@@ -516,9 +526,10 @@ const ReportItem = ({
                       .map((item, index) => (
                         <MenuItem key={index}>
                           <a
-                            className="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 data-[focus]:bg-gray-100 dark:data-[focus]:bg-neutral-700"
+                            className="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 data-[focus]:bg-gray-100 data-[focus]:dark:bg-gray-700"
                             href={item.href}
-                            onClick={(e) => e.stopPropagation()}
+                            target="_blank"
+                            rel="noreferrer"
                           >
                             {item.name}
                           </a>
@@ -530,54 +541,34 @@ const ReportItem = ({
             )}
           </div>
         </div>
-        <div
-          className={`flex-1 px-3 ${
-            selected
-              ? "text-gray-800 dark:text-white"
-              : "text-gray-800 dark:text-neutral-200"
-          }`}
-        >
+        <div className="flex-1 px-3 text-gray-600 dark:text-gray-400">
           {report.status}
         </div>
-        <div
-          className={`flex-1 px-3 pl-6 ${
-            selected
-              ? "text-gray-800 dark:text-white"
-              : "text-gray-800 dark:text-neutral-200"
-          }`}
-        >
-          {report.lastUpdated}
-        </div>
-        <div
-          className={`flex-1 px-3 absolute right-0 ${
-            selected
-              ? "text-gray-800 dark:text-white"
-              : "text-gray-800 dark:text-neutral-200"
-          }`}
-        >
-          <AnimatePresence>
-            {selectionMode && selected && selectedRecentsCount === 1 && (
-              <motion.button
-                variants={trashBinVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{ duration: 0.2, ease: "easeInOut" }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeSingleRecent();
-                }}
-                className="rounded bg-red-300/20 px-1.5 py-2 text-xs text-red-300 transition-colors hover:bg-red-600 hover:text-red-200"
-                aria-label={`Delete ${report.name}`}
-              >
-                <FiTrash2 size={20} />
-              </motion.button>
-            )}
-          </AnimatePresence>
+        <div className="flex-1 px-3 text-gray-600 dark:text-gray-400">
+          {useSafeFormattedDate(report.lastUpdated)}
         </div>
       </div>
+
+      {selectionMode && selectedRecentsCount > 0 && (
+        <motion.button
+          onClick={(e) => {
+            e.stopPropagation();
+            removeSingleReport();
+          }}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={trashBinVariants}
+          whileHover={{ scale: 1.25 }}
+          className="ml-2 text-red-500 hover:text-red-700 focus:outline-none focus:ring focus:ring-red-500 rounded p-1"
+          aria-label={`Remove ${report.name}`}
+          tabIndex={-1}
+        >
+          <FiTrash2 size={18} />
+        </motion.button>
+      )}
     </motion.li>
   );
 };
 
-export default RecentList;
+export default ReportList;

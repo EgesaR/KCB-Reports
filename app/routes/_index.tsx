@@ -1,9 +1,12 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import React, { memo, useState } from "react";
 import { FaRegHeart } from "react-icons/fa";
 import { motion } from "framer-motion";
-import RecentList from "~/components/RecentList";
+import RecentList from "~/components/ReportList";
 import SideSheet from "~/components/SideSheet";
+import { json } from "@remix-run/node";
+import { reports as serverReports, sharedItems } from "~/data/reports";
+import { useLoaderData } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -11,6 +14,11 @@ export const meta: MetaFunction = () => {
     { name: "description", content: "Welcome to KCB Reports Dashboard" },
   ];
 };
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  // In a real app, fetch from DB here
+  return json({ reports: serverReports });
+}
 
 interface ActionProps {
   text: string;
@@ -55,6 +63,7 @@ const EventCard = memo(
 
 export default function Index() {
   const [isSideSheetOpen, setIsSideSheetOpen] = useState(false);
+  const { reports } = useLoaderData<typeof loader>();
 
   return (
     <div className="flex flex-col gap-2.5 h-full pt-4 overflow-hidden relative">
@@ -71,7 +80,7 @@ export default function Index() {
           { text: "Edit", action: () => setIsSideSheetOpen(true) },
         ]}
       />
-      <RecentList />
+      <RecentList reports={reports} />
       <SideSheet
         id="dashboardSettings"
         isOpen={isSideSheetOpen}
