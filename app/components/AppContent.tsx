@@ -6,7 +6,7 @@ import ReportHeader from "~/components/ReportHeader";
 import SideSheet from "~/components/SideSheet";
 import AppBar from "~/components/AppBar";
 import SidebarModal from "~/components/SidebarModal";
-import { memo, useMemo, useState, type ReactNode } from "react";
+import { memo, useMemo, useState, type ReactNode, useCallback } from "react";
 
 /**
  * Determines if the current route is a report detail route (/reports/:id)
@@ -32,9 +32,28 @@ const AppContent = memo(({ children }: AppContentProps) => {
   // Memoize the route type so we don't recalc on every render unless matches change
   const reportDetail = useMemo(() => isReportDetailRoute(matches), [matches]);
 
-  // Function to toggle the side sheet
-  const toggleSideSheet = (id: string) => {
+  // Memoized function to toggle the side sheet
+  const toggleSideSheet = useCallback((id: string) => {
     setOpenSideSheet((prev) => (prev === id ? null : id));
+  }, []);
+
+  // Memoized function to close the side sheet
+  const closeSideSheet = useCallback(() => {
+    setOpenSideSheet(null);
+  }, []);
+
+  // Header animation variants
+  const headerVariants = {
+    hidden: {
+      opacity: 0,
+      y: -20,
+      transition: { duration: 0.2, ease: "easeInOut" },
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
   };
 
   return (
@@ -53,20 +72,22 @@ const AppContent = memo(({ children }: AppContentProps) => {
           {reportDetail ? (
             <motion.div
               key="report-header"
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              variants={headerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              className="flex-shrink-0"
             >
               <ReportHeader />
             </motion.div>
           ) : (
             <motion.div
               key="app-bar"
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              variants={headerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              className="flex-shrink-0"
             >
               <AppBar setSidesheet={toggleSideSheet} />
             </motion.div>
@@ -74,21 +95,32 @@ const AppContent = memo(({ children }: AppContentProps) => {
         </AnimatePresence>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-4">{children}</main>
+        <motion.main
+          className="flex-1 overflow-y-auto p-4 pt-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1, duration: 0.3 }}
+        >
+          {children}
+        </motion.main>
       </div>
 
-      {/* Right Panel (optional) */}
-      {openSideSheet && (
-        <SideSheet
-          id={openSideSheet}
-          isOpen={!!openSideSheet}
-          setIsOpen={() => setOpenSideSheet(null)}
-        >
-          <div className="font-comfortaa text-gray-900 dark:text-neutral-200">
+      {/* Right Panel (SideSheet) */}
+      <SideSheet
+        id={openSideSheet || ""}
+        isOpen={!!openSideSheet}
+        setIsOpen={closeSideSheet}
+      >
+        <div className="font-comfortaa text-gray-900 dark:text-neutral-200">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+          >
             Content for {openSideSheet} panel
-          </div>
-        </SideSheet>
-      )}
+          </motion.div>
+        </div>
+      </SideSheet>
     </div>
   );
 });

@@ -1,7 +1,5 @@
-import { v7 as uuid } from "uuid";
-import React, { useRef, useEffect, useState } from "react";
-import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
-import { useNavigate } from "@remix-run/react";
+// ~/components/ReportList.tsx
+import React, { useRef, useEffect, useState, useMemo } from "react";
 import {
   motion,
   AnimatePresence,
@@ -9,12 +7,55 @@ import {
   usePresence,
   useAnimate,
 } from "framer-motion";
-import { reports as initialReports, Report, sharedItems } from "~/data/reports";
-import useLongPress from "~/hooks/useLongPress";
 import { FiTrash2 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
+import { Menu } from "@headlessui/react";
+
+// Import report data and types
+import { Report, SharedItem, sharedItems } from "~/data/reports";
+import useLongPress from "~/hooks/useLongPress";
 import { useSafeFormattedDate } from "~/hooks/useSafeFormattedDate";
 
-// Variants for the parent <ul> and child <li> elements
+// Type definitions
+interface SharedItemWithAvatar {
+  src: string;
+  alt: string;
+}
+
+interface SharedItemWithName {
+  name: string;
+  href: string;
+}
+
+interface LongPressContext {
+  id: string;
+}
+
+interface ReportListProps {
+  reports?: Report[];
+}
+
+interface ReportItemProps {
+  report: Report;
+  selected: boolean;
+  selectionMode: boolean;
+  selectedRecentsCount: number;
+  handlers: {
+    onClick: (e: React.MouseEvent<HTMLLIElement>) => void;
+    onMouseDown: (e: React.MouseEvent<HTMLLIElement>) => void;
+    onMouseUp: (e: React.MouseEvent<HTMLLIElement>) => void;
+    onTouchStart: (e: React.TouchEvent<HTMLLIElement>) => void;
+    onTouchEnd: (e: React.TouchEvent<HTMLLIElement>) => void;
+  };
+  selectRecent: (id: string) => void;
+  setRecents: React.Dispatch<React.SetStateAction<Report[]>>;
+  setSelectedRecents: React.Dispatch<React.SetStateAction<Report[]>>;
+  setSelectAll: React.Dispatch<React.SetStateAction<boolean>>;
+  setSelectionMode: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+// Animation variants
 const listVariants = {
   visible: {
     opacity: 1,
@@ -27,21 +68,18 @@ const listVariants = {
   },
 };
 
-// Variants for the selection indicator animation
 const indicatorVariants = {
   initial: { width: 0, left: "0%" },
   animate: { width: 4, left: "0%" },
   exit: { width: 0, left: "-10%" },
 };
 
-// Variants for menu items animation
 const menuVariants = {
   initial: { opacity: 0, scale: 0.95 },
   animate: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.95 },
 };
 
-// Variants for trash button animation
 const trashBinVariants = {
   initial: { opacity: 0, scale: 0.8 },
   animate: { opacity: 1, scale: 1 },
@@ -67,78 +105,109 @@ const itemVariants = {
   },
 };
 
+// Type guard functions
+const isSharedItemWithAvatar = (
+  item: SharedItem
+): item is SharedItemWithAvatar => {
+  return "src" in item;
+};
+
+const isSharedItemWithName = (item: SharedItem): item is SharedItemWithName => {
+  return "name" in item;
+};
+
 // ReportList Component
-const ReportList = ({ reports = [] }: { reports: Report[] }) => {
-  const [reportsState, setReportsState] = useState<Report[]>([]);
+const ReportList: React.FC<ReportListProps> = ({ reports = [] }) => {
+  const [reportsState, setReportsState] = useState<Report[]>(reports);
   const [selectedReports, setSelectedReports] = useState<Report[]>([]);
-  const [selectAll, setSelectAll] = useState(false);
-  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectAll, setSelectAll] = useState<boolean>(false);
+  const [selectionMode, setSelectionMode] = useState<boolean>(false);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const listRef = useRef<HTMLUListElement>(null);
   const isInView = useInView(listRef, { amount: 0.2, once: true });
   const navigate = useNavigate();
 
-  // Define the context type for useLongPress
-  interface LongPressContext {
-    id: string;
-  }
+  const reportsStateMemo = useMemo(() => reportsState, [reportsState]);
 
-  // Use the long-press hook with click, double-click, and triple-click support
+  const sortedReports = useMemo(() => {
+    return [...reportsStateMemo].sort((a, b) => {
+      const dateA = new Date(a.lastUpdated);
+      const dateB = new Date(b.lastUpdated);
+      return sortOrder === "asc"
+        ? dateA.getTime() - dateB.getTime()
+        : dateB.getTime() - dateA.getTime();
+    });
+  }, [reportsStateMemo, sortOrder]);
+
+  const handleNavigate = (url: string): void => {
+    navigate(url);
+  };
+
   const { action, handlers } = useLongPress<HTMLLIElement, LongPressContext>({
-    onClick: (event, { id }) => {
+    onClick: (
+      event: React.MouseEvent<HTMLLIElement> | React.TouchEvent<HTMLLIElement>,
+      { id }: LongPressContext
+    ) => {
       if (!selectionMode) {
-        navigate(`/reports/${id}`, { preventScrollReset: false });
-        console.log(`Navigated to report with ID: ${id}`);
+        const report = reportsState.find((r) => r.id === id);
+        if (report) handleNavigate(report.url);
       } else {
         event.preventDefault();
         event.stopPropagation();
         selectReport(id);
-        console.log(`Clicked report with ID: ${id}`);
       }
     },
-    onDoubleClick: (event, { id }) => {
+    onDoubleClick: (
+      event: React.MouseEvent<HTMLLIElement>,
+      { id }: LongPressContext
+    ) => {
       event.preventDefault();
       event.stopPropagation();
       setSelectionMode(true);
       selectReport(id);
-      console.log(`Double-clicked report with ID: ${id}`);
     },
-    onTripleClick: (event, { id }) => {
+    onTripleClick: (
+      event: React.MouseEvent<HTMLLIElement>,
+      { id }: LongPressContext
+    ) => {
       event.preventDefault();
       event.stopPropagation();
       setSelectionMode(true);
-      selectReport(id);
-      console.log(`Triple-clicked report with ID: ${id}`);
+      setSelectedReports(reportsState); // Select all reports on triple-click
+      setSelectAll(true);
     },
-    onLongPress: (event, { id }) => {
-      event.preventDefault();
+    onLongPress: (
+      event: React.MouseEvent<HTMLLIElement> | React.TouchEvent<HTMLLIElement>,
+      { id }: LongPressContext
+    ) => {
+      // Note: event is a mock event, so avoid calling preventDefault/stopPropagation
       setSelectionMode(true);
       selectReport(id);
-      console.log(`Long-pressed report with ID: ${id}`);
     },
   });
 
-  const addReport = () => {
-    const newId = uuid();
+  const addReport = (): void => {
+    const newId = uuidv4();
     const newReport: Report = {
       id: newId,
-      name: "End of Term",
+      name: "New Report",
       shared: sharedItems.slice(0, 8),
-      status: "Completed",
-      lastUpdated: new Date("2025-06-10").toLocaleDateString(),
-      body: { content: "Content for the end of term report." },
-      type: "term-report",
-      url: `/reports/end-of-term`,
+      status: "Draft",
+      lastUpdated: new Date().toISOString(),
+      body: { content: "Content for the new report." },
+      type: "generic-report",
+      url: `/reports/${newId}`,
       toJSON: () => ({
         id: newId,
-        name: "End of Term",
-        status: "Completed",
+        name: "New Report",
+        status: "Draft",
       }),
     };
 
     setReportsState((prev) => [...prev, newReport]);
   };
 
-  const selectReport = (id: string) => {
+  const selectReport = (id: string): void => {
     const report = reportsState.find((r) => r.id === id);
     if (report) {
       setSelectedReports((prev) => {
@@ -151,7 +220,7 @@ const ReportList = ({ reports = [] }: { reports: Report[] }) => {
     }
   };
 
-  const removeReports = () => {
+  const removeReports = (): void => {
     setReportsState((prev) =>
       prev.filter((report) => !selectedReports.includes(report))
     );
@@ -160,14 +229,14 @@ const ReportList = ({ reports = [] }: { reports: Report[] }) => {
     setSelectionMode(false);
   };
 
-  const clearAllReports = () => {
+  const clearAllReports = (): void => {
     setReportsState([]);
     setSelectedReports([]);
     setSelectAll(false);
     setSelectionMode(false);
   };
 
-  const toggleSelectAll = () => {
+  const toggleSelectAll = (): void => {
     if (selectAll) {
       setSelectedReports([]);
       setSelectAll(false);
@@ -179,23 +248,17 @@ const ReportList = ({ reports = [] }: { reports: Report[] }) => {
     }
   };
 
-  // Initialize reports state only once or when 'reports' changes
   useEffect(() => {
     setReportsState(reports);
   }, [reports]);
 
-  // Update selectAll and selectionMode properly, avoiding infinite loops
   useEffect(() => {
     setSelectAll(
-      reportsState.length > 0 && selectedReports.length === reportsState.length
+      reportsStateMemo.length > 0 &&
+        selectedReports.length === reportsStateMemo.length
     );
-    if (selectedReports.length === 0) {
-      setSelectionMode(false);
-    } else {
-      setSelectionMode(true);
-    }
-  }, [selectedReports, reportsState]);
-  console.log("Report List Date: ", reports);
+    setSelectionMode(selectedReports.length > 0);
+  }, [selectedReports, reportsStateMemo]);
 
   return (
     <section className="p-4">
@@ -221,6 +284,12 @@ const ReportList = ({ reports = [] }: { reports: Report[] }) => {
             onClick={addReport}
           >
             Add
+          </button>
+          <button
+            className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+          >
+            Sort {sortOrder === "asc" ? "↓" : "↑"}
           </button>
           <AnimatePresence mode="popLayout">
             {selectionMode && (
@@ -287,25 +356,25 @@ const ReportList = ({ reports = [] }: { reports: Report[] }) => {
           variants={listVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
-          className="py-2 pb-12 mt-2 max-h-[50vh] overflow-y-auto"
+          className="pt-2 pb-[10px] mt-2 max-h-[41.5vh] h-auto overflow-y-auto"
           role="list"
           layout
           layoutScroll
         >
           <AnimatePresence mode="popLayout">
-            {reportsState.length === 0 && (
+            {sortedReports.length === 0 && (
               <motion.li
                 key="empty"
                 variants={itemVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                className="text-center font-semibold py-4"
+                className="text-center font-semibold pt-4"
               >
                 There is nothing today.
               </motion.li>
             )}
-            {[...reportsState].reverse().map((report) => (
+            {sortedReports.map((report) => (
               <ReportItem
                 key={report.id}
                 report={report}
@@ -328,7 +397,7 @@ const ReportList = ({ reports = [] }: { reports: Report[] }) => {
 };
 
 // ReportItem Component
-const ReportItem = ({
+const ReportItem: React.FC<ReportItemProps> = ({
   report,
   selected,
   selectionMode,
@@ -339,25 +408,13 @@ const ReportItem = ({
   setSelectedRecents,
   setSelectAll,
   setSelectionMode,
-}: {
-  report: Report;
-  selected: boolean;
-  selectionMode: boolean;
-  selectedRecentsCount: number;
-  handlers: ReturnType<
-    ReturnType<typeof useLongPress<HTMLLIElement, { id: string }>>["handlers"]
-  >;
-  selectRecent: (id: string) => void;
-  setRecents: React.Dispatch<React.SetStateAction<Report[]>>;
-  setSelectedRecents: React.Dispatch<React.SetStateAction<Report[]>>;
-  setSelectAll: React.Dispatch<React.SetStateAction<boolean>>;
-  setSelectionMode: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const [isPresent, safeToRemove] = usePresence();
   const [scope, animate] = useAnimate();
   const indicatorRef = useRef<HTMLDivElement>(null);
+  const shouldAnimate = (report.shared?.length || 0) < 50; // Disable animations for large lists
 
-  const removeSingleReport = async () => {
+  const removeSingleReport = async (): Promise<void> => {
     if (indicatorRef.current) {
       await animate(
         indicatorRef.current,
@@ -382,7 +439,7 @@ const ReportItem = ({
 
   useEffect(() => {
     if (!isPresent) {
-      const exitAnimation = async () => {
+      const exitAnimation = async (): Promise<void> => {
         if (indicatorRef.current) {
           await animate(
             indicatorRef.current,
@@ -404,18 +461,16 @@ const ReportItem = ({
     }
   }, [isPresent, animate, safeToRemove]);
 
-  // Make sure shared is always an array
-  const sharedItems = report.shared ?? [];
-  console.log("Report date: ", report.lastUpdated);
+  const sharedItemsArray: SharedItem[] = report.shared ?? [];
 
   return (
     <motion.li
       ref={scope}
-      variants={itemVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      layout
+      variants={shouldAnimate ? itemVariants : undefined}
+      initial={shouldAnimate ? "hidden" : undefined}
+      animate={shouldAnimate ? "visible" : undefined}
+      exit={shouldAnimate ? "exit" : undefined}
+      layout={shouldAnimate}
       className={`flex w-full text-sm sm:text-xs py-3 px-3 last:border-0 border-b items-center hover:bg-gray-50 dark:hover:bg-gray-700 relative report-item-${
         report.id
       } ${
@@ -469,10 +524,8 @@ const ReportItem = ({
           onClick={(e) => selectionMode && e.stopPropagation()}
         >
           <div className="flex -space-x-2">
-            {sharedItems
-              .filter(
-                (item): item is { src: string; alt: string } => "src" in item
-              )
+            {sharedItemsArray
+              .filter(isSharedItemWithAvatar)
               .map((item, index) => (
                 <img
                   key={index}
@@ -481,62 +534,52 @@ const ReportItem = ({
                   alt={item.alt}
                 />
               ))}
-            {sharedItems.some(
-              (item): item is { name: string; href: string } => "name" in item
-            ) && (
-              <Menu
-                as="div"
-                className="[--placement:top-left] outline-none border-none ring-0 relative inline-flex"
-                onClick={(e) => selectionMode && e.stopPropagation()}
-              >
-                <MenuButton
-                  className="inline-flex items-center justify-center size-8 rounded-full bg-gray-100 border-2 border-white font-medium text-gray-700 shadow-2xs hover:bg-gray-200 focus:outline-none focus:bg-gray-300 text-sm dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:border-gray-800"
-                  aria-label={`Show ${
-                    sharedItems.filter(
-                      (item): item is { name: string; href: string } =>
-                        "name" in item
-                    ).length
-                  } more shared users`}
-                >
-                  <span className="font-medium">
-                    {
-                      sharedItems.filter(
-                        (item): item is { name: string; href: string } =>
-                          "name" in item
-                      ).length
-                    }
-                    +
-                  </span>
-                </MenuButton>
-                <AnimatePresence>
-                  <MenuItems
-                    as={motion.div}
-                    variants={menuVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    className="w-48 z-10 mb-2 bg-white shadow-md rounded-lg p-2 dark:bg-gray-800 dark:divide-gray-700"
-                    anchor="top start"
-                  >
-                    {sharedItems
-                      .filter(
-                        (item): item is { name: string; href: string } =>
-                          "name" in item
-                      )
-                      .map((item, index) => (
-                        <MenuItem key={index}>
-                          <a
-                            className="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 data-[focus]:bg-gray-100 data-[focus]:dark:bg-gray-700"
-                            href={item.href}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {item.name}
-                          </a>
-                        </MenuItem>
-                      ))}
-                  </MenuItems>
-                </AnimatePresence>
+            {sharedItemsArray.some(isSharedItemWithName) && (
+              <Menu as="div" className="relative inline-flex">
+                {({ open }) => (
+                  <>
+                    <Menu.Button
+                      as="button"
+                      className="inline-flex items-center justify-center size-8 rounded-full bg-gray-100 border-2 border-white font-medium text-gray-700 shadow-2xs hover:bg-gray-200 focus:outline-none focus:bg-gray-300 text-sm dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:border-gray-800"
+                      aria-label={`Show ${
+                        sharedItemsArray.filter(isSharedItemWithName).length
+                      } more shared users`}
+                    >
+                      <span className="font-medium">
+                        {sharedItemsArray.filter(isSharedItemWithName).length}+
+                      </span>
+                    </Menu.Button>
+                    <Menu.Items
+                      as={motion.div}
+                      variants={menuVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      className="absolute top-full left-0 mt-2 w-48 bg-white shadow-md rounded-lg p-2 dark:bg-gray-800 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 z-50"
+                    >
+                      {sharedItemsArray
+                        .filter(isSharedItemWithName)
+                        .map((item, index) => (
+                          <Menu.Item key={index}>
+                            {({ active }) => (
+                              <a
+                                className={`flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 ${
+                                  active
+                                    ? "bg-gray-100 dark:bg-gray-700 dark:text-gray-300"
+                                    : "dark:text-gray-400"
+                                }`}
+                                href={item.href}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {item.name}
+                              </a>
+                            )}
+                          </Menu.Item>
+                        ))}
+                    </Menu.Items>
+                  </>
+                )}
               </Menu>
             )}
           </div>
@@ -548,10 +591,9 @@ const ReportItem = ({
           {useSafeFormattedDate(report.lastUpdated)}
         </div>
       </div>
-
       {selectionMode && selectedRecentsCount > 0 && (
         <motion.button
-          onClick={(e) => {
+          onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             removeSingleReport();
           }}
@@ -562,7 +604,6 @@ const ReportItem = ({
           whileHover={{ scale: 1.25 }}
           className="ml-2 text-red-500 hover:text-red-700 focus:outline-none focus:ring focus:ring-red-500 rounded p-1"
           aria-label={`Remove ${report.name}`}
-          tabIndex={-1}
         >
           <FiTrash2 size={18} />
         </motion.button>
