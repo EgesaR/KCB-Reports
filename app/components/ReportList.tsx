@@ -1,23 +1,16 @@
-// ~/components/ReportList.tsx
+// app/components/ReportList.tsx
 import React, { useRef, useEffect, useState, useMemo } from "react";
-import {
-  motion,
-  AnimatePresence,
-  useInView,
-  usePresence,
-  useAnimate,
-} from "framer-motion";
+import { motion, AnimatePresence, useInView, usePresence, useAnimate, Variants } from "framer-motion";
 import { FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { Menu } from "@headlessui/react";
-
-// Import report data and types
+import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
+import { AvatarGroup, AvatarGroupTooltip } from "~/components/ui/avatar-group";
 import { Report, SharedItem, sharedItems } from "~/data/reports";
 import useLongPress from "~/hooks/useLongPress";
 import { useSafeFormattedDate } from "~/hooks/useSafeFormattedDate";
 
-// Type definitions
 interface SharedItemWithAvatar {
   src: string;
   alt: string;
@@ -55,60 +48,36 @@ interface ReportItemProps {
   setSelectionMode: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-// Animation variants
-const listVariants = {
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-  hidden: {
-    opacity: 0,
-  },
+const listVariants: Variants = {
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+  hidden: { opacity: 0 },
 };
 
-const indicatorVariants = {
+const indicatorVariants: Variants = {
   initial: { width: 0, left: "0%" },
-  animate: { width: 4, left: "0%" },
-  exit: { width: 0, left: "-10%" },
+  animate: { width: 4, left: "0%", transition: { ease: "easeInOut", duration: 0.15 } },
+  exit: { width: 0, left: "-10%", transition: { ease: "easeInOut", duration: 0.15 } },
 };
 
-const menuVariants = {
-  initial: { opacity: 0, scale: 0.95 },
-  animate: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.95 },
+const menuVariants: Variants = {
+  initial: { opacity: 0, scale: 0.95, y: -10 },
+  animate: { opacity: 1, scale: 1, y: 0, transition: { ease: "easeInOut", duration: 0.2 } },
+  exit: { opacity: 0, scale: 0.95, y: -10, transition: { ease: "easeInOut", duration: 0.2 } },
 };
 
-const trashBinVariants = {
+const trashBinVariants: Variants = {
   initial: { opacity: 0, scale: 0.8 },
-  animate: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.8 },
+  animate: { opacity: 1, scale: 1, transition: { ease: "easeInOut", duration: 0.2 } },
+  exit: { opacity: 0, scale: 0.8, transition: { ease: "easeInOut", duration: 0.2 } },
 };
 
-const itemVariants = {
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-    },
-  },
-  hidden: {
-    opacity: 0,
-    y: 20,
-  },
-  exit: {
-    opacity: 0,
-    x: -24,
-    transition: { duration: 0.3 },
-  },
+const itemVariants: Variants = {
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeInOut" } },
+  hidden: { opacity: 0, y: 20 },
+  exit: { opacity: 0, x: -24, transition: { duration: 0.3, ease: "easeInOut" } },
 };
 
-// Type guard functions
-const isSharedItemWithAvatar = (
-  item: SharedItem
-): item is SharedItemWithAvatar => {
+const isSharedItemWithAvatar = (item: SharedItem): item is SharedItemWithAvatar => {
   return "src" in item;
 };
 
@@ -116,7 +85,20 @@ const isSharedItemWithName = (item: SharedItem): item is SharedItemWithName => {
   return "name" in item;
 };
 
-// ReportList Component
+const defaultAvatarUrls = [
+  "https://pbs.twimg.com/profile_images/1909615404789506048/MTqvRsjo_400x400.jpg",
+  "https://pbs.twimg.com/profile_images/1593304942210478080/TUYae5z7_400x400.jpg",
+  "https://pbs.twimg.com/profile_images/1677042510839857154/Kq4tpySA_400x400.jpg",
+  "https://pbs.twimg.com/profile_images/1783856060249595904/8TfcCN0r_400x400.jpg",
+];
+
+const getInitials = (name: string): string => {
+  const parts = name.trim().split(" ");
+  return parts.length > 1
+    ? `${parts[0][0]}${parts[parts.length - 1][0]}`
+    : parts[0].slice(0, 2).toUpperCase();
+};
+
 const ReportList: React.FC<ReportListProps> = ({ reports = [] }) => {
   const [reportsState, setReportsState] = useState<Report[]>(reports);
   const [selectedReports, setSelectedReports] = useState<Report[]>([]);
@@ -143,11 +125,21 @@ const ReportList: React.FC<ReportListProps> = ({ reports = [] }) => {
     navigate(url);
   };
 
-  const { action, handlers } = useLongPress<HTMLLIElement, LongPressContext>({
-    onClick: (
-      event: React.MouseEvent<HTMLLIElement> | React.TouchEvent<HTMLLIElement>,
-      { id }: LongPressContext
-    ) => {
+  const selectReport = (id: string): void => {
+    const report = reportsState.find((r) => r.id === id);
+    if (report) {
+      setSelectedReports((prev) => {
+        if (prev.includes(report)) {
+          return prev.filter((i) => i.id !== id);
+        } else {
+          return [...prev, report];
+        }
+      });
+    }
+  };
+
+  const { handlers } = useLongPress<HTMLLIElement, LongPressContext>({
+    onClick: (event: React.MouseEvent<HTMLLIElement> | React.TouchEvent<HTMLLIElement>, { id }: LongPressContext) => {
       if (!selectionMode) {
         const report = reportsState.find((r) => r.id === id);
         if (report) handleNavigate(report.url);
@@ -157,30 +149,20 @@ const ReportList: React.FC<ReportListProps> = ({ reports = [] }) => {
         selectReport(id);
       }
     },
-    onDoubleClick: (
-      event: React.MouseEvent<HTMLLIElement>,
-      { id }: LongPressContext
-    ) => {
+    onDoubleClick: (event: React.MouseEvent<HTMLLIElement>, { id }: LongPressContext) => {
       event.preventDefault();
       event.stopPropagation();
       setSelectionMode(true);
       selectReport(id);
     },
-    onTripleClick: (
-      event: React.MouseEvent<HTMLLIElement>,
-      { id }: LongPressContext
-    ) => {
+    onTripleClick: (event: React.MouseEvent<HTMLLIElement>, { id }: LongPressContext) => {
       event.preventDefault();
       event.stopPropagation();
       setSelectionMode(true);
-      setSelectedReports(reportsState); // Select all reports on triple-click
+      setSelectedReports(reportsState);
       setSelectAll(true);
     },
-    onLongPress: (
-      event: React.MouseEvent<HTMLLIElement> | React.TouchEvent<HTMLLIElement>,
-      { id }: LongPressContext
-    ) => {
-      // Note: event is a mock event, so avoid calling preventDefault/stopPropagation
+    onLongPress: (event: React.MouseEvent<HTMLLIElement> | React.TouchEvent<HTMLLIElement>, { id }: LongPressContext) => {
       setSelectionMode(true);
       selectReport(id);
     },
@@ -205,19 +187,6 @@ const ReportList: React.FC<ReportListProps> = ({ reports = [] }) => {
     };
 
     setReportsState((prev) => [...prev, newReport]);
-  };
-
-  const selectReport = (id: string): void => {
-    const report = reportsState.find((r) => r.id === id);
-    if (report) {
-      setSelectedReports((prev) => {
-        if (prev.includes(report)) {
-          return prev.filter((i) => i.id !== id);
-        } else {
-          return [...prev, report];
-        }
-      });
-    }
   };
 
   const removeReports = (): void => {
@@ -254,8 +223,7 @@ const ReportList: React.FC<ReportListProps> = ({ reports = [] }) => {
 
   useEffect(() => {
     setSelectAll(
-      reportsStateMemo.length > 0 &&
-        selectedReports.length === reportsStateMemo.length
+      reportsStateMemo.length > 0 && selectedReports.length === reportsStateMemo.length
     );
     setSelectionMode(selectedReports.length > 0);
   }, [selectedReports, reportsStateMemo]);
@@ -265,28 +233,28 @@ const ReportList: React.FC<ReportListProps> = ({ reports = [] }) => {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
         className="mb-4 flex justify-between items-center"
       >
         <div className="flex items-center gap-4">
-          <h3 className="text-lg sm:text-base font-semibold text-gray-800 dark:text-gray-200">
+          <h3 className="text-lg sm:text-base font-semibold text-foreground">
             Recent Reports
           </h3>
           {selectionMode && reportsState.length > 0 && (
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-muted-foreground">
               ({selectedReports.length} selected)
             </span>
           )}
         </div>
         <motion.div className="flex gap-2 sm:text-sm">
           <button
-            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-2 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90"
             onClick={addReport}
           >
             Add
           </button>
           <button
-            className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+            className="px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90"
             onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
           >
             Sort {sortOrder === "asc" ? "↓" : "↑"}
@@ -302,7 +270,7 @@ const ReportList: React.FC<ReportListProps> = ({ reports = [] }) => {
               >
                 {reportsState.length > 0 && (
                   <button
-                    className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    className="px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90"
                     onClick={clearAllReports}
                   >
                     Clear All
@@ -313,7 +281,7 @@ const ReportList: React.FC<ReportListProps> = ({ reports = [] }) => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.2, ease: "easeInOut" }}
-                  className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                  className="px-2 py-1 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90 disabled:opacity-50"
                   onClick={removeReports}
                   disabled={!selectedReports.length}
                 >
@@ -326,40 +294,39 @@ const ReportList: React.FC<ReportListProps> = ({ reports = [] }) => {
       </motion.div>
 
       <div className="flex flex-col overflow-hidden">
-        <div className="flex w-full border-b border-gray-400 dark:border-gray-600 py-2">
-          {selectionMode && reportsState.length > 0 && (
-            <div className="w-10 px-3">
+        <div className="flex w-full border-b border-border py-2">
+          <div className="w-10 px-3">
+            {selectionMode && reportsState.length > 0 && (
               <input
                 type="checkbox"
                 checked={selectAll}
                 onChange={toggleSelectAll}
-                className="size-4 rounded border border-red-300 accent-purple-200"
+                className="size-4 rounded border-border accent-primary"
                 aria-label="Select all reports"
               />
-            </div>
-          )}
-          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-gray-400">
+            )}
+          </div>
+          <div className="flex-1 sm:text-sm px-3 font-medium text-muted-foreground">
             Name
           </div>
-          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-gray-400">
+          <div className="flex-1 sm:text-sm px-3 font-medium text-muted-foreground">
             Shared
           </div>
-          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-gray-400">
+          <div className="flex-1 sm:text-sm px-3 font-medium text-muted-foreground">
             Status
           </div>
-          <div className="flex-1 sm:text-sm px-3 font-medium text-gray-600 dark:text-gray-400">
+          <div className="flex-1 sm:text-sm px-3 font-medium text-muted-foreground">
             Last Updated
           </div>
+          <div className="w-10 px-3" />
         </div>
         <motion.ul
           ref={listRef}
           variants={listVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
-          className="pt-2 pb-[10px] mt-2 max-h-[41.5vh] h-auto overflow-y-auto"
+          className="py-2 pb-18 mt-2 max-h-[42vh] overflow-y-auto"
           role="list"
-          layout
-          layoutScroll
         >
           <AnimatePresence mode="popLayout">
             {sortedReports.length === 0 && (
@@ -369,7 +336,7 @@ const ReportList: React.FC<ReportListProps> = ({ reports = [] }) => {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                className="text-center font-semibold pt-4"
+                className="text-center font-semibold py-4 min-h-12"
               >
                 There is nothing today.
               </motion.li>
@@ -396,7 +363,6 @@ const ReportList: React.FC<ReportListProps> = ({ reports = [] }) => {
   );
 };
 
-// ReportItem Component
 const ReportItem: React.FC<ReportItemProps> = ({
   report,
   selected,
@@ -412,7 +378,7 @@ const ReportItem: React.FC<ReportItemProps> = ({
   const [isPresent, safeToRemove] = usePresence();
   const [scope, animate] = useAnimate();
   const indicatorRef = useRef<HTMLDivElement>(null);
-  const shouldAnimate = (report.shared?.length || 0) < 50; // Disable animations for large lists
+  const shouldAnimate = (report.shared?.length || 0) < 50;
 
   const removeSingleReport = async (): Promise<void> => {
     if (indicatorRef.current) {
@@ -422,12 +388,7 @@ const ReportItem: React.FC<ReportItemProps> = ({
         { duration: 0.15, ease: "easeInOut" }
       );
     }
-    await animate(
-      scope.current,
-      { scale: 1.025 },
-      { duration: 0.125, ease: "easeIn" }
-    );
-    await animate(scope.current, { opacity: 0, x: -24 }, { duration: 0.3 });
+    await animate(scope.current, { opacity: 0, x: -24 }, { duration: 0.3, ease: "easeInOut" });
     setRecents((prev) => prev.filter((r) => r.id !== report.id));
     setSelectedRecents((prev) => prev.filter((r) => r.id !== report.id));
     setSelectAll(false);
@@ -447,12 +408,7 @@ const ReportItem: React.FC<ReportItemProps> = ({
             { duration: 0.15, ease: "easeInOut" }
           );
         }
-        await animate(
-          scope.current,
-          { scale: 1.025 },
-          { duration: 0.125, ease: "easeIn" }
-        );
-        await animate(scope.current, { opacity: 0, x: -24 }, { duration: 0.3 });
+        await animate(scope.current, { opacity: 0, x: -24 }, { duration: 0.3, ease: "easeInOut" });
         if (safeToRemove) {
           safeToRemove();
         }
@@ -462,6 +418,30 @@ const ReportItem: React.FC<ReportItemProps> = ({
   }, [isPresent, animate, safeToRemove]);
 
   const sharedItemsArray: SharedItem[] = report.shared ?? [];
+  const avatarItems = useMemo(
+    () => sharedItemsArray.filter(isSharedItemWithAvatar).slice(0, 4),
+    [sharedItemsArray]
+  );
+  const nameItems = useMemo(
+    () => sharedItemsArray.filter(isSharedItemWithName),
+    [sharedItemsArray]
+  );
+
+  const extraCount = sharedItemsArray.length > 4 ? sharedItemsArray.length - 4 : 0;
+
+  const avatarData = useMemo(() => {
+    const result = [];
+    for (let i = 0; i < 4; i++) {
+      const avatar = avatarItems[i] || {};
+      const name = nameItems[i] || { name: "Unknown User" };
+      result.push({
+        src: i < defaultAvatarUrls.length ? defaultAvatarUrls[i] : avatar.src || "",
+        fallback: getInitials(name.name),
+        tooltip: name.name,
+      });
+    }
+    return result;
+  }, [avatarItems, nameItems]);
 
   return (
     <motion.li
@@ -470,51 +450,45 @@ const ReportItem: React.FC<ReportItemProps> = ({
       initial={shouldAnimate ? "hidden" : undefined}
       animate={shouldAnimate ? "visible" : undefined}
       exit={shouldAnimate ? "exit" : undefined}
-      layout={shouldAnimate}
-      className={`flex w-full text-sm sm:text-xs py-3 px-3 last:border-0 border-b items-center hover:bg-gray-50 dark:hover:bg-gray-700 relative report-item-${
+      className={`flex w-full text-sm sm:text-xs py-3 px-3 last:border-0 border-b items-center hover:bg-accent relative report-item-${
         report.id
-      } ${
+      } min-h-12 ${
         selected
-          ? "bg-blue-100 dark:bg-gray-700 hover:bg-blue-200 hover:dark:bg-gray-800 border-zinc-200 dark:border-gray-600"
-          : "border-zinc-200 dark:border-gray-700"
+          ? "bg-accent hover:bg-accent/90 border-border"
+          : "border-border"
       }`}
       {...handlers}
     >
       <AnimatePresence>
         {selectionMode && selected && (
-          <div className="overflow-hidden absolute left-0 h-full w-3">
-            <motion.div
-              ref={indicatorRef}
-              variants={indicatorVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ ease: "easeInOut", duration: 0.15 }}
-              className="h-full bg-purple-300 absolute left-0"
-            />
-          </div>
+          <motion.div
+            variants={indicatorVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            ref={indicatorRef}
+            className="absolute left-0 h-full w-3 bg-primary"
+          />
         )}
       </AnimatePresence>
-      {selectionMode && (
-        <div className="w-10 px-3">
+      <div className="w-10 px-3">
+        {selectionMode && (
           <input
             type="checkbox"
             checked={selected}
             onChange={() => selectRecent(report.id)}
-            className="size-4 rounded border-gray-300 accent-purple-200"
+            className="size-4 rounded border-border accent-primary"
             aria-label={`Select ${report.name}`}
           />
-        </div>
-      )}
+        )}
+      </div>
       <div
         className="flex w-full items-center focus:outline-none relative cursor-pointer"
         aria-label={`View details for ${report.name}`}
       >
         <div
           className={`flex-1 px-3 ${
-            selected
-              ? "text-gray-800 dark:text-white"
-              : "text-gray-800 dark:text-gray-200"
+            selected ? "text-foreground" : "text-foreground"
           }`}
         >
           {report.name}
@@ -523,31 +497,38 @@ const ReportItem: React.FC<ReportItemProps> = ({
           className="flex-1 px-3"
           onClick={(e) => selectionMode && e.stopPropagation()}
         >
-          <div className="flex -space-x-2">
-            {sharedItemsArray
-              .filter(isSharedItemWithAvatar)
-              .map((item, index) => (
-                <img
+          <div className="flex items-center">
+            <AvatarGroup
+              invertOverlap
+              className="h-12 -space-x-2"
+              tooltipProps={{ side: "bottom", sideOffset: 24 }}
+              translateX="30%"
+            >
+              {avatarData.map((avatar, index) => (
+                <Avatar
                   key={index}
-                  className="inline-block size-8 rounded-full ring-2 ring-white dark:ring-gray-900"
-                  src={item.src}
-                  alt={item.alt}
-                />
+                  className="size-11 border-3 border-background hover:z-10"
+                >
+                  <AvatarImage src={avatar.src} />
+                  <AvatarFallback>{avatar.fallback}</AvatarFallback>
+                  <AvatarGroupTooltip>
+                    <p>{avatar.tooltip}</p>
+                  </AvatarGroupTooltip>
+                </Avatar>
               ))}
-            {sharedItemsArray.some(isSharedItemWithName) && (
-              <Menu as="div" className="relative inline-flex">
+            </AvatarGroup>
+            {extraCount > 0 && (
+              <Menu as="div" className="hs-dropdown [--placement:top-left] relative inline-flex ml-2">
                 {({ open }) => (
                   <>
                     <Menu.Button
-                      as="button"
-                      className="inline-flex items-center justify-center size-8 rounded-full bg-gray-100 border-2 border-white font-medium text-gray-700 shadow-2xs hover:bg-gray-200 focus:outline-none focus:bg-gray-300 text-sm dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:border-gray-800"
-                      aria-label={`Show ${
-                        sharedItemsArray.filter(isSharedItemWithName).length
-                      } more shared users`}
+                      id="hs-avatar-group-dropdown"
+                      className="hs-dropdown-toggle inline-flex items-center justify-center size-11 rounded-full bg-muted border-2 border-background font-medium text-foreground shadow-2xs align-middle hover:bg-muted/80 focus:outline-none focus:bg-muted/80 text-sm"
+                      aria-haspopup="menu"
+                      aria-expanded={open}
+                      aria-label={`Show ${nameItems.length} more shared users`}
                     >
-                      <span className="font-medium">
-                        {sharedItemsArray.filter(isSharedItemWithName).length}+
-                      </span>
+                      <span className="font-medium">+{extraCount}</span>
                     </Menu.Button>
                     <Menu.Items
                       as={motion.div}
@@ -555,28 +536,25 @@ const ReportItem: React.FC<ReportItemProps> = ({
                       initial="initial"
                       animate="animate"
                       exit="exit"
-                      className="absolute top-full left-0 mt-2 w-48 bg-white shadow-md rounded-lg p-2 dark:bg-gray-800 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 z-50"
+                      className="hs-dropdown-menu hs-dropdown-open:opacity-100 w-48 z-10 transition-[margin,opacity] opacity-0 duration-300 mb-2 bg-background shadow-md rounded-lg p-2 border border-border"
+                      aria-labelledby="hs-avatar-group-dropdown"
                     >
-                      {sharedItemsArray
-                        .filter(isSharedItemWithName)
-                        .map((item, index) => (
-                          <Menu.Item key={index}>
-                            {({ active }) => (
-                              <a
-                                className={`flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 ${
-                                  active
-                                    ? "bg-gray-100 dark:bg-gray-700 dark:text-gray-300"
-                                    : "dark:text-gray-400"
-                                }`}
-                                href={item.href}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                {item.name}
-                              </a>
-                            )}
-                          </Menu.Item>
-                        ))}
+                      {nameItems.map((item, index) => (
+                        <Menu.Item key={index}>
+                          {({ active }) => (
+                            <a
+                              className={`flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-foreground ${
+                                active ? "bg-accent text-accent-foreground" : ""
+                              }`}
+                              href={item.href}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {item.name}
+                            </a>
+                          )}
+                        </Menu.Item>
+                      ))}
                     </Menu.Items>
                   </>
                 )}
@@ -584,30 +562,32 @@ const ReportItem: React.FC<ReportItemProps> = ({
             )}
           </div>
         </div>
-        <div className="flex-1 px-3 text-gray-600 dark:text-gray-400">
+        <div className="flex-1 px-3 text-muted-foreground">
           {report.status}
         </div>
-        <div className="flex-1 px-3 text-gray-600 dark:text-gray-400">
+        <div className="flex-1 px-3 text-muted-foreground">
           {useSafeFormattedDate(report.lastUpdated)}
         </div>
       </div>
-      {selectionMode && selectedRecentsCount > 0 && (
-        <motion.button
-          onClick={(e: React.MouseEvent) => {
-            e.stopPropagation();
-            removeSingleReport();
-          }}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          variants={trashBinVariants}
-          whileHover={{ scale: 1.25 }}
-          className="ml-2 text-red-500 hover:text-red-700 focus:outline-none focus:ring focus:ring-red-500 rounded p-1"
-          aria-label={`Remove ${report.name}`}
-        >
-          <FiTrash2 size={18} />
-        </motion.button>
-      )}
+      <div className="w-10 px-3">
+        {selectionMode && selectedRecentsCount > 0 && (
+          <motion.button
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              removeSingleReport();
+            }}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={trashBinVariants}
+            whileHover={{ scale: 1.25 }}
+            className="ml-2 text-destructive hover:text-destructive/90 focus:outline-none focus:ring focus:ring-destructive/50 rounded p-1"
+            aria-label={`Remove ${report.name}`}
+          >
+            <FiTrash2 size={18} />
+          </motion.button>
+        )}
+      </div>
     </motion.li>
   );
 };
